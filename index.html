@@ -573,7 +573,7 @@ if(S.nb){const n=await db.notebooks.get(S.nb.id);if(!n||n.deleted){toast('Este c
  if(changed){S.undo=[];S.redo=[];sel=null;paint();ur()}hud();const t=$('#ttl');if(t)t.textContent=S.nb.title}
 else shelfSoft()}
 async function sync(){if(!sb||!user||!navigator.onLine)return;if(syncing){again=true;return}syncing=true;clearTimeout(retryT);const uid=user.id;
-try{const pk='qn_push_'+uid,old=localStorage['qn_last_'+uid];if(localStorage[pk]==null&&old){localStorage[pk]=old;localStorage['qn_pull_'+uid+'_notebooks']=old;localStorage['qn_pull_'+uid+'_pages']=old}
+try{const pk='qn_push_'+uid,old=localStorage['qn_last_'+uid];if(localStorage[pk]==null&&old)localStorage[pk]=old
  const last=+localStorage[pk]||0,fl=d=>skip[d.id]!==d.updatedAt;
  const ln=(await db.notebooks.where('updatedAt').above(last).toArray()).filter(fl),lp=(await db.pages.where('updatedAt').above(last).toArray()).filter(fl);
  if(ln.length||lp.length)setSync('sync');let mx=last;
@@ -586,13 +586,14 @@ try{const pk='qn_push_'+uid,old=localStorage['qn_last_'+uid];if(localStorage[pk]
  errN=0;setSync('ok');if(changed)await refreshUI()}
 catch(e){console.error(e);errN++;setSync('err');if(errN===1||errN%6===0)toast('No se pudo sincronizar ('+(e.message||e)+'). Se reintentará solo.');retryT=setTimeout(sync,Math.min(120000,6000*2**errN))}
 finally{syncing=false;if(again){again=false;syncSoon()}}}
+async function restoreCloud(){if(!user)return toast('Inicia sesión primero');Object.keys(localStorage).filter(k=>k.startsWith('qn_pull_')).forEach(k=>localStorage.removeItem(k));toast('Descargando tus cuadernos de la nube…');await sync();await loadNbs();shelfSoft();toast('Listo: cuadernos restaurados desde la nube')}
 addEventListener('online',()=>{setStat();sync()});addEventListener('offline',setStat);
 
 // ===== Ajustes =====
 function cfgModal(){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};
 const sw=(on,f)=>`<span class="sw3"><input type="checkbox" ${on?'checked':''} onchange="${f}"><i></i></span>`;
 m.innerHTML=`<div class="box"><h2>Ajustes</h2>
-<h3>Cuenta</h3>${user?`<div class="set"><div><b>${esc(user.email)}</b><small>Tus cuadernos se sincronizan en la nube</small></div><button onclick="sb.auth.signOut();$('#m').remove()">Salir</button></div>`:`<p class="mut" style="margin:6px 0 10px;font-size:13px">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="correo" autocomplete="email"><input id="cp" type="password" placeholder="contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div>`}
+<h3>Cuenta</h3>${user?`<div class="set"><div><b>${esc(user.email)}</b><small>Tus cuadernos se sincronizan en la nube</small></div><button onclick="sb.auth.signOut();$('#m').remove()">Salir</button></div><div class="set"><div>Restaurar desde la nube<small>Vuelve a descargar todos tus cuadernos guardados en tu cuenta (no borra nada local)</small></div><button onclick="$('#m').remove();restoreCloud()">Restaurar</button></div>`:`<p class="mut" style="margin:6px 0 10px;font-size:13px">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="correo" autocomplete="email"><input id="cp" type="password" placeholder="contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div>`}
 <h3>Escritura</h3>
 <div class="set"><div>Dibujar con el dedo<small>Apagado: solo el lápiz dibuja y el dedo mueve la página (1 dedo) o hace zoom (2 dedos)</small></div>${sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()")}</div>
 <div class="set"><div>Deslizar con un dedo para cambiar de página<small>Solo con la página a tamaño completo</small></div>${sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'")}</div>
