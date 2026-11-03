@@ -247,6 +247,7 @@ html body #app #tools.rdy{visibility:visible}
 
 .tkw{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}.tkw pre{flex:none;border-radius:14px}.tkh{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
 .sws2{display:flex;flex-wrap:wrap;gap:8px}.sw4{width:78px;height:56px;border-radius:14px;border:1px solid var(--line);align-items:flex-end;justify-content:flex-start;padding:5px 7px;font:11px ui-monospace,monospace;color:#fff;text-shadow:0 1px 3px #000,0 0 2px #000}
+#dg{position:fixed;top:64px;left:10px;z-index:99;font:11px/1.45 ui-monospace,Menlo,monospace;background:#000c;color:#7dff9a;padding:8px 10px;border-radius:10px;pointer-events:none;white-space:pre;max-width:90vw}
 </style></head><body><div id="app"></div><div id="toast"></div>
 <script>
 // ===== Config Supabase (también editable desde ⚙ en la app) =====
@@ -506,9 +507,12 @@ function hitTap(q){for(let i=cur.strokes.length-1;i>=0;i--){const s=cur.strokes[
 
 // --- puntero: lápiz, dedo, ratón ---
 function cancelDraw(){drawing=null;erasing=false;S.pid=null;clearTimeout(hold);if(sel&&sel.act==='rect'){sel=null}if(lctx&&S.tool!=='lasso')lctx.clearRect(0,0,W,H)}
+function dgLog(m){if(!S.dg)return;let d=$('#dg');if(!d){d=document.createElement('div');d.id='dg';document.body.appendChild(d)}S.dgl=[m,...(S.dgl||[])].slice(0,9);d.textContent=S.dgl.join('\n')}
 function pdown(e){const T=S.tool,touch=e.pointerType==='touch';dbg('pointerdown '+e.pointerType,e);
+dgLog('ptr '+e.pointerType+' '+Math.round(e.width||0)+'x'+Math.round(e.height||0)+' p'+(e.pressure||0).toFixed(2)+' tilt'+Math.round(e.tiltX||0)+','+Math.round(e.tiltY||0));
+if(e.pointerType==='pen'&&Math.max(e.width||0,e.height||0)>30){dbg('ignorado: contacto grande reportado como lápiz',e);return}
 if(touch&&Math.max(e.width||0,e.height||0)>34){dbg('ignorado: contacto grande (palma)',e);return}
-if(touch&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<1200||Date.now()-(S.bigT||0)<900))return;
+if(touch&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<4000||Date.now()-(S.bigT||0)<900)){S.ign={e,t:Date.now()};return}
 if(e.pointerType==='mouse'&&e.button!==0)return;
 if(e.pointerType==='pen'){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now()}
 if(T==='pan'){panStart(e);return}
@@ -619,7 +623,7 @@ m.innerHTML=`<div class="mrow"><select onchange="cur.template=this.value;paint()
 <h6>Programadores</h6>${it('code','Boceto → Código','devModal()')}${it('code','Mis componentes','codeList()')}
 <h6>Inteligencia artificial</h6>${it('bolt','IA sobre toda la página','aiMenu(1)')}
 <h6>Audio y exportar</h6>${it('mic','Audios del cuaderno','audioModal()')}${it('dl','Exportar PDF','exportPdf()')}${it('dl','Exportar esta página (PNG)','exportPng()')}${it('dl','Respaldo .qnotes (con audios)','exportNb(S.nb.id)')}
-<h6>Vista</h6>${it('fit','Ajustar a la pantalla','zoomTo(1)')}${it('swap','Restablecer posición de herramientas','S.dpos=S.bpos=null;localStorage.removeItem(\'qn_dpos\');localStorage.removeItem(\'qn_bpos\');tools()')}${it('fit','Ajustar al ancho','zoomTo(V.cw/V.w0)')}${it('side','Modo enfoque','focusM()')}${it('gear','Ajustes','cfgModal()')}${it('grid','Biblioteca','leave()')}`;
+<h6>Vista</h6>${it('fit','Ajustar a la pantalla','zoomTo(1)')}${it('swap','Restablecer posición de herramientas','S.dpos=S.bpos=null;localStorage.removeItem(\'qn_dpos\');localStorage.removeItem(\'qn_bpos\');tools()')}${it('bolt','Diagnóstico lápiz / palma','S.dg=!S.dg;S.dgl=[];if(!S.dg){const d=$(\'#dg\');d&&d.remove()}else dgLog(\'Diagnóstico activo: toca con lápiz y con la palma\')')}${it('fit','Ajustar al ancho','zoomTo(V.cw/V.w0)')}${it('side','Modo enfoque','focusM()')}${it('gear','Ajustes','cfgModal()')}${it('grid','Biblioteca','leave()')}`;
 m.style.left=Math.max(8,Math.min(r.right-268,innerWidth-276))+'px';m.style.top=(r.bottom+8)+'px';document.body.appendChild(m)}
 function focusM(){const on=!document.body.classList.contains('focus');document.body.classList.toggle('focus',on);$('header').style.display=on?'none':'';let b=$('#fx');b&&b.remove();if(on){b=document.createElement('button');b.id='fx';b.className='p';b.innerHTML=ic('x')+' Salir del enfoque';b.onclick=focusM;document.body.appendChild(b);toast('Modo enfoque: toca “Salir del enfoque” o pulsa Esc')}fit()}
 addEventListener('keydown',e=>{if(!S.nb||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
@@ -656,7 +660,10 @@ const end=e=>{if(!tp.has(e.pointerId))return;tp.delete(e.pointerId);if(S.t3&&Dat
  else if(gst&&gst.m==='pinch'&&tp.size<2){if(!gst.on&&Date.now()-gst.t<300&&Date.now()-(S.t3||0)>700&&Date.now()-(S.zm||0)>600){undo();toast('Deshacer')}gst=null}
  if(!tp.size)gst=null};
 ed.addEventListener('pointerup',end);ed.addEventListener('pointercancel',end);
-const tch=e=>{for(const t of e.changedTouches){if(t.touchType==='stylus')S.lp=Date.now();else if(Math.max(t.radiusX||0,t.radiusY||0)>26){S.bigT=Date.now();if(gst&&!gst.on){gst=null}dbg('palma por radio',null)}}};ed.addEventListener('touchstart',tch,{passive:true});ed.addEventListener('touchmove',tch,{passive:true});
+const tch=e=>{for(const t of e.changedTouches){const n=Date.now(),rd=Math.max(t.radiusX||0,t.radiusY||0);dgLog('touch '+t.touchType+' r'+Math.round(rd)+(t.force?' f'+t.force.toFixed(2):''));
+ if(t.touchType==='stylus'){S.lp=n;if(S.ign&&n-S.ign.t<150&&S.pid==null){const o=S.ign.e;S.ign=null;tp.delete(o.pointerId);gst=null;dbg('lápiz reportado como dedo: corregido',null);pdown(new Proxy(o,{get:(a,k)=>k==='pointerType'?'pen':typeof a[k]==='function'?a[k].bind(a):a[k]}))}}
+ else{if(rd>26){S.bigT=n;if(gst&&!gst.on)gst=null;dbg('palma por radio',null)}
+  if(e.type==='touchstart'&&S.pid!=null&&S.ptype==='pen'&&n-S.pidT<300&&![...e.touches].some(x=>x.touchType==='stylus')){cancelDraw();S.lp=0;dbg('palma reportada como lápiz: descartada',null)}}}};ed.addEventListener('touchstart',tch,{passive:true});ed.addEventListener('touchmove',tch,{passive:true});
 if(window._ge){removeEventListener('pointerup',window._ge);removeEventListener('pointercancel',window._ge)}window._ge=end;addEventListener('pointerup',end);addEventListener('pointercancel',end);if(!window._gb){window._gb=1;addEventListener('blur',()=>{tp.clear();gst=null})}
 const penBusy=(ms=1200)=>Date.now()-(S.lp||0)<ms||(S.pid!=null&&S.ptype==='pen');let T2=null;const tc=e=>{const a=e.touches[0],b=e.touches[1],r=ed.getBoundingClientRect();return{d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)||1,cx:(a.clientX+b.clientX)/2-r.left-r.width/2,cy:(a.clientY+b.clientY)/2-r.top-r.height/2}};
 ed.addEventListener('touchstart',e=>{if([...e.touches].some(t=>t.touchType==='stylus')){T2=null;P1=null;return}if(e.touches.length===2&&!penBusy(400)&&![...e.touches].some(t=>Math.max(t.radiusX||0,t.radiusY||0)>38)){T2={...tc(e),z:{...Z}};cancelDraw();gst=null;e.preventDefault()}},{passive:false});
