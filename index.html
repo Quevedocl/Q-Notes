@@ -259,7 +259,7 @@ const TPLS={lined:'Líneas',grid:'Cuadrícula',dotted:'Puntos',staff:'Pentagrama
 const $=s=>document.querySelector(s),uid=()=>crypto.randomUUID(),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const db=new Dexie('qnotes2');db.version(1).stores({notebooks:'id,updatedAt',pages:'id,notebookId,updatedAt'});db.version(2).stores({audio:'id'});db.version(3).stores({code:'id,updatedAt'});
 let S={nbs:[],nb:null,pages:[],i:0,tool:'pen',color:COLORS[0],size:3,palm:true,undo:[],redo:[],folder:'Todos',shape:'line',q:'',tbc:localStorage.qn_tbc!=='0'?1:0,cfg:JSON.parse(localStorage.qn_pens||'null')||{pen:{c:'#111827',w:3},ball:{c:'#2563eb',w:2},brush:{c:'#7c3aed',w:4},call:{c:'#111827',w:3},pencil:{c:'#475569',w:3},highlighter:{c:'#facc15',w:6}}},sb=null,user=null,syncT,saveT,cur=null,base,bctx,live,lctx,imgs={};
-S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
+S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.altPen=localStorage.qn_alt==='1';S.altW=+localStorage.qn_altw||28;S.tapg=localStorage.qn_tapg==='1';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
 let rec=null,aud=null,t0=0,recPid='',lzr=[],lzd=false;
 let sel=null,imc={};
 function setTheme(v){document.documentElement.dataset.theme=localStorage.qn_theme=v;document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()}
@@ -512,13 +512,14 @@ function pdown(e){const T=S.tool,touch=e.pointerType==='touch';dbg('pointerdown 
 dgLog('ptr '+e.pointerType+' '+Math.round(e.width||0)+'x'+Math.round(e.height||0)+' p'+(e.pressure||0).toFixed(2)+' tilt'+Math.round(e.tiltX||0)+','+Math.round(e.tiltY||0));
 if(e.pointerType==='pen'&&Math.max(e.width||0,e.height||0)>30){dbg('ignorado: contacto grande reportado como lápiz',e);return}
 if(touch&&Math.max(e.width||0,e.height||0)>110){dbg('ignorado: contacto grande (palma)',e);return}
-if(touch&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<4000||Date.now()-(S.bigT||0)<900)){S.ign={e,t:Date.now()};return}
+const altOK=S.altPen&&touch&&Math.max(e.width||0,e.height||0)<=S.altW,penLike=e.pointerType==='pen'||altOK;
+if(touch&&!altOK&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<4000||Date.now()-(S.bigT||0)<900)){S.ign={e,t:Date.now()};return}
 if(e.pointerType==='mouse'&&e.button!==0)return;
-if(e.pointerType==='pen'){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now()}
+if(penLike){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now()}
 if(T==='pan'){panStart(e);return}
-if(e.pointerType==='pen'&&(S.pid!=null||drawing||erasing)){S.ptype==='touch'?cancelDraw():finishStroke()}
+if(penLike&&(S.pid!=null||drawing||erasing)){S.ptype==='touch'?cancelDraw():finishStroke()}
 if(S.pid!=null||drawing||erasing){const stale=Date.now()-(S.lm||0)>400;if(e.pointerId===S.pid||stale||(e.pointerType==='pen'&&drawing&&drawing.p.length<3&&Date.now()-S.pidT<300)||(!drawing&&!erasing))finishStroke();else{dbg('ignorado: otro puntero activo',e);return}}
-e.preventDefault();S.pid=e.pointerId;S.ptype=e.pointerType;S.pidT=S.lm=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=live.getBoundingClientRect();
+e.preventDefault();S.pid=e.pointerId;S.ptype=penLike?'pen':e.pointerType;S.pidT=S.lm=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=live.getBoundingClientRect();
 if(S.pop){S.pop='';tools()}
 const q=pt(e);if(S.ro&&T!=='laser'&&T!=='seek'){S.pid=null;return}
 if(T==='laser'){lzd=true;lzr.push([q[0],q[1],Date.now()]);if(lzr.length===1)lz();return}
@@ -532,7 +533,7 @@ if(T==='lasso'){const b=sel&&sel.box;
   if(inBox(q,b,10)){snapU();sel.act='mv';sel.q=q;return}}
  sel={a:q,b:q,act:'rect',idx:[]};return}
 const sh=T==='shape';drawing={t:sh?'s':{highlighter:'h',pencil:'l',ball:'b',brush:'br',call:'c'}[T]||'p',k:S.shape,f:S.fill,c:S.color,w:T==='highlighter'?S.size*1.6:S.size,p:sh?[q,q]:[q]};stroke(lctx,drawing)}
-function pmove(e){if(e.pointerType==='pen')S.lp=Date.now();if(e.pointerId!==S.pid)return;S.lm=Date.now();const q=pt(e),T=S.tool;
+function pmove(e){if(e.pointerType==='pen'||(e.pointerId===S.pid&&S.ptype==='pen'))S.lp=Date.now();if(e.pointerId!==S.pid)return;S.lm=Date.now();const q=pt(e),T=S.tool;
 if(T==='laser'){if(lzd)lzr.push([q[0],q[1],Date.now()]);return}
 if(T==='lasso'&&sel&&sel.act){
  if(sel.act==='mv'){const dx=q[0]-sel.q[0],dy=q[1]-sel.q[1];sel.q=q;xf(x=>({...x,p:x.p.map(a=>[a[0]+dx,a[1]+dy,...a.slice(2)])}));sel.box=sel.box.map((v,i)=>v+(i%2?dy:dx));paint()}
@@ -643,9 +644,10 @@ const G=()=>{const a=[...tp.values()].filter(v=>v.x!=null);if(a.length<2)return 
 const FC=g=>{const r=ed.getBoundingClientRect();return[g.x-r.left-r.width/2,g.y-r.top-r.height/2]};
 ed.addEventListener('pointerdown',e=>{if(e.target.closest('.hud,.zc'))return;cancelAnimationFrame(inertia);
  if(e.pointerType==='pen'){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);if(gst&&gst.id!==e.pointerId)gst=null;S.lp=Date.now();return}
+ if(S.altPen&&e.pointerType==='touch'&&Math.max(e.width||0,e.height||0)<=S.altW){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now();return}
  if(e.pointerType!=='touch')return;
  if(Date.now()-(S.lp||0)<250||(drawing&&S.pid!=null&&S.ptype==='pen'))return;
- tp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(tp.size===3&&Date.now()-(S.bigT||0)>2000&&!penBusy(3000))S.t3=Date.now();
+ tp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(S.tapg&&tp.size===3&&Date.now()-(S.bigT||0)>2000&&!penBusy(3000))S.t3=Date.now();
  if(tp.size===2){if(S.ptype==='touch'&&(drawing||erasing||S.pid!=null))cancelDraw();const g=G();gst={m:'pinch',t:Date.now(),on:false,d0:g.d,F0:FC(g),z0:{...Z}}}
  else if(tp.size===1&&(S.palm||S.tool==='pan'))panStart(e)});
 ed.addEventListener('pointermove',e=>{const t=tp.get(e.pointerId);if(!t)return;if(e.pointerType==='touch'){t.x=e.clientX;t.y=e.clientY}
@@ -657,7 +659,7 @@ const end=e=>{if(!tp.has(e.pointerId))return;tp.delete(e.pointerId);if(S.t3&&Dat
   if(!g.on&&e.pointerType==='touch'&&Date.now()-g.t0<260){if(Date.now()-(S.tap||0)<320){S.tap=0;zoomTo(Z.s>1.05?1:2.5,e.clientX,e.clientY)}else S.tap=Date.now()}
   if(Z.s>1.02){let vx=g.vx*16,vy=g.vy*16;if(e.pointerType!=='touch'&&Date.now()-g.lt<80&&Math.hypot(vx,vy)>3){const st=()=>{vx*=.93;vy*=.93;Z.x+=vx;Z.y+=vy;applyZ();if(Math.hypot(vx,vy)>.4)inertia=requestAnimationFrame(st)};inertia=requestAnimationFrame(st)}}
   else if(S.flip&&e.pointerType==='touch'&&Date.now()-g.t0<500&&Math.abs(g.dx)>90&&Math.abs(g.dx)>Math.abs(g.dy)*1.8&&Date.now()-(S.lp||0)>1200&&Date.now()-(S.bigT||0)>1500&&(g.dx>0||S.i<S.pages.length-1))go(g.dx<0?1:-1)}
- else if(gst&&gst.m==='pinch'&&tp.size<2){if(!gst.on&&Date.now()-gst.t<300&&Date.now()-(S.t3||0)>700&&Date.now()-(S.zm||0)>600&&gst.d0>45&&Date.now()-(S.bigT||0)>2000&&!penBusy(3000)){undo();toast('Deshacer')}gst=null}
+ else if(gst&&gst.m==='pinch'&&tp.size<2){if(!gst.on&&Date.now()-gst.t<300&&Date.now()-(S.t3||0)>700&&S.tapg&&Date.now()-(S.zm||0)>600&&gst.d0>45&&Date.now()-(S.bigT||0)>2000&&!penBusy(3000)){undo();toast('Deshacer')}gst=null}
  if(!tp.size)gst=null};
 ed.addEventListener('pointerup',end);ed.addEventListener('pointercancel',end);
 const tch=e=>{for(const t of e.changedTouches){const n=Date.now(),rd=Math.max(t.radiusX||0,t.radiusY||0);dgLog('touch '+t.touchType+' r'+Math.round(rd)+(t.force?' f'+t.force.toFixed(2):''));
@@ -666,11 +668,11 @@ const tch=e=>{for(const t of e.changedTouches){const n=Date.now(),rd=Math.max(t.
   if(e.type==='touchstart'&&S.pid!=null&&S.ptype==='pen'&&n-S.pidT<300&&![...e.touches].some(x=>x.touchType==='stylus')){cancelDraw();S.lp=0;dbg('palma reportada como lápiz: descartada',null)}}}};ed.addEventListener('touchstart',tch,{passive:true});ed.addEventListener('touchmove',tch,{passive:true});
 if(window._ge){removeEventListener('pointerup',window._ge);removeEventListener('pointercancel',window._ge)}window._ge=end;addEventListener('pointerup',end);addEventListener('pointercancel',end);if(!window._gb){window._gb=1;addEventListener('blur',()=>{tp.clear();gst=null})}
 const penBusy=(ms=1200)=>Date.now()-(S.lp||0)<ms||(S.pid!=null&&S.ptype==='pen');let T2=null;const tc=e=>{const a=e.touches[0],b=e.touches[1],r=ed.getBoundingClientRect();return{d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)||1,cx:(a.clientX+b.clientX)/2-r.left-r.width/2,cy:(a.clientY+b.clientY)/2-r.top-r.height/2}};
-ed.addEventListener('touchstart',e=>{if([...e.touches].some(t=>t.touchType==='stylus')){T2=null;P1=null;return}if(e.touches.length===2&&!penBusy(400)&&Date.now()-(S.bigT||0)>1500&&tc(e).d>50&&![...e.touches].some(t=>Math.max(t.radiusX||0,t.radiusY||0)>55)){T2={...tc(e),z:{...Z}};cancelDraw();gst=null;e.preventDefault()}},{passive:false});
-ed.addEventListener('touchmove',e=>{if(T2&&(penBusy(400)||[...e.touches].some(t=>t.touchType==='stylus'||Math.max(t.radiusX||0,t.radiusY||0)>60)))T2=null;if(!T2||e.touches.length<2)return;e.preventDefault();const g=tc(e);if(!T2.on){if(Math.abs(g.d-T2.d)<10&&Math.hypot(g.cx-T2.cx,g.cy-T2.cy)<10)return;T2.on=true;T2.d=g.d;T2.cx=g.cx;T2.cy=g.cy;T2.z={...Z}}const k=clamp(T2.z.s*g.d/T2.d,1,8),f=k/T2.z.s;if(Math.abs(g.d-T2.d)>4)S.zm=Date.now();Z.s=k;Z.x=g.cx-f*(T2.cx-T2.z.x);Z.y=g.cy-f*(T2.cy-T2.z.y);applyZ()},{passive:false});
-let P1=null;const mkP=t=>{if(penBusy()||Date.now()-(S.bigT||0)<1500||t.touchType==='stylus'||Math.max(t.radiusX||0,t.radiusY||0)>70||Z.s<=1.02||!(S.palm||S.tool==='pan'))return null;cancelAnimationFrame(inertia);return{x:t.clientX,y:t.clientY,zx:Z.x,zy:Z.y,lx:t.clientX,ly:t.clientY,lt:Date.now(),vx:0,vy:0,on:false}};
+ed.addEventListener('touchstart',e=>{if(e.touches.length>=3){S.c3=Date.now();T2=null;P1=null}if([...e.touches].some(t=>t.touchType==='stylus')){T2=null;P1=null;return}if(e.touches.length===2&&!penBusy(2500)&&Date.now()-(S.c3||0)>800&&Date.now()-(S.bigT||0)>1500&&tc(e).d>50&&![...e.touches].some(t=>Math.max(t.radiusX||0,t.radiusY||0)>55)){T2={...tc(e),z:{...Z}};cancelDraw();gst=null;e.preventDefault()}},{passive:false});
+ed.addEventListener('touchmove',e=>{if(T2&&(e.touches.length>=3||penBusy(2500)||[...e.touches].some(t=>t.touchType==='stylus'||Math.max(t.radiusX||0,t.radiusY||0)>60)))T2=null;if(!T2||e.touches.length<2)return;e.preventDefault();const g=tc(e);if(!T2.on){if(Math.abs(g.d-T2.d)<16&&Math.hypot(g.cx-T2.cx,g.cy-T2.cy)<16)return;T2.on=true;T2.d=g.d;T2.cx=g.cx;T2.cy=g.cy;T2.z={...Z}}const k=clamp(T2.z.s*g.d/T2.d,1,8),f=k/T2.z.s;if(Math.abs(g.d-T2.d)>4)S.zm=Date.now();Z.s=k;Z.x=g.cx-f*(T2.cx-T2.z.x);Z.y=g.cy-f*(T2.cy-T2.z.y);applyZ()},{passive:false});
+let P1=null;const mkP=t=>{if(penBusy(3000)||Date.now()-(S.bigT||0)<1500||t.touchType==='stylus'||Math.max(t.radiusX||0,t.radiusY||0)>70||Z.s<=1.02||!(S.palm||S.tool==='pan'))return null;cancelAnimationFrame(inertia);return{x:t.clientX,y:t.clientY,zx:Z.x,zy:Z.y,lx:t.clientX,ly:t.clientY,lt:Date.now(),vx:0,vy:0,on:false}};
 ed.addEventListener('touchstart',e=>{P1=e.touches.length===1&&!T2?mkP(e.touches[0]):null},{passive:true});
-ed.addEventListener('touchmove',e=>{if(!P1||e.touches.length!==1)return;if(penBusy()){P1=null;return}const t=e.touches[0],dx=t.clientX-P1.x,dy=t.clientY-P1.y;if(Math.max(t.radiusX||0,t.radiusY||0)>70){P1=null;return}if(!P1.on&&Math.hypot(dx,dy)<12)return;P1.on=true;e.preventDefault();const n=Date.now(),dt=Math.max(1,n-P1.lt);P1.vx=(t.clientX-P1.lx)/dt;P1.vy=(t.clientY-P1.ly)/dt;P1.lx=t.clientX;P1.ly=t.clientY;P1.lt=n;S.zm=n;Z.x=P1.zx+dx;Z.y=P1.zy+dy;applyZ()},{passive:false});
+ed.addEventListener('touchmove',e=>{if(!P1||e.touches.length!==1)return;if(penBusy(3000)){P1=null;return}const t=e.touches[0],dx=t.clientX-P1.x,dy=t.clientY-P1.y;if(Math.max(t.radiusX||0,t.radiusY||0)>70){P1=null;return}if(!P1.on&&Math.hypot(dx,dy)<12)return;P1.on=true;e.preventDefault();const n=Date.now(),dt=Math.max(1,n-P1.lt);P1.vx=(t.clientX-P1.lx)/dt;P1.vy=(t.clientY-P1.ly)/dt;P1.lx=t.clientX;P1.ly=t.clientY;P1.lt=n;S.zm=n;Z.x=P1.zx+dx;Z.y=P1.zy+dy;applyZ()},{passive:false});
 const te=e=>{if(P1&&P1.on&&!e.touches.length&&Date.now()-P1.lt<90){let vx=P1.vx*16,vy=P1.vy*16;if(Math.hypot(vx,vy)>3){const st=()=>{vx*=.93;vy*=.93;Z.x+=vx;Z.y+=vy;applyZ();if(Math.hypot(vx,vy)>.4)inertia=requestAnimationFrame(st)};inertia=requestAnimationFrame(st)}}
  if(e.touches.length<2)T2=null;P1=e.touches.length===1?mkP(e.touches[0]):null};ed.addEventListener('touchend',te);ed.addEventListener('touchcancel',te);
 ed.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)zoomTo(Z.s*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);else{Z.x-=e.deltaX;Z.y-=e.deltaY;applyZ()}},{passive:false})}
@@ -784,7 +786,7 @@ const sw=(on,f)=>`<span class="sw3"><input type="checkbox" ${on?'checked':''} on
 m.innerHTML=`<div class="box"><h2>Ajustes</h2>
 <h3>Cuenta</h3>${user?`<div class="set"><div><b>${esc(user.email)}</b><small>Tus cuadernos se sincronizan en la nube</small></div><button onclick="sb.auth.signOut();$('#m').remove()">Salir</button></div><div class="set"><div>Restaurar desde la nube<small>Vuelve a descargar todos tus cuadernos guardados en tu cuenta (no borra nada local)</small></div><button onclick="$('#m').remove();restoreCloud()">Restaurar</button></div>`:`<p class="mut" style="margin:6px 0 10px;font-size:13px">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="correo" autocomplete="email"><input id="cp" type="password" placeholder="contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div>`}
 <h3>Escritura</h3>
-<div class="set"><div>Dibujar con el dedo<small>Apagado: solo el lápiz dibuja y el dedo mueve la página (1 dedo) o hace zoom (2 dedos)</small></div>${sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()")}</div>
+<div class="set"><div>Dibujar con el dedo<small>Apagado: solo el lápiz dibuja y el dedo mueve la página (1 dedo) o hace zoom (2 dedos)</small></div>${sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()")}</div><div class="set"><div>Mi lápiz se detecta como dedo<small>Para lápices genéricos o capacitivos: un contacto pequeño escribe y los grandes (palma) se ignoran</small></div>${sw(S.altPen,"S.altPen=this.checked;localStorage.qn_alt=S.altPen?'1':'0'")}</div><div class="set"><div>Tamaño máximo de la punta<small>Si la palma escribe, bájalo; si el lápiz no escribe, súbelo. El Diagnóstico (menú ⋯) muestra los tamaños.</small></div><input type="range" min="6" max="60" value="${S.altW}" style="width:140px" oninput="S.altW=+this.value;localStorage.qn_altw=this.value"></div><div class="set"><div>Gestos de toque<small>2 dedos = deshacer · 3 dedos = rehacer (la palma puede activarlos)</small></div>${sw(S.tapg,"S.tapg=this.checked;localStorage.qn_tapg=S.tapg?'1':'0'")}</div>
 <div class="set"><div>Deslizar con un dedo para cambiar de página<small>Solo con la página a tamaño completo</small></div>${sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'")}</div>
 <div class="set"><div>Autoforma al mantener pulsado<small>Convierte tu trazo en línea, rectángulo o elipse si dejas el lápiz quieto. Apagado por defecto para no alterar tu letra</small></div>${sw(S.snap,"S.snap=this.checked;localStorage.qn_snap=S.snap?1:0")}</div>
 <div class="set"><div>Volver al lápiz al soltar el borrador</div>${sw(S.er.auto,"S.er.auto=+this.checked")}</div>
