@@ -283,12 +283,14 @@ stop:'<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>',
 cu:'<path d="M7 14l5-5 5 5"/>',cd:'<path d="M7 10l5 5 5-5"/>',
 eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
 copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>'});
-Object.assign(S,{snap:localStorage.qn_snap==='1',flip:localStorage.qn_flip!=='0',esz:+localStorage.qn_esz||14,emode:localStorage.qn_emode||'part',dtop:localStorage.qn_dtop==='1',dmin:localStorage.qn_dmin==='1',syncState:'',res:0});
+Object.assign(S,{dbgOn:localStorage.qn_dbg==='1',snap:localStorage.qn_snap==='1',flip:localStorage.qn_flip!=='0',esz:+localStorage.qn_esz||14,emode:localStorage.qn_emode||'part',dtop:localStorage.qn_dtop==='1',dmin:localStorage.qn_dmin==='1',syncState:'',res:0});
 const PENS=[['pen','Pluma fuente'],['ball','Bolígrafo'],['brush','Pincel'],['call','Caligrafía'],['pencil','Lápiz'],['highlighter','Resaltador']];
 const POPT=new Set(['pen','ball','brush','call','pencil','highlighter','eraser','shape','text','lasso']);
 const Z={s:1,x:0,y:0},V={w0:1,h0:1,cw:1,ch:1},tp=new Map(),dirty=new Set();
 let drawing=null,erasing=false,hold,RO=null,gst=null,rtv=0;
-const fmtT=s=>`${s/60|0}:${String(s%60|0).padStart(2,'0')}`;
+const DBG={n:{},last:''};sessionStorage.qn_loads=(+sessionStorage.qn_loads||0)+1;
+function dbg(k,e){if(!S.dbgOn)return;DBG.n[k]=(DBG.n[k]||0)+1;if(e)DBG.last=`${e.pointerType||''} w${Math.round(e.width||0)}h${Math.round(e.height||0)} p${(e.pressure||0).toFixed(2)}`;let d=$('#dbg');if(!d){d=document.createElement('div');d.id='dbg';d.style.cssText='position:fixed;left:8px;top:64px;z-index:999;background:#000c;color:#7dffb2;font:11px/1.4 monospace;padding:8px 10px;border-radius:10px;max-width:60vw;pointer-events:none;white-space:pre-wrap';document.body.appendChild(d)}d.textContent='cargas de página: '+sessionStorage.qn_loads+'\n'+Object.entries(DBG.n).map(([a,b])=>a+': '+b).join('\n')+'\núltimo: '+DBG.last}
+const e0=()=>null;const fmtT=s=>`${s/60|0}:${String(s%60|0).padStart(2,'0')}`;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 
 async function openNb(id){await flushSave();S.nb=await db.notebooks.get(id);S.pages=(await db.pages.where('notebookId').equals(id).toArray()).filter(p=>!p.deleted).sort((a,b)=>a.n-b.n);if(!S.pages.length){const p=mkPage(id,1,S.nb.template||'lined');await db.pages.add(p);S.pages=[p]}S.i=0;S.pop='';if(S.tool==='laser'||S.tool==='seek'||S.tool==='pan')S.tool='pen';editor()}
@@ -299,7 +301,7 @@ $('#app').innerHTML=`<header class="eh"><button onclick="leave()" title="Bibliot
 <div class="ed" id="ed"><div id="paper"><canvas id="base"></canvas><canvas id="live"></canvas></div><div class="hud" id="hud"></div><button class="zc" id="zc" onclick="zoomTo(1)" title="Ajustar a la pantalla"></button></div><div id="tools"></div>
 <input type="file" id="pdfin" accept="application/pdf" hidden onchange="importPdf(event)"><input type="file" id="imgin" accept="image/*" multiple hidden onchange="addImg(event)"><input type="file" id="camin" accept="image/*" capture="environment" hidden onchange="addImg(event)">`;
 base=$('#base');live=$('#live');S.res=0;setRes(2);
-live.addEventListener('pointerdown',pdown);live.addEventListener('pointermove',pmove);live.addEventListener('pointerup',pup);live.addEventListener('pointercancel',pup);live.addEventListener('lostpointercapture',pup);
+live.addEventListener('pointerdown',pdown);live.addEventListener('pointermove',pmove);live.addEventListener('pointerup',pup);live.addEventListener('pointercancel',e=>{dbg('pointercancel',e);pup(e)});live.addEventListener('lostpointercapture',pup);
 live.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 const ed=$('#ed');['contextmenu','selectstart','dragstart'].forEach(v=>ed.addEventListener(v,e=>e.preventDefault()));
 ed.addEventListener('dragover',e=>e.preventDefault());ed.addEventListener('drop',dropFiles);
@@ -309,7 +311,8 @@ function setRes(r){if(!base||S.res===r)return;S.res=r;for(const c of[base,live])
 const wantRes=()=>Math.min(3,Math.max(2,Math.ceil((V.w0/W)*Z.s*Math.min(devicePixelRatio||1,3)*2)/2));
 function fit(){const ed=$('#ed'),p=$('#paper');if(!ed||!p)return;const r=ed.getBoundingClientRect(),pad=12;V.cw=r.width;V.ch=r.height;const s=Math.max(.05,Math.min((r.width-pad*2)/W,(r.height-pad*2)/H));V.w0=W*s;V.h0=H*s;p.style.width=V.w0+'px';p.style.height=V.h0+'px';applyZ()}
 function clampZ(){Z.s=clamp(Z.s,1,6);const ex=(V.w0*Z.s-V.cw)/2,ey=(V.h0*Z.s-V.ch)/2,mx=ex>0?ex+40:0,my=ey>0?ey+40:0;Z.x=clamp(Z.x,-mx,mx);Z.y=clamp(Z.y,-my,my)}
-function applyZ(){clampZ();const p=$('#paper');if(!p)return;p.style.transform=Z.s===1&&!Z.x&&!Z.y?'none':`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;const z=$('#zc');if(z){z.classList.toggle('on',Z.s>1.02);z.textContent=Math.round(Z.s*100)+'%'}clearTimeout(S.rt);S.rt=setTimeout(()=>{if(!drawing&&S.pid==null)setRes(wantRes())},260)}
+function applyZ(){clampZ();const p=$('#paper');if(!p)return;p.style.transform=Z.s===1&&!Z.x&&!Z.y?'none':`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;const z=$('#zc');if(z){z.classList.toggle('on',Z.s>1.02);z.textContent=Math.round(Z.s*100)+'%'}clearTimeout(S.rt);S.rt=setTimeout(resTick,300)}
+function resTick(){if(drawing||S.pid!=null||Date.now()-(S.lp||0)<2000){S.rt=setTimeout(resTick,900);return}const w=wantRes();if(Math.abs(w-S.res)>=.5){dbg('cambio de resolución');setRes(w)}}
 function zoomTo(k,fx,fy){const r=$('#ed').getBoundingClientRect(),F=fx==null?[0,0]:[fx-r.left-r.width/2,fy-r.top-r.height/2],k0=Z.s;Z.s=clamp(k,1,6);if(Z.s===1){Z.x=Z.y=0}else{Z.x=F[0]-(Z.s/k0)*(F[0]-Z.x);Z.y=F[1]-(Z.s/k0)*(F[1]-Z.y)}applyZ()}
 const zoom=()=>applyZ();
 
@@ -351,13 +354,14 @@ function hitTap(q){for(let i=cur.strokes.length-1;i>=0;i--){const s=cur.strokes[
 
 // --- puntero: lápiz, dedo, ratón ---
 function cancelDraw(){drawing=null;erasing=false;S.pid=null;clearTimeout(hold);if(sel&&sel.act==='rect'){sel=null}if(lctx&&S.tool!=='lasso')lctx.clearRect(0,0,W,H)}
-function pdown(e){const T=S.tool,touch=e.pointerType==='touch';
-if(touch&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<700))return;
+function pdown(e){const T=S.tool,touch=e.pointerType==='touch';dbg('pointerdown '+e.pointerType,e);
+if(Math.max(e.width||0,e.height||0)>34){dbg('ignorado: contacto grande (palma)',e);return}
+if(touch&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<700||Date.now()-(S.bigT||0)<900))return;
 if(e.pointerType==='mouse'&&e.button!==0)return;
 if(e.pointerType==='pen'){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now()}
 if(T==='pan'){panStart(e);return}
-if(S.pid!=null||drawing||erasing){if(e.pointerType==='pen'||e.pointerId===S.pid)finishStroke();else return}
-e.preventDefault();S.pid=e.pointerId;S.ptype=e.pointerType;S.pidT=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=live.getBoundingClientRect();
+if(S.pid!=null||drawing||erasing){const stale=Date.now()-(S.lm||0)>400;if(e.pointerId===S.pid||stale||(e.pointerType==='pen'&&drawing&&drawing.p.length<3&&Date.now()-S.pidT<300)||(!drawing&&!erasing))finishStroke();else{dbg('ignorado: otro puntero activo',e);return}}
+e.preventDefault();S.pid=e.pointerId;S.ptype=e.pointerType;S.pidT=S.lm=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=live.getBoundingClientRect();
 if(S.pop){S.pop='';tools()}
 const q=pt(e);if(S.ro&&T!=='laser'&&T!=='seek'){S.pid=null;return}
 if(T==='laser'){lzd=true;lzr.push([q[0],q[1],Date.now()]);if(lzr.length===1)lz();return}
@@ -370,7 +374,7 @@ if(T==='lasso'){const b=sel&&sel.box;
   if(inBox(q,b,10)){snapU();sel.act='mv';sel.q=q;return}}
  sel={a:q,b:q,act:'rect',idx:[]};return}
 const sh=T==='shape';drawing={t:sh?'s':{highlighter:'h',pencil:'l',ball:'b',brush:'br',call:'c'}[T]||'p',k:S.shape,f:S.fill,c:S.color,w:T==='highlighter'?S.size*1.6:S.size,p:sh?[q,q]:[q]};stroke(lctx,drawing)}
-function pmove(e){if(e.pointerType==='pen')S.lp=Date.now();if(e.pointerId!==S.pid)return;const q=pt(e),T=S.tool;
+function pmove(e){if(e.pointerType==='pen')S.lp=Date.now();if(e.pointerId!==S.pid)return;S.lm=Date.now();const q=pt(e),T=S.tool;
 if(T==='laser'){if(lzd)lzr.push([q[0],q[1],Date.now()]);return}
 if(T==='lasso'&&sel&&sel.act){
  if(sel.act==='mv'){const dx=q[0]-sel.q[0],dy=q[1]-sel.q[1];sel.q=q;xf(x=>({...x,p:x.p.map(a=>[a[0]+dx,a[1]+dy,...a.slice(2)])}));sel.box=sel.box.map((v,i)=>v+(i%2?dy:dx));paint()}
@@ -395,7 +399,7 @@ if(S.tool==='lasso'&&sel){if(sel.act==='rect'){const x1=Math.min(sel.a[0],sel.b[
  else if(sel.act==='mv'||sel.act==='rs')save();
  if(sel)sel.act=null;if(sel)selDraw();else lctx.clearRect(0,0,W,H);tools();return}
 if(erasing){erasing=false;lctx.clearRect(0,0,W,H);if(S.edirty){save();paint()}else{S.undo.pop();ur()}if(S.er.auto)pick(S.prev||'pen');return}
-if(!drawing)return;const d=drawing;drawing=null;snapU();if(rec&&cur.id===recPid)d.ts=Date.now()-t0;cur.strokes=[...cur.strokes,d];if(d.t==='h')paint();else stroke(bctx,d);lctx.clearRect(0,0,W,H);save()}
+if(!drawing)return;const d=drawing;drawing=null;if(d.p.length<2&&d.t!=='s')dbg('trazo de 1 punto',e0());snapU();if(rec&&cur.id===recPid)d.ts=Date.now()-t0;cur.strokes=[...cur.strokes,d];if(d.t==='h')paint();else stroke(bctx,d);lctx.clearRect(0,0,W,H);save()}
 function erase(q){const r=S.esz,out=[];let ch=false;
 for(const s of cur.strokes){
  if(S.er.hl&&s.t!=='h'){out.push(s);continue}
@@ -471,12 +475,12 @@ ed.addEventListener('pointerdown',e=>{if(e.target.closest('.hud,.zc'))return;can
  if(e.pointerType!=='touch')return;
  if(Date.now()-(S.lp||0)<700||(drawing&&S.pid!=null&&S.ptype==='pen'))return;
  tp.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(tp.size===2){if(drawing||erasing||S.pid!=null)cancelDraw();const g=G();gst={m:'pinch',d0:g.d,F0:FC(g),z0:{...Z}}}
+ if(tp.size===2){if(S.ptype==='touch'&&(drawing||erasing||S.pid!=null))cancelDraw();const g=G();gst={m:'pinch',on:false,d0:g.d,F0:FC(g),z0:{...Z}}}
  else if(tp.size===1&&(S.palm||S.tool==='pan'))panStart(e)});
 ed.addEventListener('pointermove',e=>{const t=tp.get(e.pointerId);if(!t)return;if(e.pointerType==='touch'){t.x=e.clientX;t.y=e.clientY}
  if(!gst)return;
- if(gst.m==='pinch'&&e.pointerType==='touch'){const g=G();if(!g)return;const k2=clamp(gst.z0.s*g.d/gst.d0,1,6),F=FC(g);Z.s=k2;Z.x=F[0]-(k2/gst.z0.s)*(gst.F0[0]-gst.z0.x);Z.y=F[1]-(k2/gst.z0.s)*(gst.F0[1]-gst.z0.y);applyZ()}
- else if(gst.m==='pan'&&e.pointerId===gst.id){const dx=e.clientX-gst.x0,dy=e.clientY-gst.y0,n=Date.now(),dt=Math.max(1,n-gst.lt);gst.dx=dx;gst.dy=dy;gst.vx=(e.clientX-gst.lx)/dt;gst.vy=(e.clientY-gst.ly)/dt;gst.lx=e.clientX;gst.ly=e.clientY;gst.lt=n;if(Z.s>1.02){Z.x=gst.zx+dx;Z.y=gst.zy+dy;applyZ()}}});
+ if(gst.m==='pinch'&&e.pointerType==='touch'){const g=G();if(!g)return;if(!gst.on){if(Date.now()-(S.lp||0)<1500||Date.now()-(S.bigT||0)<1500)return;if(Math.abs(g.d-gst.d0)<20&&Math.hypot(FC(g)[0]-gst.F0[0],FC(g)[1]-gst.F0[1])<20)return;gst.on=true;gst.d0=g.d;gst.F0=FC(g);gst.z0={...Z};dbg('pellizco activado')}const k2=clamp(gst.z0.s*g.d/gst.d0,1,6),F=FC(g);Z.s=k2;Z.x=F[0]-(k2/gst.z0.s)*(gst.F0[0]-gst.z0.x);Z.y=F[1]-(k2/gst.z0.s)*(gst.F0[1]-gst.z0.y);applyZ()}
+ else if(gst.m==='pan'&&e.pointerId===gst.id){const dx=e.clientX-gst.x0,dy=e.clientY-gst.y0,n=Date.now(),dt=Math.max(1,n-gst.lt);if(!gst.on){if(Math.hypot(dx,dy)<14||Date.now()-(S.lp||0)<1500||Date.now()-(S.bigT||0)<1500)return;gst.on=true;gst.x0=e.clientX-dx*0;dbg('paneo activado')}gst.dx=dx;gst.dy=dy;gst.vx=(e.clientX-gst.lx)/dt;gst.vy=(e.clientY-gst.ly)/dt;gst.lx=e.clientX;gst.ly=e.clientY;gst.lt=n;if(Z.s>1.02){Z.x=gst.zx+dx;Z.y=gst.zy+dy;applyZ()}}});
 const end=e=>{if(!tp.has(e.pointerId))return;tp.delete(e.pointerId);
  if(gst&&gst.m==='pan'&&e.pointerId===gst.id){const g=gst;gst=null;
   if(Z.s>1.02){let vx=g.vx*16,vy=g.vy*16;if(Date.now()-g.lt<80&&Math.hypot(vx,vy)>3){const st=()=>{vx*=.93;vy*=.93;Z.x+=vx;Z.y+=vy;applyZ();if(Math.hypot(vx,vy)>.4)inertia=requestAnimationFrame(st)};inertia=requestAnimationFrame(st)}}
@@ -484,6 +488,7 @@ const end=e=>{if(!tp.has(e.pointerId))return;tp.delete(e.pointerId);
  else if(gst&&gst.m==='pinch'&&tp.size<2)gst=null;
  if(!tp.size)gst=null};
 ed.addEventListener('pointerup',end);ed.addEventListener('pointercancel',end);
+const tch=e=>{for(const t of e.changedTouches){if(t.touchType==='stylus')S.lp=Date.now();else if(Math.max(t.radiusX||0,t.radiusY||0)>26){S.bigT=Date.now();if(gst&&!gst.on){gst=null}dbg('palma por radio',null)}}};ed.addEventListener('touchstart',tch,{passive:true});ed.addEventListener('touchmove',tch,{passive:true});
 if(window._ge){removeEventListener('pointerup',window._ge);removeEventListener('pointercancel',window._ge)}window._ge=end;addEventListener('pointerup',end);addEventListener('pointercancel',end);if(!window._gb){window._gb=1;addEventListener('blur',()=>{tp.clear();gst=null})}
 ed.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)zoomTo(Z.s*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);else{Z.x-=e.deltaX;Z.y-=e.deltaY;applyZ()}},{passive:false})}
 
@@ -570,7 +575,7 @@ if(S.nb){const n=await db.notebooks.get(S.nb.id);if(!n||n.deleted){toast('Este c
  const cid=cur&&cur.id,nc=arr.find(p=>p.id===cid);let changed=false;
  if(nc&&cur&&!drawing&&!erasing&&S.pid==null&&!dirty.has(cur)&&nc.updatedAt>cur.updatedAt){Object.assign(cur,nc);delete imgs[cur.id];changed=true}
  S.pages=arr.map(p=>p.id===cid&&cur?cur:p);let i=S.pages.findIndex(p=>p.id===cid);if(i<0){i=Math.min(S.i,S.pages.length-1);S.i=i;cur=S.pages[i];changed=true}else S.i=i;
- if(changed){S.undo=[];S.redo=[];sel=null;paint();ur()}hud();const t=$('#ttl');if(t)t.textContent=S.nb.title}
+ if(changed){dbg('refreshUI repinta');S.undo=[];S.redo=[];sel=null;paint();ur()}hud();const t=$('#ttl');if(t)t.textContent=S.nb.title}
 else shelfSoft()}
 async function sync(){if(!sb||!user||!navigator.onLine)return;if(syncing){again=true;return}syncing=true;clearTimeout(retryT);const uid=user.id;
 try{const pk='qn_push_'+uid,old=localStorage['qn_last_'+uid];if(localStorage[pk]==null&&old)localStorage[pk]=old
@@ -602,6 +607,7 @@ m.innerHTML=`<div class="box"><h2>Ajustes</h2>
 <label>Estabilización del trazo</label><input type="range" min="0" max="80" value="${S.stab*100}" oninput="S.stab=this.value/100;localStorage.qn_stab=S.stab">
 <h3>Apariencia</h3><select onchange="setTheme(this.value)">${[['obsidiana','Obsidiana (oscuro + menta)'],['marfil','Marfil (claro)'],['ambar','Ámbar (oscuro cálido)']].map(([k,v])=>`<option value="${k}" ${(localStorage.qn_theme||'obsidiana')===k?'selected':''}>${v}</option>`).join('')}</select>
 <h3>Datos en este dispositivo</h3><p class="mut" id="stor" style="margin:6px 0;font-size:13px;line-height:1.5">Los cuadernos se guardan en el navegador de este dispositivo y, si inicias sesión, también en la nube. Los <b>audios solo viven en este dispositivo</b>: descárgalos desde “Audios del cuaderno” o con el respaldo .qnotes.</p>
+<div class="set"><div>Modo diagnóstico<small>Muestra un panel con lo que detecta la app al escribir (para encontrar fallos del lápiz o la palma)</small></div>${sw(S.dbgOn,"S.dbgOn=this.checked;localStorage.qn_dbg=S.dbgOn?1:0;const d=$('#dbg');if(d&&!S.dbgOn)d.remove();if(S.dbgOn)dbg('activado')")}</div>
 <details class="adv"><summary>Avanzado: conexión Supabase</summary><label>Project URL</label><input id="cu" value="${esc(CFG.url)}" placeholder="https://xxxx.supabase.co"><label>Anon key</label><input id="ck" value="${esc(CFG.key)}"><button style="margin-top:10px;width:100%" onclick="saveCfg()">Guardar y conectar</button></details>
 <button style="margin-top:16px;width:100%" onclick="$('#m').remove()">Cerrar</button></div>`;document.body.appendChild(m);
 try{navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(e=>{const el=$('#stor');if(el)el.innerHTML+=`<br>Usando <b>${fmtMB(e.usage)}</b> de ${fmtMB(e.quota)} disponibles.`})}catch(_){}}

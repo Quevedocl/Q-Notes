@@ -29,14 +29,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Modelos de Gemini a probar en orden (si uno está saturado, sin cuota o no existe, pasa al siguiente).
 function models(): string[] {
   const m = Deno.env.get('GEMINI_MODEL');
-  return [...new Set([m, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'].filter(Boolean) as string[])];
+  return [...new Set([m, 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'].filter(Boolean) as string[])];
 }
 
 async function gemini(key: string, model: string, action: string, image: string, mime: string, thinkingOff: boolean) {
   const generationConfig: Record<string, unknown> = { maxOutputTokens: 4096 };
   if (thinkingOff) generationConfig.thinkingConfig = { thinkingBudget: 0 };
   const ctl = new AbortController();
-  const to = setTimeout(() => ctl.abort(), 40000);
+  const to = setTimeout(() => ctl.abort(), 22000);
   try {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: 'POST',
@@ -65,7 +65,7 @@ async function viaGemini(key: string, action: string, image: string, mime: strin
       } catch (e) {
         last = `${model}: ${(e as Error).name === 'AbortError' ? 'tiempo agotado' : (e as Error).message}`;
         console.error('gemini fetch', last);
-        continue;
+        break; // si tarda demasiado, no repetir: pasar al siguiente modelo
       }
       if (res.ok) {
         const j = res.j as any;
