@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Q-Notes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="favicon.png"><meta name="apple-mobile-web-app-title" content="Q-Notes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#0a0b0e">
 <title>Q-Notes</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -106,6 +106,59 @@ input,select,textarea{font-size:16px}html,body{position:fixed;inset:0;width:100%
 .shelf{padding:28px 32px 70px}
 @media(max-width:760px){.hero{grid-template-columns:1fr}.srch{width:auto;flex:1}.srch kbd,.mark{display:none}.gr{font-size:26px}.shelf{padding:20px 16px 70px}}
 .mark{background:none!important;box-shadow:none!important;width:34px;height:34px;display:block}.mark svg{width:100%;height:100%;display:block;border-radius:10px;box-shadow:0 6px 18px #0007}
+/* ===== Q-Notes v2: base táctil ===== */
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+input,textarea{-webkit-user-select:text;user-select:text}
+::selection{background:transparent}
+canvas,#paper{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}
+.shelf{touch-action:pan-y}
+#paper{will-change:auto!important}
+.ed{touch-action:none;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+#app>header{order:-2}
+header.eh{gap:8px;padding:8px 12px}
+.tt{background:transparent;font-weight:650;font-size:16px;letter-spacing:-.02em;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 10px}
+@media(max-width:640px){.hide-s{display:none}.tt{max-width:30vw}.pill2 span{display:none}}
+button:disabled{opacity:.35;pointer-events:none}
+.pill2.sync i{background:#fbbf24;animation:rec 1s infinite}.pill2.err{color:#ff8a8a}.pill2.err i{background:#ff5d5d}.pill2.off i{background:#8a8f9c}
+#toast{bottom:calc(96px + env(safe-area-inset-bottom));max-width:min(92vw,460px);text-align:center}
+/* HUD de página y zoom */
+.hud,.zc{position:absolute;z-index:6;display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);box-shadow:0 8px 24px #0006;font-variant-numeric:tabular-nums}
+.hud{right:14px;bottom:14px}.hud button{width:36px;height:36px;padding:0;border-radius:50%;background:transparent}.hud span{padding:0 6px;font-size:13px;color:var(--mut);min-width:54px;text-align:center}
+.zc{left:14px;bottom:14px;padding:8px 14px;font-size:13px;font-weight:600;display:none}.zc.on{display:block}
+/* Dock de herramientas */
+#app #tools{flex-direction:row!important;flex-wrap:nowrap!important;gap:0!important;border-radius:0!important;position:relative!important;left:auto!important;top:auto!important;flex:none;z-index:30;display:flex;justify-content:center;padding:6px 10px calc(8px + env(safe-area-inset-bottom));background:none;border:0;box-shadow:none;pointer-events:none;max-width:100vw}
+#app #tools.top{order:-1;padding:8px 10px 2px}
+.dock{pointer-events:auto;display:flex;align-items:center;gap:4px;max-width:100%;padding:6px;border-radius:28px;background:var(--glass);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border:1px solid var(--line);box-shadow:0 14px 40px #0008;position:relative}
+.dsc{display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 4px;min-width:0;-webkit-overflow-scrolling:touch}.dsc::-webkit-scrollbar{display:none}
+.tg2{display:flex;gap:2px;padding:3px;border-radius:19px;background:var(--grp);flex:none}
+#app .tb{width:44px;height:44px;padding:0;border-radius:15px;background:transparent;flex:none;position:relative}
+#app .tb.on{background:var(--ac);color:var(--on);box-shadow:0 6px 18px color-mix(in srgb,var(--ac) 50%,transparent)}
+#app .tb.rec{background:#ff4d4d;color:#fff;width:auto;padding:0 12px;gap:6px;animation:rec 1.4s infinite}
+#app .tb.sm{width:36px;height:36px;border-radius:12px}
+.tb .ic{width:22px;height:22px}.rt{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+#app .cbtn{width:44px;height:44px;border-radius:50%;padding:0;flex:none}
+.dock.mini{padding:5px 6px 5px 5px;gap:6px}.dock.mini .cdot{display:none}
+.pop2{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 10px);padding:14px;border-radius:22px;display:flex;flex-direction:column;gap:12px;width:max-content;max-width:calc(100vw - 16px);background:var(--glass);backdrop-filter:blur(26px) saturate(1.7);-webkit-backdrop-filter:blur(26px) saturate(1.7);border:1px solid var(--line);box-shadow:0 18px 50px #000b;animation:ppIn .25s cubic-bezier(.2,1.3,.3,1);z-index:40}
+#tools.top .pop2{bottom:auto;top:calc(100% + 10px)}
+.pr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pr b{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.pop2 .szr{min-width:220px}
+/* Menú */
+#mn{width:268px;max-height:calc(100dvh - 80px);overflow:auto;gap:2px;padding:10px}
+#mn h6{margin:10px 8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+#mn button{padding:10px 12px;gap:12px;width:100%}#mn .ic{width:18px;height:18px;color:var(--mut)}
+#mn .mrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:2px}
+/* Ajustes */
+.set{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}.set:last-child{border:0}
+.set small{display:block;color:var(--mut);font-size:12px;margin-top:2px;line-height:1.35}
+.sw3{position:relative;width:50px;height:30px;flex:none}.sw3 input{opacity:0;position:absolute;inset:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2}
+.sw3 i{position:absolute;inset:0;border-radius:99px;background:var(--hov);transition:.2s}.sw3 i::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s cubic-bezier(.3,1.4,.4,1);box-shadow:0 2px 6px #0005}
+.sw3 input:checked+i{background:var(--ac)}.sw3 input:checked+i::after{transform:translateX(20px)}
+.box h3{margin:18px 0 2px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+details.adv{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:10px 14px}details.adv summary{cursor:pointer;color:var(--mut)}
+/* Audios */
+.arow{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;background:var(--grp);margin-bottom:10px}.arow audio{width:100%;height:36px}.arow .tl{justify-content:space-between}
+.tg .cur canvas{outline:3px solid var(--ac)}.tg .add{display:grid;place-items:center;aspect-ratio:205/265;border:2px dashed var(--line);border-radius:6px;cursor:pointer;color:var(--mut)}
+.errb{white-space:pre-wrap;padding:12px 14px;border-radius:14px;background:var(--grp);line-height:1.45;max-height:40vh;overflow:auto;margin:6px 0 0}
 </style></head><body><div id="app"></div><div id="toast"></div>
 <script>
 // ===== Config Supabase (también editable desde ⚙ en la app) =====
@@ -119,7 +172,7 @@ const db=new Dexie('qnotes2');db.version(1).stores({notebooks:'id,updatedAt',pag
 let S={nbs:[],nb:null,pages:[],i:0,tool:'pen',color:COLORS[0],size:3,palm:true,undo:[],redo:[],folder:'Todos',shape:'line',q:'',tbc:localStorage.qn_tbc!=='0'?1:0,cfg:JSON.parse(localStorage.qn_pens||'null')||{pen:{c:'#111827',w:3},ball:{c:'#2563eb',w:2},brush:{c:'#7c3aed',w:4},call:{c:'#111827',w:3},pencil:{c:'#475569',w:3},highlighter:{c:'#facc15',w:6}}},sb=null,user=null,syncT,saveT,cur=null,base,bctx,live,lctx,imgs={};
 S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
 let rec=null,aud=null,t0=0,recPid='',lzr=[],lzd=false;
-let sel=null,hold,Z={s:1,x:0,y:0},imc={};
+let sel=null,imc={};
 function setTheme(v){document.documentElement.dataset.theme=localStorage.qn_theme=v;document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()}
 const IC={pen:'<path d="M12 20h9M16.4 3.6a2.1 2.1 0 013 3L7.4 18.6 3 20l1.4-4.4z"/>',ball:'<path d="M12 19l7-7 3 3-7 7zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18zM2 2l7.6 7.6"/>',brush:'<path d="M9 12l8-8a2.8 2.8 0 114 4l-8 8M7 15c-1.7 0-3 1.3-3 3 0 1.3-2.5 1.5-2 2 1 1 2.5 2 4 2 2.2 0 4-1.8 4-4a3 3 0 00-3-3z"/>',call:'<path d="M20 12a6 6 0 00-8.5-8.5L5 10.5V19h8.5zM16 8L2 22M17.5 15H9"/>',pencil:'<path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5zM15 5l4 4"/>',highlighter:'<path d="M9 11l-6 6v3h9l3-3M22 12l-4.6 4.6a2 2 0 01-2.8 0l-5.2-5.2a2 2 0 010-2.8L14 4"/>',eraser:'<path d="M7 21l-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21M22 21H7M5 11l9 9"/>',lasso:'<rect x="4" y="4" width="16" height="16" rx="3" stroke-dasharray="3.5 3.5"/>',text:'<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',shape:'<circle cx="9" cy="9" r="6"/><rect x="11" y="11" width="10" height="10" rx="1.5"/>',laser:'<circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',seek:'<path d="M9 11V5a2 2 0 014 0v6M13 11a2 2 0 014 0v3a6 6 0 01-6 6h-1a5 5 0 01-4-2l-3-4a2 2 0 013-2l2 2"/>',undo:'<path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 010 11H11"/>',redo:'<path d="M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 000 11H13"/>',hand:'<path d="M18 11V6a2 2 0 00-4 0M14 10V4a2 2 0 00-4 0v2M10 10.5V6a2 2 0 00-4 0v8M18 8a2 2 0 114 0v6a8 8 0 01-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L3.4 16a2 2 0 013-2.8L8 15"/>',book:'<path d="M2 4h7a3 3 0 013 3v13a2 2 0 00-2-2H2zM22 4h-7a3 3 0 00-3 3v13a2 2 0 012-2h8z"/>',mic:'<path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v3"/>',play:'<path d="M6 4l14 8-14 8z" fill="currentColor"/>',pause:'<path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/>',more:'<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',bl:'<path d="M15 18l-6-6 6-6"/>',br:'<path d="M9 18l6-6-6-6"/>',cl:'<path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>',x:'<path d="M18 6L6 18M6 6l12 12"/>',grip:'<circle cx="9" cy="6" r="1.4" fill="currentColor"/><circle cx="15" cy="6" r="1.4" fill="currentColor"/><circle cx="9" cy="12" r="1.4" fill="currentColor"/><circle cx="15" cy="12" r="1.4" fill="currentColor"/><circle cx="9" cy="18" r="1.4" fill="currentColor"/><circle cx="15" cy="18" r="1.4" fill="currentColor"/>',grid:'<path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>',star:'<path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2-6.3-3.7-6.3 3.7 1.6-7.2L2 9.6 9 9z"/>',trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',side:'<path d="M3 4h18v16H3zM9 4v16"/>',gear:'<path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4"/>',plus:'<path d="M12 5v14M5 12h14"/>'};
 const ic=(k,x='')=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[k]||''}</svg>${x}`;
@@ -137,14 +190,14 @@ return `<div class="cover" style="background:${tx?tx+',':''}linear-gradient(135d
 async function loadNbs(){const a=await db.notebooks.toArray();S.nbs=a.filter(n=>!n.deleted).sort((x,y)=>y.updatedAt-x.updatedAt);S.trash=a.filter(n=>n.deleted)}
 const ago=t=>{const m=(Date.now()-t)/6e4;return m<1?'ahora':m<60?`hace ${m|0} min`:m<1440?`hace ${m/60|0} h`:m<10080?`hace ${m/1440|0} d`:new Date(t).toLocaleDateString()};
 const hue=f=>`hsl(${[...f].reduce((a,c)=>a+c.charCodeAt(0),0)*37%360} 70% 62%)`;
-function shelf(){document.body.classList.remove('focus');const fx=$('#fx');fx&&fx.remove();S.nb=null;cur=null;if(!S.tab)S.tab='docs';
+function shelf(){leaveEditor();document.body.classList.remove('focus');const fx=$('#fx');fx&&fx.remove();S.nb=null;cur=null;if(!S.tab)S.tab='docs';
 const fl=JSON.parse(localStorage.qn_folders||'[]'),fs=[...new Set([...S.nbs.map(n=>n.folder).filter(Boolean),...fl])],tr=S.tab==='trash',q=S.q.toLowerCase(),an=S.noan?'':'an',
 list=(tr?S.trash:S.nbs).filter(n=>(S.tab!=='fav'||n.fav)&&(tr||S.folder==='Todos'||n.folder===S.folder)&&n.title.toLowerCase().includes(q)).sort(S.sort==='name'?(a,b)=>a.title.localeCompare(b.title):(a,b)=>b.updatedAt-a.updatedAt),
 home=!tr&&S.tab==='docs'&&S.folder==='Todos'&&!q&&S.nbs.length,last=S.nbs[0],hr=new Date().getHours(),gr=hr<6?'Buenas noches':hr<13?'Buenos días':hr<20?'Buenas tardes':'Buenas noches',
 nv=(t,k,l,c)=>`<button class="${S.tab===k&&(k!=='docs'||S.folder==='Todos')?'on':''}" onclick="S.tab='${k}';S.folder='Todos';shelf()">${ic(t)}<span style="flex:1;text-align:left">${l}</span><span class="mut">${c}</span></button>`,
 card=(n,i)=>`<div class="nb ${an}" style="--i:${i}" onclick="${tr?'':`openNb('${n.id}')`}">${coverHTML(n)}<div class="meta"><b>${esc(n.title)}</b><small>${ago(n.updatedAt)}${n.folder?' · '+esc(n.folder):''}</small></div><div class="act" onclick="event.stopPropagation()">${tr?`<button title="Restaurar" onclick="restoreNb('${n.id}')">${ic('undo')}</button><span class="sp2"></span><button title="Borrar para siempre" onclick="permDel('${n.id}',1)">${ic('x')}</button>`:`<button class="${n.fav?'fv':''}" title="Favorito" onclick="fav('${n.id}')">${ic('star')}</button><span class="sp2"></span><button title="Editar" onclick="editNb('${n.id}')">${ic('pen')}</button><button title="Mover a la papelera" onclick="delNb('${n.id}')">${ic('trash')}</button>`}</div></div>`,
 ttl=tr?'Papelera':S.tab==='fav'?'Favoritos':S.folder==='Todos'?'Todos los cuadernos':S.folder;
-$('#app').innerHTML=`<header><button onclick="S.sbc=!S.sbc;shelf()" title="Panel lateral">${ic('side')}</button><span class="mark">${LOGO}</span><h1 style="flex:1"><span class="logo">Q-Notes</span></h1><label class="srch">${ic('search')}<input id="q" placeholder="Buscar cuadernos" value="${esc(S.q)}" oninput="S.q=this.value;shelf()"><kbd>⌘K</kbd></label><span class="pill2 ${user?'ok':''}" id="stat"><i></i>${user?'Sincronizado':'Solo local'}</span><button onclick="cfgModal()" title="Ajustes">${ic('gear')}</button><button class="p" onclick="nuevoMenu()">${ic('plus')} Nuevo</button></header>
+$('#app').innerHTML=`<header><button onclick="S.sbc=!S.sbc;shelf()" title="Panel lateral">${ic('side')}</button><span class="mark">${LOGO}</span><h1 style="flex:1"><span class="logo">Q-Notes</span></h1><label class="srch">${ic('search')}<input id="q" placeholder="Buscar cuadernos" value="${esc(S.q)}" oninput="S.q=this.value;shelf()"><kbd>⌘K</kbd></label><span class="pill2" id="stat"></span><button onclick="cfgModal()" title="Ajustes">${ic('gear')}</button><button class="p" onclick="nuevoMenu()">${ic('plus')} Nuevo</button></header>
 <div class="lib ${S.sbc?'c':''}"><aside class="side">${nv('grid','docs','Documentos',S.nbs.length)}${nv('star','fav','Favoritos',S.nbs.filter(n=>n.fav).length)}${nv('trash','trash','Papelera',S.trash.length)}<h6>Carpetas</h6>${fs.map(f=>`<button class="${S.tab==='docs'&&f===S.folder?'on':''}" onclick="S.tab='docs';S.folder='${esc(f)}';shelf()"><i class="dotf" style="background:${hue(f)}"></i><span>${esc(f)}</span></button>`).join('')}<button onclick="newFolder()">${ic('plus')}<span>Nueva carpeta</span></button>
 <div class="acct" onclick="cfgModal()"><i class="av">${user?esc(user.email[0].toUpperCase()):ic('cloud')}</i><div><b>${user?esc(user.email):'Sin sesión'}</b><small>${user?'Sincronizado en la nube':'Inicia sesión para sincronizar'}</small></div></div></aside>
 <div class="shelf">${home?`<h1 class="gr">${gr}</h1><p class="mut" style="margin:0">${S.nbs.length} cuaderno${S.nbs.length>1?'s':''} · ${S.nbs.filter(n=>n.fav).length} favorito${S.nbs.filter(n=>n.fav).length===1?'':'s'}</p>
@@ -152,19 +205,16 @@ $('#app').innerHTML=`<header><button onclick="S.sbc=!S.sbc;shelf()" title="Panel
 <div class="qa">${[['doc','Cuaderno','newModal()'],['bolt','Nota rápida','quick()'],['up','Importar',"$('#fi').click()"],['scan','Escanear',"$('#fs').click()"]].map(([i,l,f])=>`<button onclick="${f}">${ic(i)}${l}</button>`).join('')}</div></section>`:''}
 <div class="sh"><h2>${esc(ttl)} <span class="mut" style="font-size:14px;font-weight:500">${list.length}</span>${tr&&S.trash.length?'<button style="margin-left:12px;font-size:13px" onclick="emptyTrash()">Vaciar</button>':''}</h2><div class="tl"><select style="width:auto" onchange="S.sort=this.value;shelf()"><option value="recent" ${S.sort==='recent'?'selected':''}>Recientes</option><option value="name" ${S.sort==='name'?'selected':''}>Nombre</option></select><div class="seg"><button class="${S.view!=='list'?'on':''}" onclick="S.view='grid';localStorage.qn_view='grid';shelf()">${ic('grid')}</button><button class="${S.view==='list'?'on':''}" onclick="S.view='list';localStorage.qn_view='list';shelf()">${ic('list')}</button></div></div></div>
 ${list.length||(!tr&&S.tab==='docs'&&!q)?`<div class="grid ${S.view==='list'?'list':''}">${list.map(card).join('')}${!tr&&S.tab==='docs'&&!q?`<div class="nb newt ${an}" style="--i:${list.length}" onclick="newModal()"><div class="cover">${ic('plus')}</div><div class="meta"><b>Nuevo cuaderno</b><small>Personaliza portada y papel</small></div></div>`:''}</div>`:`<div class="empty">${ic(tr?'trash':q?'search':'star')}<h3>${q?'Sin resultados':tr?'La papelera está vacía':'Aún no tienes favoritos'}</h3><p>${q?'Prueba con otro nombre.':tr?'Los cuadernos que borres aparecerán aquí.':'Toca la estrella de un cuaderno para fijarlo aquí.'}</p></div>`}</div></div><input type="file" id="fi" accept="application/pdf,.qnotes,.json,image/*" hidden onchange="impFile(event)"><input type="file" id="fs" accept="image/*" capture="environment" hidden onchange="scan(event)">`;
-S.noan=1;if(S.q){const q=$('#q');q.focus();q.setSelectionRange(99,99)}}
+setStat();S.noan=1;if(S.q){const q=$('#q');q.focus();q.setSelectionRange(99,99)}}
 addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){const q=$('#q');if(q){e.preventDefault();q.focus()}}});
 async function fav(id){const n=await db.notebooks.get(id);n.fav=!n.fav;n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
 async function restoreNb(id){const n=await db.notebooks.get(id);n.deleted=false;n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
-async function permDel(id,ask){if(ask&&!await dlg.c('¿Borrar para siempre?','Borrar'))return;await db.notebooks.delete(id);await db.pages.where('notebookId').equals(id).delete();await loadNbs();shelf()}
 async function emptyTrash(){if(!S.trash.length||!await dlg.c('¿Vaciar la papelera?','Vaciar'))return;for(const n of S.trash)await permDel(n.id,0)}
 function nuevoMenu(){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:320px;display:flex;flex-direction:column;gap:8px"><h2>Nuevo</h2>${[['📓 Cuaderno','newModal()'],['📁 Carpeta','newFolder()'],['⚡ Nota rápida','quick()'],['📥 Importar (PDF, .qnotes)',"$('#fi').click()"],['📷 Escanear documento',"$('#fs').click()"]].map(([l,f])=>`<button style="text-align:left" onclick="$('#m').remove();${f}">${l}</button>`).join('')}</div>`;document.body.appendChild(m)}
 async function newFolder(){const n=await dlg.t('Nombre de la carpeta');if(!n)return;const f=JSON.parse(localStorage.qn_folders||'[]');f.push(n.trim());localStorage.qn_folders=JSON.stringify(f);S.folder=n.trim();S.tab='docs';shelf()}
 async function quickNb(t,tpl,bg){const nb={id:uid(),title:t,folder:'',template:tpl,cover:{c1:GR[3][0],c2:GR[3][1],tex:'solid',bind:'lomo',st:'⚡'},updatedAt:Date.now()};await db.notebooks.add(nb);await db.pages.add(mkPage(nb.id,1,tpl,bg));await loadNbs();syncSoon();await openNb(nb.id)}
 function quick(){quickNb('Nota rápida '+new Date().toLocaleDateString(),'lined')}
 async function scan(e,f){f=f||e.target.files[0];e.target.value='';if(!f)return;const im=new Image();im.onload=async()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const x=c.getContext('2d'),k=Math.min(c.width/im.width,c.height/im.height);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,(c.width-im.width*k)/2,(c.height-im.height*k)/2,im.width*k,im.height*k);await quickNb('Escaneo '+new Date().toLocaleDateString(),'blank',c.toDataURL('image/jpeg',.82))};im.src=URL.createObjectURL(f)}
-async function impFile(e){const f=e.target.files[0];e.target.value='';if(!f)return;try{if(/\.(qnotes|json)$/i.test(f.name)){const j=JSON.parse(await f.text()),id=uid();Object.assign(j.nb,{id,deleted:false,updatedAt:Date.now()});await db.notebooks.add(j.nb);for(const p of j.pages)await db.pages.add({...p,id:uid(),notebookId:id,updatedAt:Date.now()});await loadNbs();syncSoon();shelf();toast('Cuaderno importado ✔')}else if(f.type.startsWith('image/'))scan(e,f);else{await quickNb(f.name.replace(/\.pdf$/i,''),'blank');await importPdf({target:{files:[f],value:''}});const p=S.pages.shift();p.deleted=true;p.updatedAt=Date.now();await db.pages.put(p);renum();S.i=0;loadPage();tools()}}catch(x){console.error(x);toast('No se pudo importar')}}
-async function exportNb(id){const nb=await db.notebooks.get(id),pg=(await db.pages.where('notebookId').equals(id).toArray()).filter(p=>!p.deleted),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({v:1,nb,pages:pg})],{type:'application/json'}));a.download=nb.title+'.qnotes';a.click()}
 async function renNb(id){const n=await db.notebooks.get(id),t=prompt('Nombre del cuaderno',n.title);if(!t)return;n.title=t.trim();n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
 async function delNb(id){if(!await dlg.c('¿Mover este cuaderno a la papelera?','Mover'))return;const n=await db.notebooks.get(id);n.deleted=true;n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
 
@@ -186,20 +236,12 @@ async function editNb(id){newModal(await db.notebooks.get(id))}
 async function createNb(){const e=NB.id,nb={...NB,id:NB.id||uid(),title:$('#nt').value.trim()||'Mi cuaderno',folder:$('#nf').value.trim(),template:$('#ntp').value,updatedAt:Date.now()};if(e)await db.notebooks.put(nb);else{await db.notebooks.add(nb);await db.pages.add(mkPage(nb.id,1,nb.template))}$('#m').remove();await loadNbs();syncSoon();e?shelf():openNb(nb.id)}
 const mkPage=(nbId,n,t,bg)=>({id:uid(),notebookId:nbId,n,template:t,strokes:[],bg:bg||null,updatedAt:Date.now()});
 
-// ===== Editor =====
-async function openNb(id){S.nb=await db.notebooks.get(id);S.pages=(await db.pages.where('notebookId').equals(id).toArray()).filter(p=>!p.deleted).sort((a,b)=>a.n-b.n);S.i=0;editor()}
-function editor(){S.noan=0;$('#app').innerHTML=`<header><button onclick="shelf()">${ic('bl')}Biblioteca</button><h1 style="flex:1;text-align:center">${esc(S.nb.title)} <span class="mut" id="pn"></span></h1><span class="mut" id="stat">${user?'☁ sincronizado':'Solo local'}</span><button onclick="go(-1)">${ic('bl')}</button><button onclick="go(1)">${ic('br')}</button><button title="Páginas" onclick="pagesModal()">${ic('grid')}</button><button id="mb" onclick="menu()">${ic('more')}</button></header>
-<div class="ed"><div id="paper"><canvas id="base"></canvas><canvas id="live"></canvas></div></div><div id="tools"></div><input type="file" id="pdfin" accept="application/pdf" hidden onchange="importPdf(event)"><input type="file" id="imgin" accept="image/*" hidden onchange="addImg(event)">`;
-base=$('#base');live=$('#live');base.width=live.width=W*2;base.height=live.height=H*2;bctx=base.getContext('2d');lctx=live.getContext('2d');bctx.scale(2,2);lctx.scale(2,2);
-live.onpointerdown=pdown;live.onpointermove=pmove;live.onpointerup=live.onpointercancel=pup;fit();loadPage();tools();gest()}
-function fit(){const p=$('#paper');if(!p)return;const s=Math.min((innerWidth-12)/W,(innerHeight-($('header').style.display==='none'?24:76))/H);p.style.width=W*s+'px';p.style.height=H*s+'px'}
-addEventListener('resize',fit);
-addEventListener('keydown',e=>{if(!S.nb||e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();e.shiftKey?redo():undo()}});
-function loadPage(){cur=S.pages[S.i];sel=null;{const p=$('#paper');if(p){p.classList.remove('flip');void p.offsetWidth;p.classList.add('flip')}}S.undo=[];S.redo=[];$('#pn').textContent=`· pág ${S.i+1}/${S.pages.length}`;paint()}
-function go(d){const j=S.i+d;if(j<0)return;if(j>=S.pages.length){addPage(false);return}S.i=j;loadPage();tools()}
-async function addPage(dup){const p=mkPage(S.nb.id,S.i+2,cur.template,dup?cur.bg:null);if(dup)p.strokes=[];S.pages.splice(S.i+1,0,p);S.pages.forEach((x,k)=>{if(x.n!==k+1){x.n=k+1;x.updatedAt=Date.now();db.pages.put(x)}});await db.pages.put(p);S.i++;loadPage();tools();touchNb()}
-async function touchNb(){S.nb.updatedAt=Date.now();await db.notebooks.put(S.nb);syncSoon()}
-function save(){cur.updatedAt=Date.now();clearTimeout(saveT);saveT=setTimeout(async()=>{await db.pages.put(cur);touchNb()},250)}
+const blobB64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]);f.readAsDataURL(b)});
+const b64Blob=(s,t)=>{const a=atob(s),u=new Uint8Array(a.length);for(let i=0;i<a.length;i++)u[i]=a.charCodeAt(i);return new Blob([u],{type:t})};
+async function permDel(id,ask){if(ask&&!await dlg.c('¿Borrar para siempre?','Borrar'))return;const ps=await db.pages.where('notebookId').equals(id).toArray();await db.audio.bulkDelete(ps.map(p=>p.id));await db.notebooks.delete(id);await db.pages.where('notebookId').equals(id).delete();await loadNbs();shelf()}
+async function impFile(e){const f=e.target.files[0];e.target.value='';if(!f)return;try{if(/\.(qnotes|json)$/i.test(f.name)){const j=JSON.parse(await f.text()),id=uid(),map={};Object.assign(j.nb,{id,deleted:false,updatedAt:Date.now()});await db.notebooks.add(j.nb);for(const p of j.pages){const nid=uid();map[p.id]=nid;await db.pages.add({...p,id:nid,notebookId:id,updatedAt:Date.now()})}for(const a of j.audio||[]){if(map[a.id])await db.audio.put({id:map[a.id],nb:id,blob:b64Blob(a.b64,a.mime),mime:a.mime,dur:a.dur,at:a.at})}await loadNbs();syncSoon();shelf();toast('Cuaderno importado ✔')}else if(f.type.startsWith('image/'))scan(e,f);else{await quickNb(f.name.replace(/\.pdf$/i,''),'blank');await importPdf({target:{files:[f],value:''}});const p=S.pages.shift();p.deleted=true;p.updatedAt=Date.now();await db.pages.put(p);renum();S.i=0;loadPage();tools()}}catch(x){console.error(x);toast('No se pudo importar')}}
+async function exportNb(id){await flushSave();toast('Preparando respaldo…');const nb=await db.notebooks.get(id),pg=(await db.pages.where('notebookId').equals(id).toArray()).filter(p=>!p.deleted),audio=[];for(const p of pg){const a=await db.audio.get(p.id);if(a)audio.push({id:p.id,mime:a.mime||a.blob.type,dur:a.dur,at:a.at,b64:await blobB64(a.blob)})}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({v:2,nb,pages:pg,audio})],{type:'application/json'}));a.download=nb.title+'.qnotes';a.click();toast('Respaldo listo'+(audio.length?' · incluye '+audio.length+' audio(s)':''))}
+
 
 // ===== Plantillas =====
 function tpl(c,t,p){tpl0(c,t);if(p==='cream'){c.globalCompositeOperation='multiply';c.fillStyle='#fbf0d0';c.fillRect(0,0,W,H)}if(p==='dark'){c.globalCompositeOperation='difference';c.fillStyle='#e4e6ee';c.fillRect(0,0,W,H)}c.globalCompositeOperation='source-over'}
@@ -229,100 +271,341 @@ if(!pg.bg)return fin();let im=imgs[pg.id];if(im&&im.complete){c.drawImage(im,0,0
 im=imgs[pg.id]=new Image();im.onload=()=>{if(c===bctx&&pg===cur)paint();else if(done){c.drawImage(im,0,0,W,H);fin()}};im.src=pg.bg}
 function paint(){bctx.clearRect(0,0,W,H);drawPage(bctx,cur)}
 
-// ===== Lápiz / dibujo =====
-let drawing=null,erasing=false;
-function pt(e){const r=live.getBoundingClientRect();return[+((e.clientX-r.left)*W/r.width).toFixed(1),+((e.clientY-r.top)*H/r.height).toFixed(1),e.pressure>0?+e.pressure.toFixed(2):.5]}
-function commit(x){S.undo.push(cur.strokes.slice());S.redo=[];cur.strokes=[...cur.strokes,x];paint();save()}
+// ===== Editor v2 =====
+Object.assign(IC,{
+pan:'<path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/>',
+image:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/>',
+move:'<path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/>',
+swap:'<path d="M7 4v16M7 4L3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/>',
+dl:'<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
+fit:'<path d="M4 9V5a1 1 0 011-1h4M20 9V5a1 1 0 00-1-1h-4M4 15v4a1 1 0 001 1h4M20 15v4a1 1 0 01-1 1h-4"/>',
+stop:'<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>',
+cu:'<path d="M7 14l5-5 5 5"/>',cd:'<path d="M7 10l5 5 5-5"/>',
+eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>'});
+Object.assign(S,{snap:localStorage.qn_snap==='1',flip:localStorage.qn_flip!=='0',esz:+localStorage.qn_esz||14,emode:localStorage.qn_emode||'part',dtop:localStorage.qn_dtop==='1',dmin:localStorage.qn_dmin==='1',syncState:'',res:0});
+const PENS=[['pen','Pluma fuente'],['ball','Bolígrafo'],['brush','Pincel'],['call','Caligrafía'],['pencil','Lápiz'],['highlighter','Resaltador']];
+const POPT=new Set(['pen','ball','brush','call','pencil','highlighter','eraser','shape','text','lasso']);
+const Z={s:1,x:0,y:0},V={w0:1,h0:1,cw:1,ch:1},tp=new Map(),dirty=new Set();
+let drawing=null,erasing=false,hold,RO=null,gst=null,rtv=0;
+const fmtT=s=>`${s/60|0}:${String(s%60|0).padStart(2,'0')}`;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+async function openNb(id){await flushSave();S.nb=await db.notebooks.get(id);S.pages=(await db.pages.where('notebookId').equals(id).toArray()).filter(p=>!p.deleted).sort((a,b)=>a.n-b.n);if(!S.pages.length){const p=mkPage(id,1,S.nb.template||'lined');await db.pages.add(p);S.pages=[p]}S.i=0;S.pop='';if(S.tool==='laser'||S.tool==='seek'||S.tool==='pan')S.tool='pen';editor()}
+function leaveEditor(){if(rec)try{rec.stop()}catch(_){}if(RO){RO.disconnect();RO=null}clearInterval(rtv);if(aud){aud.pause();aud=null}tp.clear();gst=null}
+async function leave(){await flushSave();shelf()}
+function editor(){S.noan=0;leaveEditor();
+$('#app').innerHTML=`<header class="eh"><button onclick="leave()" title="Biblioteca">${ic('bl')}<span class="hide-s">Biblioteca</span></button><button class="tt" onclick="renTitle()" id="ttl" title="Renombrar">${esc(S.nb.title)}</button><span class="pill2" id="stat"></span><span style="flex:1"></span><button id="bu" onclick="undo()" title="Deshacer">${ic('undo')}</button><button id="br2" onclick="redo()" title="Rehacer">${ic('redo')}</button><button title="Páginas" onclick="pagesModal()">${ic('grid')}</button><button id="mb" onclick="menu()" title="Más">${ic('more')}</button></header>
+<div class="ed" id="ed"><div id="paper"><canvas id="base"></canvas><canvas id="live"></canvas></div><div class="hud" id="hud"></div><button class="zc" id="zc" onclick="zoomTo(1)" title="Ajustar a la pantalla"></button></div><div id="tools"></div>
+<input type="file" id="pdfin" accept="application/pdf" hidden onchange="importPdf(event)"><input type="file" id="imgin" accept="image/*" multiple hidden onchange="addImg(event)"><input type="file" id="camin" accept="image/*" capture="environment" hidden onchange="addImg(event)">`;
+base=$('#base');live=$('#live');S.res=0;setRes(2);
+live.addEventListener('pointerdown',pdown);live.addEventListener('pointermove',pmove);live.addEventListener('pointerup',pup);live.addEventListener('pointercancel',pup);live.addEventListener('lostpointercapture',pup);
+live.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+const ed=$('#ed');['contextmenu','selectstart','dragstart'].forEach(v=>ed.addEventListener(v,e=>e.preventDefault()));
+ed.addEventListener('dragover',e=>e.preventDefault());ed.addEventListener('drop',dropFiles);
+RO=new ResizeObserver(()=>fit());RO.observe(ed);
+fit();loadPage(false);tools();gest();setStat()}
+function setRes(r){if(!base||S.res===r)return;S.res=r;for(const c of[base,live]){c.width=Math.round(W*r);c.height=Math.round(H*r)}bctx=base.getContext('2d');lctx=live.getContext('2d');bctx.setTransform(r,0,0,r,0,0);lctx.setTransform(r,0,0,r,0,0);if(cur)paint();if(sel&&sel.box)selDraw()}
+const wantRes=()=>Math.min(3,Math.max(2,Math.ceil((V.w0/W)*Z.s*Math.min(devicePixelRatio||1,3)*2)/2));
+function fit(){const ed=$('#ed'),p=$('#paper');if(!ed||!p)return;const r=ed.getBoundingClientRect(),pad=12;V.cw=r.width;V.ch=r.height;const s=Math.max(.05,Math.min((r.width-pad*2)/W,(r.height-pad*2)/H));V.w0=W*s;V.h0=H*s;p.style.width=V.w0+'px';p.style.height=V.h0+'px';applyZ()}
+function clampZ(){Z.s=clamp(Z.s,1,6);const ex=(V.w0*Z.s-V.cw)/2,ey=(V.h0*Z.s-V.ch)/2,mx=ex>0?ex+40:0,my=ey>0?ey+40:0;Z.x=clamp(Z.x,-mx,mx);Z.y=clamp(Z.y,-my,my)}
+function applyZ(){clampZ();const p=$('#paper');if(!p)return;p.style.transform=Z.s===1&&!Z.x&&!Z.y?'none':`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;const z=$('#zc');if(z){z.classList.toggle('on',Z.s>1.02);z.textContent=Math.round(Z.s*100)+'%'}clearTimeout(S.rt);S.rt=setTimeout(()=>{if(!drawing&&S.pid==null)setRes(wantRes())},260)}
+function zoomTo(k,fx,fy){const r=$('#ed').getBoundingClientRect(),F=fx==null?[0,0]:[fx-r.left-r.width/2,fy-r.top-r.height/2],k0=Z.s;Z.s=clamp(k,1,6);if(Z.s===1){Z.x=Z.y=0}else{Z.x=F[0]-(Z.s/k0)*(F[0]-Z.x);Z.y=F[1]-(Z.s/k0)*(F[1]-Z.y)}applyZ()}
+const zoom=()=>applyZ();
+
+function loadPage(flip=true){cur=S.pages[S.i];sel=null;if(flip){const p=$('#paper');if(p){p.classList.remove('flip');void p.offsetWidth;p.classList.add('flip')}}S.undo=[];S.redo=[];S.pid=null;drawing=null;if(lctx)lctx.clearRect(0,0,W,H);hud();ur();paint()}
+function hud(){const h=$('#hud');if(!h)return;h.innerHTML=`<button onclick="go(-1)" ${S.i?'':'disabled'} title="Anterior">${ic('bl')}</button><span>${S.i+1} / ${S.pages.length}</span><button onclick="go(1)" title="${S.i<S.pages.length-1?'Siguiente':'Página nueva'}">${ic(S.i<S.pages.length-1?'br':'plus')}</button>`}
+function go(d){const j=S.i+d;if(j<0)return;if(j>=S.pages.length){addPage(false);return}S.i=j;Z.s=1;Z.x=Z.y=0;applyZ();loadPage();tools()}
+async function addPage(dup){const p=mkPage(S.nb.id,S.i+2,cur.template,dup?cur.bg:null);p.paper=cur.paper;S.pages.splice(S.i+1,0,p);S.pages.forEach((x,k)=>{if(x.n!==k+1){x.n=k+1;x.updatedAt=Date.now();db.pages.put(x)}});await db.pages.put(p);S.i++;Z.s=1;Z.x=Z.y=0;applyZ();loadPage();tools();touchNb()}
+async function touchNb(){if(!S.nb)return;S.nb.updatedAt=Date.now();await db.notebooks.put(S.nb);syncSoon()}
+async function renTitle(){const t=await dlg.t('Nombre del cuaderno',S.nb.title);if(!t||!t.trim())return;S.nb.title=t.trim();$('#ttl').textContent=S.nb.title;touchNb()}
+const ur=()=>{const u=$('#bu'),r=$('#br2');if(u)u.disabled=!S.undo.length;if(r)r.disabled=!S.redo.length};
+const snapU=()=>{S.undo.push(cur.strokes.slice());if(S.undo.length>100)S.undo.shift();S.redo=[];ur()};
+
+// --- guardado: nunca se pierde un trazo, aunque cambies de página ---
+function save(){cur.updatedAt=Date.now();dirty.add(cur);setStat();clearTimeout(S.sv);S.sv=setTimeout(flushSave,400)}
+async function flushSave(){clearTimeout(S.sv);S.sv=0;if(!dirty.size)return;const a=[...dirty];dirty.clear();try{await db.pages.bulkPut(a);S.err=0;if(S.nb){S.nb.updatedAt=Date.now();await db.notebooks.put(S.nb)}syncSoon()}catch(e){console.error(e);a.forEach(p=>dirty.add(p));S.err=1;toast('No se pudo guardar (¿poco espacio?). Exporta un respaldo desde ⋯')}setStat()}
+addEventListener('pagehide',flushSave);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushSave();else syncSoon()});
+function setStat(){const el=$('#stat');if(!el)return;let t,c='';if(S.err){t='Error al guardar';c='err'}else if(!user){t=dirty.size?'Guardando…':'Solo local';c=dirty.size?'sync':''}else if(!navigator.onLine){t='Sin conexión';c='off'}else if(S.syncState==='err'){t='Error de sync';c='err'}else if(dirty.size||S.syncState==='sync'){t='Guardando…';c='sync'}else{t='Sincronizado';c='ok'}el.className='pill2 '+c;el.innerHTML='<i></i><span>'+t+'</span>'}
+
+// --- utilidades de geometría ---
+function pt(e){const r=S.rc||live.getBoundingClientRect();return[+((e.clientX-r.left)*W/r.width).toFixed(1),+((e.clientY-r.top)*H/r.height).toFixed(1),e.pressure>0?+e.pressure.toFixed(2):.5]}
+function pagePt(cx,cy){const r=live.getBoundingClientRect();return[(cx-r.left)*W/r.width,(cy-r.top)*H/r.height]}
+function bbox(s){if(s.t==='i'||s.t==='s'){const[a,b]=s.p;return[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])]}
+if(s.t==='x'){const fs=s.w*5+10,ls=s.s.split('\n');bctx.save();bctx.font=`${fs}px -apple-system,sans-serif`;const w=Math.max(...ls.map(l=>bctx.measureText(l).width));bctx.restore();return[s.p[0][0],s.p[0][1],s.p[0][0]+w,s.p[0][1]+ls.length*(s.w*6+12)]}
+const xs=s.p.map(a=>a[0]),ys=s.p.map(a=>a[1]),m=s.w||2;return[Math.min(...xs)-m,Math.min(...ys)-m,Math.max(...xs)+m,Math.max(...ys)+m]}
+const dseg=(q,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((q[0]-a[0])*dx+(q[1]-a[1])*dy)/l:0;t=clamp(t,0,1);return Math.hypot(q[0]-a[0]-t*dx,q[1]-a[1]-t*dy)};
+const inBox=(q,b,m=0)=>q[0]>=b[0]-m&&q[0]<=b[2]+m&&q[1]>=b[1]-m&&q[1]<=b[3]+m;
+const unionBox=ix=>{const B=ix.map(i=>bbox(cur.strokes[i]));return B.length?[Math.min(...B.map(b=>b[0])),Math.min(...B.map(b=>b[1])),Math.max(...B.map(b=>b[2])),Math.max(...B.map(b=>b[3]))]:null};
+const hsz=()=>9/((V.w0/W)*Z.s);
+
+function commit(x){snapU();cur.strokes=[...cur.strokes,x];paint();save()}
 function xf(f){cur.strokes=cur.strokes.map((x,i)=>sel.idx.includes(i)?f(x):x)}
-function selDraw(){lctx.clearRect(0,0,W,H);lctx.save();lctx.setLineDash([6,5]);lctx.lineWidth=1.5;lctx.strokeStyle='#4f8cff';if(sel.act==='rect'){const a=sel.a,b=sel.b;lctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1])}else if(sel.box){const b=sel.box;lctx.strokeRect(b[0]-8,b[1]-8,b[2]-b[0]+16,b[3]-b[1]+16)}lctx.restore()}
-function scaleSel(f){if(!sel||!sel.box)return;S.undo.push(cur.strokes.slice());S.redo=[];const b=sel.box,cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2;xf(x=>({...x,w:x.t==='i'||x.t==='x'?x.w*f:x.w,p:x.p.map(a=>[cx+(a[0]-cx)*f,cy+(a[1]-cy)*f,...a.slice(2)])}));sel.box=[cx+(b[0]-cx)*f,cy+(b[1]-cy)*f,cx+(b[2]-cx)*f,cy+(b[3]-cy)*f];paint();selDraw();save()}
-function delSel(){if(!sel)return;S.undo.push(cur.strokes.slice());S.redo=[];cur.strokes=cur.strokes.filter((_,i)=>!sel.idx.includes(i));sel=null;lctx.clearRect(0,0,W,H);paint();save()}
-function pdown(e){if(e.pointerType==='touch'&&(S.palm||Date.now()-(S.lp||0)<900))return;if(S.pid!=null&&Date.now()-S.pidT>8000)S.pid=null;if(S.pid!=null){if(e.pointerType==='pen'){drawing=null;erasing=false;lctx.clearRect(0,0,W,H)}else return}S.pid=e.pointerId;S.pidT=Date.now();e.preventDefault();if(S.pop){S.pop='';tools()}live.setPointerCapture(e.pointerId);const q=pt(e),T=S.tool;if(S.ro&&T!=='laser'&&T!=='seek')return;
+function selDraw(){lctx.clearRect(0,0,W,H);if(!sel)return;lctx.save();lctx.setLineDash([6,5]);lctx.lineWidth=1.5;lctx.strokeStyle='#4f8cff';if(sel.act==='rect'){const a=sel.a,b=sel.b;lctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1])}else if(sel.box){const b=sel.box;lctx.strokeRect(b[0]-8,b[1]-8,b[2]-b[0]+16,b[3]-b[1]+16);lctx.setLineDash([]);lctx.fillStyle='#fff';const h=hsz();[[b[0]-8,b[1]-8],[b[2]+8,b[1]-8],[b[2]+8,b[3]+8],[b[0]-8,b[3]+8]].forEach(c=>{lctx.beginPath();lctx.arc(c[0],c[1],h,0,7);lctx.fill();lctx.stroke()})}lctx.restore()}
+function scaleSel(f){if(!sel||!sel.box)return;snapU();const b=sel.box,cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2;xf(x=>({...x,w:x.t==='x'?x.w*f:x.w,p:x.p.map(a=>[cx+(a[0]-cx)*f,cy+(a[1]-cy)*f,...a.slice(2)])}));sel.box=[cx+(b[0]-cx)*f,cy+(b[1]-cy)*f,cx+(b[2]-cx)*f,cy+(b[3]-cy)*f];paint();selDraw();save()}
+function delSel(){if(!sel)return;snapU();cur.strokes=cur.strokes.filter((_,i)=>!sel.idx.includes(i));sel=null;lctx.clearRect(0,0,W,H);paint();save();tools()}
+function recolor(){if(!sel||!sel.box)return;snapU();xf(x=>x.t==='i'?x:{...x,c:S.color});paint();save()}
+function dupSel(){if(!sel||!sel.box)return;snapU();const n=sel.idx.map(i=>({...cur.strokes[i],p:cur.strokes[i].p.map(a=>[a[0]+30,a[1]+30,...a.slice(2)])})),b=cur.strokes.length;cur.strokes=[...cur.strokes,...n];sel.idx=n.map((_,k)=>b+k);sel.box=sel.box.map(v=>v+30);paint();selDraw();save()}
+function selectRect(x1,y1,x2,y2){const idx=[];cur.strokes.forEach((s,i)=>{const b=bbox(s);if(s.t==='i'||s.t==='x'||s.t==='s'){if(b[0]<=x2&&b[2]>=x1&&b[1]<=y2&&b[3]>=y1)idx.push(i)}else if(s.p.some(a=>a[0]>=x1&&a[0]<=x2&&a[1]>=y1&&a[1]<=y2))idx.push(i)});return idx}
+function hitTap(q){for(let i=cur.strokes.length-1;i>=0;i--){const s=cur.strokes[i];if(s.t==='i'||s.t==='x'){if(inBox(q,bbox(s),4))return i}else if(s.t==='s'){if(inBox(q,bbox(s),10))return i}else if(s.p.some((a,k)=>Math.hypot(a[0]-q[0],a[1]-q[1])<14||(k&&dseg(q,s.p[k-1],a)<12)))return i}return -1}
+
+// --- puntero: lápiz, dedo, ratón ---
+function cancelDraw(){drawing=null;erasing=false;S.pid=null;clearTimeout(hold);if(sel&&sel.act==='rect'){sel=null}if(lctx&&S.tool!=='lasso')lctx.clearRect(0,0,W,H)}
+function pdown(e){const T=S.tool,touch=e.pointerType==='touch';
+if(touch&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<700))return;
+if(e.pointerType==='mouse'&&e.button!==0)return;
+if(e.pointerType==='pen'){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now()}
+if(T==='pan'){panStart(e);return}
+if(S.pid!=null||drawing||erasing){if(e.pointerType==='pen'||e.pointerId===S.pid)finishStroke();else return}
+e.preventDefault();S.pid=e.pointerId;S.ptype=e.pointerType;S.pidT=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=live.getBoundingClientRect();
+if(S.pop){S.pop='';tools()}
+const q=pt(e);if(S.ro&&T!=='laser'&&T!=='seek'){S.pid=null;return}
 if(T==='laser'){lzd=true;lzr.push([q[0],q[1],Date.now()]);if(lzr.length===1)lz();return}
-if(T==='seek'){const k=cur.strokes.filter(x=>x.ts!=null&&x.p.length).map(x=>[Math.min(...x.p.map(a=>Math.hypot(a[0]-q[0],a[1]-q[1]))),x]).sort((a,b)=>a[0]-b[0])[0];if(k&&k[0]<30){const j=()=>{aud.currentTime=k[1].ts/1000};aud?j():play().then(()=>aud&&j())}return}
-if(T==='eraser'){erasing=true;S.undo.push(cur.strokes.slice());S.redo=[];return erase(q)}
-if(T==='text'){dlg.t('Texto:').then(t=>{if(t)commit({t:'x',c:S.color,w:S.size,p:[q],s:t})});return}
-if(T==='lasso'){const b=sel&&sel.box;if(b&&q[0]>b[0]-10&&q[0]<b[2]+10&&q[1]>b[1]-10&&q[1]<b[3]+10){S.undo.push(cur.strokes.slice());S.redo=[];sel.act='mv';sel.q=q}else sel={a:q,b:q,act:'rect',idx:[]};return}
+if(T==='seek'){S.pid=null;const k=cur.strokes.filter(x=>x.ts!=null&&x.p.length).map(x=>[Math.min(...x.p.map(a=>Math.hypot(a[0]-q[0],a[1]-q[1]))),x]).sort((a,b)=>a[0]-b[0])[0];if(k&&k[0]<30){const j=()=>{aud.currentTime=k[1].ts/1000};aud?j():play().then(()=>aud&&j())}return}
+if(T==='eraser'){erasing=true;snapU();S.edirty=0;return erase(q)}
+if(T==='text'){S.pid=null;dlg.t('Texto:').then(t=>{if(t)commit({t:'x',c:S.color,w:S.size,p:[q],s:t})});return}
+if(T==='lasso'){const b=sel&&sel.box;
+ if(b){const bc=[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]],cs=[[b[0]-8,b[1]-8],[b[2]+8,b[1]-8],[b[2]+8,b[3]+8],[b[0]-8,b[3]+8]],hi=cs.findIndex(c=>Math.hypot(c[0]-q[0],c[1]-q[1])<hsz()*2.4);
+  if(hi>=0){snapU();sel.act='rs';sel.o=bc[(hi+2)%4];sel.q0=Math.max(8,Math.hypot(cs[hi][0]-sel.o[0],cs[hi][1]-sel.o[1]));sel.sn=sel.idx.map(i=>cur.strokes[i]);sel.b0=b.slice();return}
+  if(inBox(q,b,10)){snapU();sel.act='mv';sel.q=q;return}}
+ sel={a:q,b:q,act:'rect',idx:[]};return}
 const sh=T==='shape';drawing={t:sh?'s':{highlighter:'h',pencil:'l',ball:'b',brush:'br',call:'c'}[T]||'p',k:S.shape,f:S.fill,c:S.color,w:T==='highlighter'?S.size*1.6:S.size,p:sh?[q,q]:[q]};stroke(lctx,drawing)}
-function pmove(e){if(S.pid!=null&&e.pointerId!==S.pid)return;const q=pt(e);if(S.tool==='laser'){if(lzd)lzr.push([q[0],q[1],Date.now()]);return}
-if(S.tool==='lasso'&&sel&&sel.act){if(sel.act==='mv'){const dx=q[0]-sel.q[0],dy=q[1]-sel.q[1];sel.q=q;xf(x=>({...x,p:x.p.map(a=>[a[0]+dx,a[1]+dy,...a.slice(2)])}));sel.box=sel.box.map((v,i)=>v+(i%2?dy:dx));paint()}else sel.b=q;selDraw();return}
-if(erasing)return erase(q);if(!drawing)return;
-if(drawing.t==='s')drawing.p[1]=q;else{(e.getCoalescedEvents?e.getCoalescedEvents():[e]).forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2]]:n)});clearTimeout(hold);hold=setTimeout(()=>{if(!drawing||drawing.t==='s'||drawing.p.length<9)return;const P=drawing.p,a=P[0],b=P.at(-1),d=drawing;
+function pmove(e){if(e.pointerType==='pen')S.lp=Date.now();if(e.pointerId!==S.pid)return;const q=pt(e),T=S.tool;
+if(T==='laser'){if(lzd)lzr.push([q[0],q[1],Date.now()]);return}
+if(T==='lasso'&&sel&&sel.act){
+ if(sel.act==='mv'){const dx=q[0]-sel.q[0],dy=q[1]-sel.q[1];sel.q=q;xf(x=>({...x,p:x.p.map(a=>[a[0]+dx,a[1]+dy,...a.slice(2)])}));sel.box=sel.box.map((v,i)=>v+(i%2?dy:dx));paint()}
+ else if(sel.act==='rs'){const f=clamp(Math.hypot(q[0]-sel.o[0],q[1]-sel.o[1])/sel.q0,.1,12),o=sel.o;cur.strokes=cur.strokes.map((x,i)=>{const k=sel.idx.indexOf(i);if(k<0)return x;const s0=sel.sn[k];return{...s0,w:s0.t==='x'?s0.w*f:s0.w,p:s0.p.map(a=>[o[0]+(a[0]-o[0])*f,o[1]+(a[1]-o[1])*f,...a.slice(2)])}});sel.box=sel.b0.map((v,i)=>o[i%2]+(v-o[i%2])*f);paint()}
+ else sel.b=q;selDraw();return}
+if(erasing){erase(q);return}if(!drawing)return;
+if(drawing.t==='s')drawing.p[1]=q;else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2]]:n)});
+ clearTimeout(hold);if(S.snap)hold=setTimeout(snapShape,700)}
+if(!S.raf)S.raf=requestAnimationFrame(()=>{S.raf=0;if(!drawing)return;lctx.clearRect(0,0,W,H);stroke(lctx,drawing)})}
+function snapShape(){if(!drawing||drawing.t==='s'||drawing.p.length<9)return;const P=drawing.p,a=P[0],b=P.at(-1),d=drawing;
 if(d.t==='h')drawing={...d,p:[a,[b[0],a[1],.5]]};
 else{const xs=P.map(v=>v[0]),ys=P.map(v=>v[1]),x1=Math.min(...xs),x2=Math.max(...xs),y1=Math.min(...ys),y2=Math.max(...ys);let k='line',p=[a,b];
-if(Math.hypot(a[0]-b[0],a[1]-b[1])<.25*Math.max(x2-x1,y2-y1)){const cx=(x1+x2)/2,cy=(y1+y2)/2,rx=(x2-x1)/2||1,ry=(y2-y1)/2||1,e=P.reduce((m,v)=>m+Math.abs(Math.hypot((v[0]-cx)/rx,(v[1]-cy)/ry)-1),0)/P.length;k=e<.12?'ell':'rect';p=[[x1,y1],[x2,y2]]}
-drawing={t:'s',k,f:S.fill,c:d.c,w:d.w,p}}
-lctx.clearRect(0,0,W,H);stroke(lctx,drawing);navigator.vibrate&&navigator.vibrate(10)},550)}
-lctx.clearRect(0,0,W,H);stroke(lctx,drawing)}
-function pup(e){if(e&&S.pid!=null&&e.pointerId!==S.pid)return;if(e&&e.pointerType==='pen')S.lp=Date.now();S.pid=null;clearTimeout(hold);if(S.tool==='laser'){lzd=false;return}
-if(S.tool==='lasso'&&sel){if(sel.act==='rect'){const x1=Math.min(sel.a[0],sel.b[0]),x2=Math.max(sel.a[0],sel.b[0]),y1=Math.min(sel.a[1],sel.b[1]),y2=Math.max(sel.a[1],sel.b[1]);sel.idx=[];cur.strokes.forEach((x,i)=>{if(x.p.some(a=>a[0]>=x1&&a[0]<=x2&&a[1]>=y1&&a[1]<=y2))sel.idx.push(i)});const P=sel.idx.flatMap(i=>cur.strokes[i].p);if(P.length){sel.box=[Math.min(...P.map(a=>a[0])),Math.min(...P.map(a=>a[1])),Math.max(...P.map(a=>a[0])),Math.max(...P.map(a=>a[1]))];toast(sel.idx.length+' elemento(s): arrastra para mover')}else sel=null}else if(sel.act==='mv')save();if(sel){sel.act=null;selDraw()}else lctx.clearRect(0,0,W,H);return}
-if(erasing){erasing=false;save();if(S.er.auto)pick(S.prev||'pen');return}if(!drawing)return;S.undo.push(cur.strokes.slice());S.redo=[];if(rec&&cur.id===recPid)drawing.ts=Date.now()-t0;cur.strokes=[...cur.strokes,drawing];stroke(bctx,drawing);lctx.clearRect(0,0,W,H);drawing=null;save()}
-function erase(q){const n=cur.strokes.filter(s=>(S.er.hl&&s.t!=='h')||!s.p.some(p=>Math.hypot(p[0]-q[0],p[1]-q[1])<14));if(n.length!==cur.strokes.length){cur.strokes=n;paint()}}
-function undo(){if(!S.undo.length)return;S.redo.push(cur.strokes);cur.strokes=S.undo.pop();paint();save()}
-function redo(){if(!S.redo.length)return;S.undo.push(cur.strokes);cur.strokes=S.redo.pop();paint();save()}
-const PENS=[['pen','Pluma fuente'],['ball','Bolígrafo'],['brush','Pincel'],['call','Caligrafía'],['pencil','Lápiz'],['highlighter','Resaltador']];
-function pick(k){if(k==='eraser'&&S.tool!=='eraser')S.prev=S.tool;S.tool=k;S.pop='';const c=S.cfg[k];if(c){S.color=c.c;S.size=c.w}tools()}
+ if(Math.hypot(a[0]-b[0],a[1]-b[1])<.25*Math.max(x2-x1,y2-y1)){const cx=(x1+x2)/2,cy=(y1+y2)/2,rx=(x2-x1)/2||1,ry=(y2-y1)/2||1,e=P.reduce((m,v)=>m+Math.abs(Math.hypot((v[0]-cx)/rx,(v[1]-cy)/ry)-1),0)/P.length;k=e<.12?'ell':'rect';p=[[x1,y1],[x2,y2]]}
+ drawing={t:'s',k,f:S.fill,c:d.c,w:d.w,p}}
+lctx.clearRect(0,0,W,H);stroke(lctx,drawing);navigator.vibrate&&navigator.vibrate(10)}
+function pup(e){if(e.pointerId!==S.pid)return;if(e.pointerType==='pen')S.lp=Date.now();finishStroke()}
+function finishStroke(){S.pid=null;clearTimeout(hold);if(S.raf){cancelAnimationFrame(S.raf);S.raf=0}
+if(S.tool==='laser'){lzd=false;return}
+if(S.tool==='lasso'&&sel){if(sel.act==='rect'){const x1=Math.min(sel.a[0],sel.b[0]),x2=Math.max(sel.a[0],sel.b[0]),y1=Math.min(sel.a[1],sel.b[1]),y2=Math.max(sel.a[1],sel.b[1]);
+  if(x2-x1<6&&y2-y1<6){const h=hitTap(sel.a);sel.idx=h>=0?[h]:[]}else sel.idx=selectRect(x1,y1,x2,y2);
+  sel.box=unionBox(sel.idx);if(!sel.box)sel=null}
+ else if(sel.act==='mv'||sel.act==='rs')save();
+ if(sel)sel.act=null;if(sel)selDraw();else lctx.clearRect(0,0,W,H);tools();return}
+if(erasing){erasing=false;lctx.clearRect(0,0,W,H);if(S.edirty){save();paint()}else{S.undo.pop();ur()}if(S.er.auto)pick(S.prev||'pen');return}
+if(!drawing)return;const d=drawing;drawing=null;snapU();if(rec&&cur.id===recPid)d.ts=Date.now()-t0;cur.strokes=[...cur.strokes,d];if(d.t==='h')paint();else stroke(bctx,d);lctx.clearRect(0,0,W,H);save()}
+function erase(q){const r=S.esz,out=[];let ch=false;
+for(const s of cur.strokes){
+ if(S.er.hl&&s.t!=='h'){out.push(s);continue}
+ if(s.t==='i'||s.t==='x'){if(inBox(q,bbox(s),r*.4)){ch=true}else out.push(s);continue}
+ if(s.t==='s'){const[a,b]=s.p,bx=bbox(s);let hit;if(s.k==='line'||s.k==='arr')hit=dseg(q,a,b)<r;else hit=inBox(q,bx,r)&&!inBox(q,[bx[0]+r,bx[1]+r,bx[2]-r,bx[3]-r]);if(hit)ch=true;else out.push(s);continue}
+ const P=s.p;if(S.emode==='stroke'||P.length<2){if(P.some(a=>Math.hypot(a[0]-q[0],a[1]-q[1])<r))ch=true;else out.push(s);continue}
+ const runs=[];let run=[],cut=false;
+ for(let i=0;i<P.length;i++){const kill=Math.hypot(P[i][0]-q[0],P[i][1]-q[1])<r;
+  if(kill){if(run.length)runs.push(run);run=[];cut=true;continue}
+  if(i>0&&run.length&&dseg(q,P[i-1],P[i])<r){runs.push(run);run=[];cut=true}
+  run.push(P[i])}
+ if(run.length)runs.push(run);
+ if(!cut){out.push(s);continue}ch=true;runs.filter(x=>x.length>1).forEach(x=>out.push({...s,p:x}))}
+lctx.clearRect(0,0,W,H);lctx.save();lctx.strokeStyle='#8a8f9c';lctx.lineWidth=1.2;lctx.beginPath();lctx.arc(q[0],q[1],r,0,7);lctx.stroke();lctx.restore();
+if(ch){cur.strokes=out;S.edirty=1;if(!S.rp)S.rp=requestAnimationFrame(()=>{S.rp=0;paint()})}}
+function undo(){if(!S.undo.length)return;S.redo.push(cur.strokes);cur.strokes=S.undo.pop();sel=null;lctx.clearRect(0,0,W,H);paint();save();ur()}
+function redo(){if(!S.redo.length)return;S.undo.push(cur.strokes);cur.strokes=S.redo.pop();sel=null;lctx.clearRect(0,0,W,H);paint();save();ur()}
+
+// --- herramientas ---
+function pick(k){if(k===S.tool&&POPT.has(k)){S.pop=S.pop?'':'t';tools();return}if(k==='eraser'&&S.tool!=='eraser')S.prev=S.tool;S.tool=k;S.pop='';const c=S.cfg[k];if(c){S.color=c.c;S.size=c.w}if(k!=='lasso')sel=null;tools()}
 function savePen(){if(S.cfg[S.tool]){S.cfg[S.tool]={c:S.color,w:S.size};localStorage.qn_pens=JSON.stringify(S.cfg)}}
 function setC(c){S.color=c;if(S.tool==='eraser')S.tool='pen';savePen();tools()}
 function setSz(v){S.size=+v;savePen()}
-function pop(k){S.pop=S.pop===k?'':k;S.an2=1;tools()}
 function cpop(){return `<div class="sws">${COLORS.map(c=>`<button class="sw2 ${S.color===c?'on':''}" style="background:${c}" onclick="setC('${c}')"></button>`).join('')}<label class="sw2 cu" title="Color personalizado"><input type="color" value="${S.color}" onchange="setC(this.value)"></label></div><div class="szr"><i class="prv" style="width:${S.size*2+4}px;height:${S.size*2+4}px;background:${S.color}"></i><input type="range" min="1" max="10" value="${S.size}" oninput="setSz(this.value);this.previousElementSibling.style.cssText='width:'+(this.value*2+4)+'px;height:'+(this.value*2+4)+'px;background:'+S.color"></div>`}
-function ctxp(){return S.tool==='shape'?[['line','Línea'],['arr','Flecha'],['rect','Rectángulo'],['ell','Elipse']].map(([k,v])=>`<button class="chip ${S.shape===k?'on':''}" onclick="S.shape='${k}';tools()">${v}</button>`).join('')+`<button class="chip ${S.fill?'on':''}" onclick="S.fill=S.fill?0:1;tools()">Relleno</button>`:`<button class="chip on" onclick="aiMenu(0)">${ic('bolt')} IA</button><button class="chip" onclick="recolor()">Color</button><button class="chip" onclick="dupSel()">Duplicar</button><button class="chip" onclick="scaleSel(1.15)">＋</button><button class="chip" onclick="scaleSel(.87)">－</button><button class="chip dg" onclick="delSel()">Borrar</button>`}
+const chip=(on,f,l)=>`<button class="chip ${on?'on':''}" onclick="${f}">${l}</button>`;
+function popHTML(){const T=S.tool;
+if(T==='eraser')return `<div class="pr"><b>Tamaño</b></div><div class="szr"><i class="prv" style="width:${S.esz/2+4}px;height:${S.esz/2+4}px;background:var(--mut)"></i><input type="range" min="6" max="60" value="${S.esz}" oninput="S.esz=+this.value;localStorage.qn_esz=this.value;this.previousElementSibling.style.cssText='width:'+(this.value/2+4)+'px;height:'+(this.value/2+4)+'px;background:var(--mut)'"></div><div class="pr">${chip(S.emode==='part',"S.emode='part';localStorage.qn_emode='part';tools()",'Borrar parte')}${chip(S.emode==='stroke',"S.emode='stroke';localStorage.qn_emode='stroke';tools()",'Trazo completo')}${chip(S.er.hl,"S.er.hl=S.er.hl?0:1;tools()",'Solo resaltador')}</div>`;
+if(T==='shape')return `<div class="pr">${[['line','Línea'],['arr','Flecha'],['rect','Rectángulo'],['ell','Elipse']].map(([k,v])=>chip(S.shape===k,`S.shape='${k}';tools()`,v)).join('')}${chip(S.fill,'S.fill=S.fill?0:1;tools()','Relleno')}</div>${cpop()}`;
+if(T==='lasso')return sel&&sel.box?`<div class="pr">${chip(1,'aiMenu(0)',ic('bolt')+' IA')}${chip(0,'recolor()','Color')}${chip(0,'dupSel()','Duplicar')}${chip(0,'scaleSel(1.15)','＋')}${chip(0,'scaleSel(.87)','－')}<button class="chip dg" onclick="delSel()">Borrar</button></div><div class="pr"><b>Arrastra las esquinas para cambiar el tamaño</b></div>`:'';
+if(T==='text')return cpop();
+return cpop()+`<div class="pr">${chip(S.snap,"S.snap=!S.snap;localStorage.qn_snap=S.snap?1:0;tools();toast(S.snap?'Autoforma: mantén el lápiz quieto al final del trazo':'Autoforma desactivada')",'Autoforma al mantener')}</div>`}
 function tools(){if(S.tool!=='lasso'){sel=null;lctx&&lctx.clearRect(0,0,W,H)}
-const el=$('#tools'),b=(k,l)=>`<button class="tb ${S.tool===k?'on':''}" title="${l}" onclick="pick('${k}')">${ic(k)}</button>`,dr='onpointerdown="tbDown(event)" onpointermove="tbMove(event)" onpointerup="tbUp(event)"',g=(d,h)=>`<div class="grp" style="--d:${d}">${h}</div>`;
-if(S.tbc){el.innerHTML=`<div class="bub ${S.an?'an':''}" style="--rc:${S.color}" data-tap="1" ${dr}>${ic(S.tool)}<i class="cdot" style="background:${S.color}"></i></div>`;S.an=0;return placeTb()}
-el.innerHTML=`<div class="pill ${S.an?'an':''}"><span class="hd" ${dr}>${ic('grip')}</span>
-${g(1,`<button class="tb" title="Deshacer" onclick="undo()">${ic('undo')}</button><button class="tb" title="Rehacer" onclick="redo()">${ic('redo')}</button>`)}
-${g(2,PENS.map(p=>b(p[0],p[1])).join(''))}
-${g(3,`<button class="tb ${S.tool==='eraser'&&!S.er.hl?'on':''}" title="Borrar trazo" onclick="S.er.hl=0;pick('eraser')">${ic('eraser')}</button><button class="tb ${S.tool==='eraser'&&S.er.hl?'on':''}" title="Borrar solo resaltador" onclick="S.er.hl=1;pick('eraser')">${ic('eraser','<i class="mk"></i>')}</button>`)}
-${g(4,b('lasso','Seleccionar y mover')+b('text','Texto')+b('shape','Formas')+b('laser','Puntero láser'))}
-<button class="cbtn" style="--d:5" title="Color y grosor" onclick="pop('c')"><i style="background:${S.color}"></i></button>
-${g(6,`<button class="tb ${S.palm?'on':''}" title="Rechazo de palma" onclick="S.palm=!S.palm;localStorage.qn_palm=S.palm?'1':'0';tools();toast(S.palm?'Solo lápiz: el dedo no dibuja (2 dedos = zoom)':'El dedo también dibuja')">${ic('hand')}</button><button class="tb ${S.ro?'on':''}" title="Modo lectura" onclick="S.ro=!S.ro;tools();toast(S.ro?'Modo lectura':'Modo edición')">${ic('book')}</button><button class="tb ${rec?'on rec':''}" title="Grabar audio" onclick="recToggle()">${ic('mic')}</button>${cur.audio?`<button class="tb" onclick="play()">${ic(aud?'pause':'play')}</button>`+b('seek','Tocar un trazo para saltar al audio'):''}`)}
-<button class="tb" style="--d:7" title="Contraer" onclick="S.tbc=1;S.an=1;S.pop='';localStorage.qn_tbc=1;tools()">${ic('cl')}</button></div>${S.pop==='c'||S.tool==='shape'||S.tool==='lasso'?`<div class="pp ${S.an2?'an':''}">${S.pop==='c'?cpop():ctxp()}</div>`:''}`;S.an=S.an2=0;placeTb()}
-let tbd=null;
-function tbDown(e){const r=$('#tools').getBoundingClientRect();tbd=[e.clientX-r.left,e.clientY-r.top,e.clientX,e.clientY,0];e.currentTarget.setPointerCapture(e.pointerId)}
-function tbMove(e){if(!tbd)return;if(Math.abs(e.clientX-tbd[2])+Math.abs(e.clientY-tbd[3])>6)tbd[4]=1;if(!tbd[4])return;const el=$('#tools');el.style.left=Math.max(0,Math.min(innerWidth-el.offsetWidth,e.clientX-tbd[0]))+'px';el.style.top=Math.max(0,Math.min(innerHeight-el.offsetHeight,e.clientY-tbd[1]))+'px'}
-function tbUp(e){if(!tbd)return;const m=tbd[4];tbd=null;const el=$('#tools');if(m){localStorage.qn_tb=JSON.stringify({x:el.offsetLeft,y:el.offsetTop});placeTb()}else if(e.currentTarget.dataset.tap){S.tbc=0;S.an=1;localStorage.qn_tbc=0;tools()}}
-function placeTb(){const el=$('#tools'),p=JSON.parse(localStorage.qn_tb||'null')||{x:16,y:innerHeight-el.offsetHeight-28};el.style.left=Math.max(0,Math.min(innerWidth-el.offsetWidth,p.x))+'px';el.style.top=Math.max(0,Math.min(innerHeight-el.offsetHeight,p.y))+'px';const pp=el.querySelector('.pp');if(pp){pp.classList.toggle('dn',el.offsetTop<innerHeight/2);pp.style.left=Math.min(0,innerWidth-8-(el.offsetLeft+pp.offsetWidth))+'px'}}
-function menu(){const o=$('#mn');if(o)return o.remove();const m=document.createElement('div'),r=$('#mb').getBoundingClientRect(),up=false,op=(a,v)=>a.map(([k,l])=>`<option value="${k}" ${v===k?'selected':''}>${l}</option>`).join('');m.id='mn';
-m.innerHTML=`<select onchange="cur.template=this.value;paint();save()">${op(Object.entries(TPLS),cur.template)}</select><select onchange="cur.paper=this.value;paint();save()">${op([['','Papel blanco'],['cream','Papel crema'],['dark','Papel oscuro']],cur.paper||'')}</select>`+[['＋ Página nueva','addPage(false)'],['⧉ Duplicar fondo','addPage(true)'],['🗂 Páginas','pagesModal()'],['🖼 Insertar imagen',"$('#imgin').click()"],['🧹 Limpiar página','clearPg()'],['PDF ↑ Importar',"$('#pdfin').click()"],['PDF ↓ Exportar','exportPdf()'],['PNG ↓ Esta página','exportPng()'],['✨ IA: toda la página','aiMenu(1)'],['⬇ Exportar .qnotes (respaldo)','exportNb(S.nb.id)'],['⤢ Zoom 100%','Z={s:1,x:0,y:0};zoom()'],['🖥 Modo enfoque','focusM()'],['🏠 Biblioteca','shelf()']].map(([l,f])=>`<button onclick="$('#mn').remove();${f}">${l}</button>`).join('');
-m.style.left=Math.max(8,Math.min(r.right-220,innerWidth-230))+'px';m.style.top=(up?r.top-8:r.bottom+8)+'px';if(up)m.style.transform='translateY(-100%)';document.body.appendChild(m)}
-function focusM(){const on=!document.body.classList.contains('focus');document.body.classList.toggle('focus',on);$('header').style.display=on?'none':'';let b=$('#fx');b&&b.remove();if(on){b=document.createElement('button');b.id='fx';b.className='p';b.innerHTML=ic('x')+' Salir del enfoque';b.onclick=focusM;document.body.appendChild(b);toast('Modo enfoque: toca “Salir del enfoque” o pulsa Esc')}fit();placeTb()}
-addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('focus'))focusM()});
-document.addEventListener('gesturestart',e=>e.preventDefault());addEventListener('scroll',()=>scrollTo(0,0));window.visualViewport&&visualViewport.addEventListener('scroll',()=>scrollTo(0,0));
-addEventListener('pointerdown',e=>{const m=$('#mn');if(m&&!m.contains(e.target)&&!e.target.closest('#mb'))m.remove()});
+const el=$('#tools');if(!el)return;const sc=el.querySelector('.dsc'),sl=sc?sc.scrollLeft:0;el.className=S.dtop?'top':'';
+const b=(k,l)=>`<button class="tb ${S.tool===k?'on':''}" title="${l}" onclick="pick('${k}')">${ic(k)}</button>`,hasA=!!cur&&!!cur.audio;
+const ph=S.pop==='t'||(S.tool==='lasso'&&sel&&sel.box),pop=ph?popHTML():'';
+if(S.dmin){el.innerHTML=`<div class="dock mini"><button class="tb ${rec?'on rec':''}" style="--rc:${S.color}" onclick="S.dmin=0;localStorage.qn_dmin=0;tools()" title="Mostrar herramientas">${ic(S.tool)}</button><i class="prv" style="width:16px;height:16px;background:${S.color};box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--mut)"></i><button class="tb sm" onclick="undo()">${ic('undo')}</button></div>`;return}
+el.innerHTML=`<div class="dock">${pop?`<div class="pop2">${pop}</div>`:''}<div class="dsc">
+<div class="tg2">${PENS.map(p=>b(p[0],p[1])).join('')}</div>
+<div class="tg2">${b('eraser','Borrador')}${b('lasso','Seleccionar, mover y redimensionar')}${b('text','Texto')}${b('shape','Formas')}<button class="tb" title="Insertar imagen" onclick="$('#imgin').click()">${ic('image')}</button></div>
+<button class="cbtn" title="Color y grosor" onclick="S.pop=S.pop?'':'t';tools()"><i style="width:26px;height:26px;border-radius:50%;display:block;background:${S.color};box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--mut)"></i></button>
+<div class="tg2">${b('pan','Mover página')}${b('laser','Puntero láser')}<button class="tb ${S.palm?'':'on'}" title="${S.palm?'El dedo NO dibuja (solo mueve y hace zoom)':'El dedo dibuja'}" onclick="S.palm=!S.palm;localStorage.qn_palm=S.palm?'1':'0';tools();toast(S.palm?'Solo el lápiz dibuja · el dedo mueve la página':'El dedo también dibuja · 2 dedos = zoom')">${ic('hand')}</button><button class="tb ${S.ro?'on':''}" title="Modo lectura" onclick="S.ro=!S.ro;tools();toast(S.ro?'Modo lectura':'Modo edición')">${ic('book')}</button></div>
+<div class="tg2">${rec?`<button class="tb rec" onclick="recToggle()" title="Detener grabación">${ic('stop')}<span class="rt" id="rt">${fmtT((Date.now()-t0)/1000)}</span></button>`:`<button class="tb" title="Grabar audio" onclick="recToggle()">${ic('mic')}</button>`}${hasA?`<button class="tb" title="Reproducir" onclick="play()">${ic(aud?'pause':'play')}</button>${b('seek','Tocar un trazo para saltar al audio')}`:''}<button class="tb" title="Audios del cuaderno" onclick="audioModal()">${ic('list')}</button></div>
+</div><button class="tb sm" title="${S.dtop?'Mover abajo':'Mover arriba'}" onclick="S.dtop=!S.dtop;localStorage.qn_dtop=S.dtop?1:0;S.pop='';tools()">${ic('swap')}</button><button class="tb sm" title="Contraer" onclick="S.dmin=1;S.pop='';localStorage.qn_dmin=1;tools()">${ic('cd')}</button></div>`;
+const n=el.querySelector('.dsc');if(n)n.scrollLeft=sl;const on=el.querySelector('.tb.on:not(.sm)');if(on&&n&&!ph){/* mantiene visible */}}
+addEventListener('pointerdown',e=>{const m=$('#mn');if(m&&!m.contains(e.target)&&!e.target.closest('#mb'))m.remove();if(S.pop&&S.nb&&!e.target.closest('.dock')&&!e.target.closest('#live')){S.pop='';tools()}});
+
+// --- menú ---
+function menu(){const o=$('#mn');if(o)return o.remove();const m=document.createElement('div'),r=$('#mb').getBoundingClientRect(),op=(a,v)=>a.map(([k,l])=>`<option value="${k}" ${v===k?'selected':''}>${l}</option>`).join(''),
+it=(i,l,f)=>`<button onclick="$('#mn').remove();${f}">${ic(i)}<span>${l}</span></button>`;m.id='mn';
+m.innerHTML=`<div class="mrow"><select onchange="cur.template=this.value;paint();save()">${op(Object.entries(TPLS),cur.template)}</select><select onchange="cur.paper=this.value;paint();save()">${op([['','Papel blanco'],['cream','Papel crema'],['dark','Papel oscuro']],cur.paper||'')}</select></div>
+<h6>Página</h6>${it('plus','Página nueva','addPage(false)')}${it('copy','Duplicar fondo','addPage(true)')}${it('trash','Limpiar página','clearPg()')}
+<h6>Insertar</h6>${it('image','Imagen de la galería','$(\'#imgin\').click()')}${it('scan','Foto con la cámara','$(\'#camin\').click()')}${it('up','Importar PDF','$(\'#pdfin\').click()')}
+<h6>Inteligencia artificial</h6>${it('bolt','IA sobre toda la página','aiMenu(1)')}
+<h6>Audio y exportar</h6>${it('mic','Audios del cuaderno','audioModal()')}${it('dl','Exportar PDF','exportPdf()')}${it('dl','Exportar esta página (PNG)','exportPng()')}${it('dl','Respaldo .qnotes (con audios)','exportNb(S.nb.id)')}
+<h6>Vista</h6>${it('fit','Ajustar a la pantalla','zoomTo(1)')}${it('fit','Ajustar al ancho','zoomTo(V.cw/V.w0)')}${it('side','Modo enfoque','focusM()')}${it('gear','Ajustes','cfgModal()')}${it('grid','Biblioteca','leave()')}`;
+m.style.left=Math.max(8,Math.min(r.right-268,innerWidth-276))+'px';m.style.top=(r.bottom+8)+'px';document.body.appendChild(m)}
+function focusM(){const on=!document.body.classList.contains('focus');document.body.classList.toggle('focus',on);$('header').style.display=on?'none':'';let b=$('#fx');b&&b.remove();if(on){b=document.createElement('button');b.id='fx';b.className='p';b.innerHTML=ic('x')+' Salir del enfoque';b.onclick=focusM;document.body.appendChild(b);toast('Modo enfoque: toca “Salir del enfoque” o pulsa Esc')}fit()}
+addEventListener('keydown',e=>{if(!S.nb||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+if(e.key==='Escape'&&document.body.classList.contains('focus'))focusM();
+if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);
+if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();e.shiftKey?redo():undo()}
+if(e.key==='+'||e.key==='=')zoomTo(Z.s*1.25);if(e.key==='-')zoomTo(Z.s/1.25);if(e.key==='0')zoomTo(1)});
+document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('gesturechange',e=>e.preventDefault());addEventListener('scroll',()=>scrollTo(0,0));window.visualViewport&&visualViewport.addEventListener('scroll',()=>scrollTo(0,0));
 function lz(){const n=Date.now();lzr=lzr.filter(a=>n-a[2]<700);lctx.clearRect(0,0,W,H);lzr.forEach((a,i)=>{lctx.globalAlpha=1-(n-a[2])/700;lctx.fillStyle='#ff2d2d';lctx.shadowColor='#f00';lctx.shadowBlur=14;lctx.beginPath();lctx.arc(a[0],a[1],i===lzr.length-1&&lzd?9:5,0,7);lctx.fill()});lctx.globalAlpha=1;lctx.shadowBlur=0;if(lzr.length)requestAnimationFrame(lz)}
-function recolor(){if(!sel||!sel.box)return;S.undo.push(cur.strokes.slice());S.redo=[];xf(x=>x.t==='i'?x:{...x,c:S.color});paint();save()}
-function dupSel(){if(!sel||!sel.box)return;S.undo.push(cur.strokes.slice());S.redo=[];const n=sel.idx.map(i=>({...cur.strokes[i],p:cur.strokes[i].p.map(a=>[a[0]+30,a[1]+30,...a.slice(2)])})),b=cur.strokes.length;cur.strokes=[...cur.strokes,...n];sel.idx=n.map((_,k)=>b+k);sel.box=sel.box.map(v=>v+30);paint();selDraw();save()}
-async function recToggle(){if(rec){rec.stop();return}try{const st=await navigator.mediaDevices.getUserMedia({audio:true}),ch=[],pg=cur,r=new MediaRecorder(st);rec=r;recPid=pg.id;r.ondataavailable=e=>ch.push(e.data);r.onstop=async()=>{st.getTracks().forEach(k=>k.stop());await db.audio.put({id:pg.id,blob:new Blob(ch,{type:r.mimeType})});rec=null;pg.audio=1;pg.updatedAt=Date.now();await db.pages.put(pg);tools();toast('Audio guardado en esta página: ▶ para reproducir, 👆 para saltar a un trazo')};t0=Date.now();r.start();tools();toast('🔴 Grabando: cada trazo queda ligado a este momento')}catch(e){rec=null;toast('Sin permiso de micrófono')}}
-async function play(){if(aud){aud.pause();aud=null;paint();return tools()}const r=await db.audio.get(cur.id);if(!r)return toast('Esta página no tiene audio (solo se guarda en este dispositivo)');aud=new Audio(URL.createObjectURL(r.blob));aud.onended=()=>{aud=null;paint();tools()};await aud.play();const iv=setInterval(()=>{if(!aud)return clearInterval(iv);paint()},150);tools()}
+
+// --- gestos: zoom, mover con 1 dedo, 2 dedos, ratón ---
+function panStart(e){gst={m:'pan',id:e.pointerId,x0:e.clientX,y0:e.clientY,zx:Z.x,zy:Z.y,t0:Date.now(),lx:e.clientX,ly:e.clientY,lt:Date.now(),vx:0,vy:0,dx:0,dy:0};if(e.pointerType!=='touch'){try{$('#ed').setPointerCapture(e.pointerId)}catch(_){}tp.set(e.pointerId,{})}}
+function gest(){Z.s=1;Z.x=Z.y=0;const ed=$('#ed');let inertia=0;
+const G=()=>{const a=[...tp.values()].filter(v=>v.x!=null);if(a.length<2)return null;return{d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2}};
+const FC=g=>{const r=ed.getBoundingClientRect();return[g.x-r.left-r.width/2,g.y-r.top-r.height/2]};
+ed.addEventListener('pointerdown',e=>{if(e.target.closest('.hud,.zc'))return;cancelAnimationFrame(inertia);
+ if(e.pointerType==='pen'){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);if(gst&&gst.id!==e.pointerId)gst=null;S.lp=Date.now();return}
+ if(e.pointerType!=='touch')return;
+ if(Date.now()-(S.lp||0)<700||(drawing&&S.pid!=null&&S.ptype==='pen'))return;
+ tp.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(tp.size===2){if(drawing||erasing||S.pid!=null)cancelDraw();const g=G();gst={m:'pinch',d0:g.d,F0:FC(g),z0:{...Z}}}
+ else if(tp.size===1&&(S.palm||S.tool==='pan'))panStart(e)});
+ed.addEventListener('pointermove',e=>{const t=tp.get(e.pointerId);if(!t)return;if(e.pointerType==='touch'){t.x=e.clientX;t.y=e.clientY}
+ if(!gst)return;
+ if(gst.m==='pinch'&&e.pointerType==='touch'){const g=G();if(!g)return;const k2=clamp(gst.z0.s*g.d/gst.d0,1,6),F=FC(g);Z.s=k2;Z.x=F[0]-(k2/gst.z0.s)*(gst.F0[0]-gst.z0.x);Z.y=F[1]-(k2/gst.z0.s)*(gst.F0[1]-gst.z0.y);applyZ()}
+ else if(gst.m==='pan'&&e.pointerId===gst.id){const dx=e.clientX-gst.x0,dy=e.clientY-gst.y0,n=Date.now(),dt=Math.max(1,n-gst.lt);gst.dx=dx;gst.dy=dy;gst.vx=(e.clientX-gst.lx)/dt;gst.vy=(e.clientY-gst.ly)/dt;gst.lx=e.clientX;gst.ly=e.clientY;gst.lt=n;if(Z.s>1.02){Z.x=gst.zx+dx;Z.y=gst.zy+dy;applyZ()}}});
+const end=e=>{if(!tp.has(e.pointerId))return;tp.delete(e.pointerId);
+ if(gst&&gst.m==='pan'&&e.pointerId===gst.id){const g=gst;gst=null;
+  if(Z.s>1.02){let vx=g.vx*16,vy=g.vy*16;if(Date.now()-g.lt<80&&Math.hypot(vx,vy)>3){const st=()=>{vx*=.93;vy*=.93;Z.x+=vx;Z.y+=vy;applyZ();if(Math.hypot(vx,vy)>.4)inertia=requestAnimationFrame(st)};inertia=requestAnimationFrame(st)}}
+  else if(S.flip&&e.pointerType==='touch'&&Date.now()-g.t0<500&&Math.abs(g.dx)>90&&Math.abs(g.dx)>Math.abs(g.dy)*1.8&&Date.now()-(S.lp||0)>1200&&(g.dx>0||S.i<S.pages.length-1))go(g.dx<0?1:-1)}
+ else if(gst&&gst.m==='pinch'&&tp.size<2)gst=null;
+ if(!tp.size)gst=null};
+ed.addEventListener('pointerup',end);ed.addEventListener('pointercancel',end);
+if(window._ge){removeEventListener('pointerup',window._ge);removeEventListener('pointercancel',window._ge)}window._ge=end;addEventListener('pointerup',end);addEventListener('pointercancel',end);if(!window._gb){window._gb=1;addEventListener('blur',()=>{tp.clear();gst=null})}
+ed.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)zoomTo(Z.s*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);else{Z.x-=e.deltaX;Z.y-=e.deltaY;applyZ()}},{passive:false})}
+
+// --- audio: dónde se guarda y cómo gestionarlo ---
+async function recToggle(){if(rec){rec.stop();return}
+if(!navigator.mediaDevices||!window.MediaRecorder)return toast('Este navegador no permite grabar audio');
+if(cur.audio&&!await dlg.c('Esta página ya tiene un audio. Grabar uno nuevo lo reemplaza.','Reemplazar'))return;
+try{const st=await navigator.mediaDevices.getUserMedia({audio:true}),ch=[],pg=cur,r=new MediaRecorder(st);rec=r;recPid=pg.id;r.ondataavailable=e=>e.data&&e.data.size&&ch.push(e.data);
+r.onstop=async()=>{clearInterval(rtv);st.getTracks().forEach(k=>k.stop());const dur=Math.round((Date.now()-t0)/1000),blob=new Blob(ch,{type:r.mimeType||'audio/mp4'});rec=null;
+ try{await db.audio.put({id:pg.id,nb:pg.notebookId,blob,mime:blob.type,dur,at:Date.now()});pg.audio=1;pg.updatedAt=Date.now();await db.pages.put(pg);toast('Audio guardado en este dispositivo · menú ⋯ → Audios del cuaderno')}catch(e){console.error(e);toast('No se pudo guardar el audio (poco espacio)')}tools()};
+t0=Date.now();r.start(1000);rtv=setInterval(()=>{const e=$('#rt');if(e)e.textContent=fmtT((Date.now()-t0)/1000)},500);tools();toast('🔴 Grabando: cada trazo queda ligado a este momento')}catch(e){rec=null;tools();toast('Sin permiso de micrófono')}}
+async function play(){if(aud){aud.pause();URL.revokeObjectURL(aud.src);aud=null;paint();return tools()}const r=await db.audio.get(cur.id);if(!r)return toast('Este audio no está en este dispositivo (los audios no se sincronizan)');aud=new Audio(URL.createObjectURL(r.blob));aud.onended=()=>{aud=null;paint();tools()};await aud.play();const iv=setInterval(()=>{if(!aud)return clearInterval(iv);paint()},200);tools()}
+const extOf=m=>/mp4|aac|m4a/.test(m||'')?'m4a':/ogg/.test(m||'')?'ogg':/wav/.test(m||'')?'wav':/mpeg|mp3/.test(m||'')?'mp3':'webm';
+const fmtMB=b=>b>1e6?(b/1e6).toFixed(1)+' MB':Math.max(1,Math.round(b/1e3))+' KB';
+async function audioModal(){const o=$('#m');o&&o.remove();const rows=[];for(const[k,p]of S.pages.entries()){if(!p.audio)continue;const a=await db.audio.get(p.id);if(a)rows.push({k,p,a,u:URL.createObjectURL(a.blob)})}
+let est='';try{if(navigator.storage&&navigator.storage.estimate){const e=await navigator.storage.estimate();est=`Este dispositivo usa ${fmtMB(e.usage)} de ${fmtMB(e.quota)} disponibles para Q-Notes.`}}catch(_){}
+const m=document.createElement('div');m.className='modal';m.id='m';const close=()=>{rows.forEach(r=>URL.revokeObjectURL(r.u));m.remove()};m.onclick=e=>{if(e.target===m)close()};
+m.innerHTML=`<div class="box"><h2>${ic('mic')} Audios de “${esc(S.nb.title)}”</h2><p class="mut" style="margin:0 0 14px;line-height:1.5;font-size:13px">Los audios se guardan <b>solo en este dispositivo</b> (almacenamiento interno del navegador), ligados a la página donde los grabaste. No se suben a la nube. Descárgalos aquí o incluye todo en el respaldo <b>.qnotes</b> desde el menú ⋯.<br>${esc(est)}</p>
+${rows.length?rows.map(r=>`<div class="arow"><div class="tl"><b>Página ${r.k+1}</b><span class="mut">${fmtT(r.a.dur||0)} · ${fmtMB(r.a.blob.size)} · ${new Date(r.a.at||Date.now()).toLocaleDateString()}</span></div><audio controls preload="none" src="${r.u}"></audio><div class="tl"><button data-go="${r.k}">Ir a la página</button><span style="display:flex;gap:6px"><button data-dl="${r.k}">${ic('dl')} Descargar</button><button class="chip dg" data-rm="${r.k}">Eliminar</button></span></div></div>`).join(''):`<div class="empty" style="padding:30px 10px">${ic('mic')}<h3>Aún no hay audios</h3><p>Toca 🎙 en la barra de herramientas y escribe mientras grabas.</p></div>`}
+<button style="width:100%;margin-top:8px" id="ac">Cerrar</button></div>`;document.body.appendChild(m);m.querySelector('#ac').onclick=close;
+m.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{close();S.i=+b.dataset.go;loadPage();tools()});
+m.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{const r=rows.find(x=>x.k==+b.dataset.dl),a=document.createElement('a');a.href=r.u;a.download=`${S.nb.title}-pag${r.k+1}.${extOf(r.a.mime||r.a.blob.type)}`;a.click()});
+m.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{const r=rows.find(x=>x.k==+b.dataset.rm);if(!await dlg.c('¿Eliminar este audio? No se puede deshacer.','Eliminar'))return;await db.audio.delete(r.p.id);r.p.audio=0;r.p.updatedAt=Date.now();await db.pages.put(r.p);if(aud&&r.p===cur){aud.pause();aud=null}close();tools();audioModal()})}
+
+// --- IA ---
 const AIA=[['convert','Convertir a texto'],['summary','Resumir'],['bullets','En viñetas'],['explain','Explicar o resolver'],['translate','Traducir (ES ⇄ EN)']];let AI_T='';
 const wrap=(t,n=48)=>t.split('\n').flatMap(l=>{const o=[];while(l.length>n){let k=l.lastIndexOf(' ',n);if(k<1)k=n;o.push(l.slice(0,k));l=l.slice(k).trim()}o.push(l);return o}).join('\n');
-function aiMenu(whole){if(!whole&&!(sel&&sel.box))return toast('Primero rodea algo con el lazo');const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:340px;display:flex;flex-direction:column;gap:8px"><h2 style="margin:0 0 6px">${ic('bolt')} IA · ${whole?'toda la página':'selección'}</h2>${AIA.map(([k,l])=>`<button style="justify-content:flex-start" onclick="$('#m').remove();aiRun('${k}',${whole})">${l}</button>`).join('')}<p class="mut" style="margin:6px 0 0;font-size:12px">Se envía una imagen de esto a la IA para procesarla.</p></div>`;document.body.appendChild(m)}
-async function aiRun(a,whole){if(!user||!sb)return toast('Inicia sesión en ⚙ para usar la IA');const c=document.createElement('canvas'),x=c.getContext('2d'),Z2=1.5;
+function aiMenu(whole){if(!user||!sb){toast('Inicia sesión en Ajustes para usar la IA');return cfgModal()}if(!whole&&!(sel&&sel.box))return toast('Primero selecciona algo con el lazo');const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:340px;display:flex;flex-direction:column;gap:8px"><h2 style="margin:0 0 6px">${ic('bolt')} IA · ${whole?'toda la página':'selección'}</h2>${AIA.map(([k,l])=>`<button style="justify-content:flex-start" onclick="$('#m').remove();aiRun('${k}',${whole})">${l}</button>`).join('')}<p class="mut" style="margin:6px 0 0;font-size:12px">Se envía una imagen de esto a la IA para procesarla.</p></div>`;document.body.appendChild(m)}
+async function aiCall(a,img,retry=1){const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Tu sesión expiró. Vuelve a iniciar sesión en Ajustes.');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),60000);
+try{const r=await fetch(CFG.url+'/functions/v1/ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:CFG.key},body:JSON.stringify({action:a,image:img,mime:'image/jpeg'})});let j=null;try{j=await r.json()}catch(_){}
+ if(!r.ok||(j&&j.error)){const e=new Error((j&&(j.error||j.msg||j.message))||('El servidor respondió '+r.status));e.status=r.status;throw e}return j}
+catch(e){if(e.name==='AbortError')throw new Error('La IA tardó demasiado en responder. Prueba con menos contenido.');if(e instanceof TypeError)throw new Error('No se pudo contactar a la IA. Revisa tu conexión a internet.');if(retry&&(e.status===502||e.status===503)){await new Promise(r=>setTimeout(r,1500));return aiCall(a,img,0)}throw e}finally{clearTimeout(to)}}
+function errBox(t,msg,retry){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:420px"><h2 style="margin:0">${esc(t)}</h2><p class="errb">${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="$('#m').remove()">Cerrar</button>${retry?'<button class="p" style="flex:1" id="rt2">Reintentar</button>':''}</div></div>`;document.body.appendChild(m);if(retry)m.querySelector('#rt2').onclick=()=>{m.remove();retry()}}
+async function aiRun(a,whole){if(!user||!sb)return toast('Inicia sesión en Ajustes para usar la IA');const c=document.createElement('canvas'),x=c.getContext('2d'),Z2=1.5;
 await Promise.all(cur.strokes.filter(k=>k.t==='i').map(k=>ld(k.s)));
 if(whole){c.width=W*Z2;c.height=H*Z2;x.scale(Z2,Z2);await new Promise(r=>drawPage(x,cur,r))}
 else{const b=sel.box,m=30,sx=Math.max(0,b[0]-m),sy=Math.max(0,b[1]-m),w=Math.min(W,b[2]+m)-sx,h=Math.min(H,b[3]+m)-sy;c.width=Math.max(80,w*Z2);c.height=Math.max(80,h*Z2);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.scale(Z2,Z2);x.translate(-sx,-sy);sel.idx.forEach(i=>stroke(x,cur.strokes[i]))}
-toast('✨ Pensando…');
-try{const{data,error}=await sb.functions.invoke('ai',{body:{action:a,image:c.toDataURL('image/png').split(',')[1]}});
-const msg=error?(await(error.context&&error.context.json?error.context.json().then(j=>j.error).catch(()=>null):null))||error.message:data.error;
-if(msg)return toast(msg);AI_T=data.text||'(sin resultado)';aiShow(data.left)}catch(e){toast('No se pudo contactar a la IA')}}
-function aiShow(left){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:520px"><h2 style="margin:0 0 12px">${ic('bolt')} Resultado</h2><div style="white-space:pre-wrap;max-height:50vh;overflow:auto;padding:14px;border-radius:14px;background:var(--grp);line-height:1.5">${esc(AI_T)}</div><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="navigator.clipboard&&navigator.clipboard.writeText(AI_T);toast('Copiado')">Copiar</button><button class="p" style="flex:2" onclick="aiIns()">Insertar en la página</button></div>${left!=null?`<p class="mut" style="margin:10px 0 0;font-size:12px">Te quedan ${left} consultas hoy.</p>`:''}</div>`;document.body.appendChild(m)}
-function aiIns(){const b=sel&&sel.box;commit({t:'x',c:S.color,w:2,p:[[b?b[0]:60,b?b[3]+24:80,.5]],s:wrap(AI_T)});$('#m').remove();toast('Insertado: usa ⬚ para moverlo')}
-async function clearPg(){if(!await dlg.c('¿Limpiar los trazos de esta página?','Limpiar'))return;S.undo.push(cur.strokes.slice());S.redo=[];cur.strokes=[];paint();save()}
+toast('✨ Pensando…');const img=c.toDataURL('image/jpeg',.85).split(',')[1];
+try{const d=await aiCall(a,img);AI_T=d.text||'(sin resultado)';aiShow(d.left)}catch(e){console.error(e);errBox('La IA no pudo responder',e.message||String(e),()=>aiRun(a,whole))}}
+function aiShow(left){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:520px"><h2 style="margin:0 0 12px">${ic('bolt')} Resultado</h2><div style="white-space:pre-wrap;max-height:50vh;overflow:auto;padding:14px;border-radius:14px;background:var(--grp);line-height:1.5;-webkit-user-select:text;user-select:text">${esc(AI_T)}</div><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="navigator.clipboard&&navigator.clipboard.writeText(AI_T);toast('Copiado')">Copiar</button><button class="p" style="flex:2" onclick="aiIns()">Insertar en la página</button></div>${left!=null?`<p class="mut" style="margin:10px 0 0;font-size:12px">Te quedan ${left} consultas hoy.</p>`:''}</div>`;document.body.appendChild(m)}
+function aiIns(){const b=sel&&sel.box;commit({t:'x',c:S.color,w:2,p:[[b?b[0]:60,b?b[3]+24:80,.5]],s:wrap(AI_T)});$('#m').remove();toast('Insertado: selecciónalo con el lazo para moverlo')}
+async function clearPg(){if(!await dlg.c('¿Limpiar los trazos de esta página?','Limpiar'))return;snapU();cur.strokes=[];sel=null;paint();save()}
 function exportPng(){const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const x=c.getContext('2d');x.scale(2,2);Promise.all(cur.strokes.filter(k=>k.t==='i').map(k=>ld(k.s))).then(()=>drawPage(x,cur,()=>c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(S.nb.title||'pagina')+'-'+(S.i+1)+'.png';a.click()})))}
-function addImg(e){const f=e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{const m=new Image();m.onload=()=>{const k=Math.min(1,1200/Math.max(m.width,m.height)),c=document.createElement('canvas');c.width=m.width*k;c.height=m.height*k;c.getContext('2d').drawImage(m,0,0,c.width,c.height);const u=c.toDataURL('image/jpeg',.85),w=Math.min(420,W-160),h=w*c.height/c.width;commit({t:'i',c:'#000',w,s:u,p:[[80,120],[80+w,120+h]]});toast('Imagen añadida: usa ⬚ para moverla o cambiar su tamaño')};m.src=r.result};r.readAsDataURL(f)}
+
+// --- imágenes: botón, galería, cámara, arrastrar y pegar ---
+function insertImage(f,n=0){return new Promise(res=>{const u=URL.createObjectURL(f),m=new Image();m.onerror=()=>{URL.revokeObjectURL(u);toast('No se pudo leer esa imagen');res()};
+m.onload=()=>{const k=Math.min(1,1600/Math.max(m.naturalWidth,m.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(m.naturalWidth*k);c.height=Math.round(m.naturalHeight*k);const x=c.getContext('2d');
+ const png=/png|webp|gif/.test(f.type)&&c.width*c.height<1.2e6;if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}x.drawImage(m,0,0,c.width,c.height);URL.revokeObjectURL(u);
+ const d=png?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.86),w=Math.min(W*.6,c.width),h=w*c.height/c.width,ed=$('#ed').getBoundingClientRect(),cp=pagePt(ed.left+ed.width/2,ed.top+ed.height/2),
+ x0=clamp(cp[0]-w/2+n*24,10,W-w-10),y0=clamp(cp[1]-h/2+n*24,10,H-h-10);
+ commit({t:'i',c:'#000',w,s:d,p:[[x0,y0],[x0+w,y0+h]]});S.tool='lasso';S.pop='';sel={idx:[cur.strokes.length-1],box:[x0,y0,x0+w,y0+h],act:null};tools();selDraw();res()};m.src=u})}
+async function addImg(e){const fs=[...e.target.files];e.target.value='';let n=0;for(const f of fs){await insertImage(f,n++)}if(fs.length)toast('Imagen añadida: arrástrala o tira de las esquinas para cambiar el tamaño')}
+async function dropFiles(e){e.preventDefault();const fs=[...(e.dataTransfer?.files||[])];let n=0;for(const f of fs){if(f.type.startsWith('image/'))await insertImage(f,n++);else if(f.type==='application/pdf')await importPdf({target:{files:[f],value:''}})}}
+addEventListener('paste',e=>{if(!S.nb||/INPUT|TEXTAREA/.test(e.target.tagName))return;const fs=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));if(!fs.length)return;e.preventDefault();let n=0;fs.reduce((p,f)=>p.then(()=>insertImage(f,n++)),Promise.resolve())});
+
+// --- páginas ---
 function renum(){S.pages.forEach((x,n)=>{if(x.n!==n+1){x.n=n+1;x.updatedAt=Date.now();db.pages.put(x)}})}
-function movePg(k,d){const j=k+d;if(j<0||j>=S.pages.length)return;const id=cur.id;[S.pages[k],S.pages[j]]=[S.pages[j],S.pages[k]];renum();S.i=S.pages.findIndex(p=>p.id===id);touchNb();pagesModal();$('#pn').textContent=`· pág ${S.i+1}/${S.pages.length}`}
-async function delPg(k){if(S.pages.length<2)return toast('Debe quedar al menos una página');if(!await dlg.c('¿Eliminar la página '+(k+1)+'?','Eliminar'))return;const p=S.pages.splice(k,1)[0];p.deleted=true;p.updatedAt=Date.now();db.pages.put(p);renum();S.i=Math.min(S.i,S.pages.length-1);touchNb();loadPage();pagesModal()}
-function pagesModal(){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.innerHTML='<div class="box" style="max-width:760px"><h2>Páginas</h2><div class="tg" id="th"></div><button style="width:100%;margin-top:14px" onclick="$(\'#m\').remove()">Cerrar</button></div>';document.body.appendChild(m);
-S.pages.forEach((pg,k)=>{const d=document.createElement('div');d.className=k===S.i?'on':'';const c=document.createElement('canvas');c.width=205;c.height=265;c.onclick=()=>{S.i=k;$('#m').remove();loadPage();tools()};const x=c.getContext('2d');x.scale(.25,.25);drawPage(x,pg,()=>{});d.append(c,k+1+' ');[['◀',-1],['▶',1]].forEach(([l,dd])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>movePg(k,dd);d.append(b)});const b=document.createElement('button');b.textContent='🗑';b.onclick=()=>delPg(k);d.append(b);$('#th').append(d)})}
-function zoom(){if(Z.s<=1.02)Z={s:1,x:0,y:0};$('#paper').style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`}
-function gest(){Z={s:1,x:0,y:0};const d=$('.ed'),G=e=>{const t=e.touches,dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return{d:Math.hypot(dx,dy)||1,x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2}};let g=null,z0;
-d.addEventListener('touchstart',e=>{if(e.touches.length===2){g=G(e);z0={...Z};drawing=null;lctx.clearRect(0,0,W,H)}},{passive:false});
-d.addEventListener('touchmove',e=>{if(g&&e.touches.length===2){e.preventDefault();const n=G(e);Z.s=Math.min(5,Math.max(1,z0.s*n.d/g.d));Z.x=z0.x+n.x-g.x;Z.y=z0.y+n.y-g.y;zoom()}},{passive:false});
-d.addEventListener('touchend',e=>{if(e.touches.length<2)g=null});
-d.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)Z.s=Math.min(5,Math.max(1,Z.s*(1-e.deltaY*.01)));else{Z.x-=e.deltaX;Z.y-=e.deltaY}zoom()},{passive:false})}
+function movePg(k,d){const j=k+d;if(j<0||j>=S.pages.length)return;const id=cur.id;[S.pages[k],S.pages[j]]=[S.pages[j],S.pages[k]];renum();S.i=S.pages.findIndex(p=>p.id===id);touchNb();pagesModal();hud()}
+async function delPg(k){if(S.pages.length<2)return toast('Debe quedar al menos una página');if(!await dlg.c('¿Eliminar la página '+(k+1)+'?','Eliminar'))return;const p=S.pages.splice(k,1)[0];p.deleted=true;p.updatedAt=Date.now();dirty.delete(p);db.pages.put(p);if(p.audio)db.audio.delete(p.id);renum();S.i=Math.min(S.i,S.pages.length-1);touchNb();loadPage();tools();pagesModal()}
+function pagesModal(){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};
+m.innerHTML='<div class="box" style="max-width:780px"><h2>Páginas</h2><div class="tg" id="th"></div><button style="width:100%;margin-top:14px" onclick="$(\'#m\').remove()">Cerrar</button></div>';document.body.appendChild(m);
+S.pages.forEach((pg,k)=>{const d=document.createElement('div');d.className=k===S.i?'on cur':'';const c=document.createElement('canvas');c.width=205;c.height=265;c.onclick=()=>{S.i=k;$('#m').remove();Z.s=1;Z.x=Z.y=0;applyZ();loadPage();tools()};const x=c.getContext('2d');x.scale(.25,.25);drawPage(x,pg,()=>{});d.append(c,k+1+' ');[['◀',-1],['▶',1]].forEach(([l,dd])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>movePg(k,dd);d.append(b)});const b=document.createElement('button');b.textContent='🗑';b.onclick=()=>delPg(k);d.append(b);$('#th').append(d)});
+const a=document.createElement('div');a.className='add';a.innerHTML=ic('plus');a.onclick=async()=>{S.i=S.pages.length-1;await addPage(false);$('#m').remove()};$('#th').append(a)}
+
+// ===== Supabase: cuenta + sincronización estable (sin bucles ni parpadeos) =====
+let chan=null,chanUid=null,syncT2=0,syncing=false,again=false,errN=0,retryT=0,rtQ={notebooks:[],pages:[]},rtT=0;const skip={};
+function syncSoon(){clearTimeout(syncT);syncT=setTimeout(sync,3500)}
+function setSync(s){S.syncState=s;setStat()}
+function shelfSoft(){const s=$('.shelf');if(!s||$('#m')||document.activeElement&&document.activeElement.id==='q')return;const t=s.scrollTop;shelf();const n=$('.shelf');if(n)n.scrollTop=t}
+function initSb(){if(!CFG.url||!CFG.key||!window.supabase)return;sb=supabase.createClient(CFG.url,CFG.key);
+sb.auth.onAuthStateChange((_ev,s)=>{const nu=s&&s.user||null,ch=(nu&&nu.id)!==(user&&user.id);user=nu;if(!ch)return setStat();setTimeout(()=>{if(user){startRt();sync()}else stopRt();setStat();shelfSoft()},0)})}
+function startRt(){if(!sb||!user||(chan&&chanUid===user.id))return;stopRt();chanUid=user.id;chan=sb.channel('qn-'+user.id.slice(0,8));
+for(const tb of['notebooks','pages'])chan.on('postgres_changes',{event:'*',schema:'public',table:tb,filter:'user_id=eq.'+user.id},p=>{if(p.new&&p.new.data){rtQ[tb].push(p.new);clearTimeout(rtT);rtT=setTimeout(flushRt,400)}});chan.subscribe()}
+function stopRt(){if(chan&&sb)try{sb.removeChannel(chan)}catch(_){}chan=null;chanUid=null}
+async function flushRt(){const q=rtQ;rtQ={notebooks:[],pages:[]};let c=0;for(const tb of['notebooks','pages'])c+=await applyRows(tb,q[tb]);if(c)await refreshUI()}
+async function applyRows(tb,rows){const st=tb==='pages'?db.pages:db.notebooks;let ch=0;
+for(const r of rows){const d=r.data;if(!d||!d.id)continue;const l=await st.get(d.id);if(l&&l.updatedAt>=d.updatedAt)continue;
+ if(tb==='pages'&&cur&&cur.id===d.id&&(drawing||erasing||S.pid!=null||dirty.has(cur)))continue;
+ await st.put(d);skip[d.id]=d.updatedAt;if(tb==='pages')delete imgs[d.id];ch++}return ch}
+// Actualiza la interfaz SOLO si algo cambió de verdad, sin recargar la página ni borrar lo que escribes
+async function refreshUI(){await loadNbs();
+if(S.nb){const n=await db.notebooks.get(S.nb.id);if(!n||n.deleted){toast('Este cuaderno fue eliminado desde otro dispositivo');return shelf()}S.nb=n;
+ const arr=(await db.pages.where('notebookId').equals(n.id).toArray()).filter(p=>!p.deleted).sort((a,b)=>a.n-b.n);if(!arr.length)return;
+ const cid=cur&&cur.id,nc=arr.find(p=>p.id===cid);let changed=false;
+ if(nc&&cur&&!drawing&&!erasing&&S.pid==null&&!dirty.has(cur)&&nc.updatedAt>cur.updatedAt){Object.assign(cur,nc);delete imgs[cur.id];changed=true}
+ S.pages=arr.map(p=>p.id===cid&&cur?cur:p);let i=S.pages.findIndex(p=>p.id===cid);if(i<0){i=Math.min(S.i,S.pages.length-1);S.i=i;cur=S.pages[i];changed=true}else S.i=i;
+ if(changed){S.undo=[];S.redo=[];sel=null;paint();ur()}hud();const t=$('#ttl');if(t)t.textContent=S.nb.title}
+else shelfSoft()}
+async function sync(){if(!sb||!user||!navigator.onLine)return;if(syncing){again=true;return}syncing=true;clearTimeout(retryT);const uid=user.id;
+try{const pk='qn_push_'+uid,old=localStorage['qn_last_'+uid];if(localStorage[pk]==null&&old){localStorage[pk]=old;localStorage['qn_pull_'+uid+'_notebooks']=old;localStorage['qn_pull_'+uid+'_pages']=old}
+ const last=+localStorage[pk]||0,fl=d=>skip[d.id]!==d.updatedAt;
+ const ln=(await db.notebooks.where('updatedAt').above(last).toArray()).filter(fl),lp=(await db.pages.where('updatedAt').above(last).toArray()).filter(fl);
+ if(ln.length||lp.length)setSync('sync');let mx=last;
+ if(ln.length){const{error}=await sb.from('notebooks').upsert(ln.map(d=>({id:d.id,user_id:uid,data:d,updated_at:d.updatedAt})));if(error)throw error;mx=Math.max(mx,...ln.map(d=>d.updatedAt))}
+ for(let k=0;k<lp.length;k+=6){const c=lp.slice(k,k+6),{error}=await sb.from('pages').upsert(c.map(d=>({id:d.id,user_id:uid,notebook_id:d.notebookId,data:d,updated_at:d.updatedAt})));if(error)throw error;mx=Math.max(mx,...c.map(d=>d.updatedAt))}
+ if(mx>last)localStorage[pk]=mx;
+ let changed=0;
+ for(const tb of['notebooks','pages']){const key='qn_pull_'+uid+'_'+tb;let from=+localStorage[key]||0;
+  for(;;){const{data,error}=await sb.from(tb).select('data,updated_at').eq('user_id',uid).gt('updated_at',from).order('updated_at',{ascending:true}).limit(30);if(error)throw error;if(!data.length)break;changed+=await applyRows(tb,data);from=Math.max(from,...data.map(r=>+r.updated_at||0));localStorage[key]=from;if(data.length<30)break}}
+ errN=0;setSync('ok');if(changed)await refreshUI()}
+catch(e){console.error(e);errN++;setSync('err');if(errN===1||errN%6===0)toast('No se pudo sincronizar ('+(e.message||e)+'). Se reintentará solo.');retryT=setTimeout(sync,Math.min(120000,6000*2**errN))}
+finally{syncing=false;if(again){again=false;syncSoon()}}}
+addEventListener('online',()=>{setStat();sync()});addEventListener('offline',setStat);
+
+// ===== Ajustes =====
+function cfgModal(){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};
+const sw=(on,f)=>`<span class="sw3"><input type="checkbox" ${on?'checked':''} onchange="${f}"><i></i></span>`;
+m.innerHTML=`<div class="box"><h2>Ajustes</h2>
+<h3>Cuenta</h3>${user?`<div class="set"><div><b>${esc(user.email)}</b><small>Tus cuadernos se sincronizan en la nube</small></div><button onclick="sb.auth.signOut();$('#m').remove()">Salir</button></div>`:`<p class="mut" style="margin:6px 0 10px;font-size:13px">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="correo" autocomplete="email"><input id="cp" type="password" placeholder="contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div>`}
+<h3>Escritura</h3>
+<div class="set"><div>Dibujar con el dedo<small>Apagado: solo el lápiz dibuja y el dedo mueve la página (1 dedo) o hace zoom (2 dedos)</small></div>${sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()")}</div>
+<div class="set"><div>Deslizar con un dedo para cambiar de página<small>Solo con la página a tamaño completo</small></div>${sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'")}</div>
+<div class="set"><div>Autoforma al mantener pulsado<small>Convierte tu trazo en línea, rectángulo o elipse si dejas el lápiz quieto. Apagado por defecto para no alterar tu letra</small></div>${sw(S.snap,"S.snap=this.checked;localStorage.qn_snap=S.snap?1:0")}</div>
+<div class="set"><div>Volver al lápiz al soltar el borrador</div>${sw(S.er.auto,"S.er.auto=+this.checked")}</div>
+<label>Estabilización del trazo</label><input type="range" min="0" max="80" value="${S.stab*100}" oninput="S.stab=this.value/100;localStorage.qn_stab=S.stab">
+<h3>Apariencia</h3><select onchange="setTheme(this.value)">${[['obsidiana','Obsidiana (oscuro + menta)'],['marfil','Marfil (claro)'],['ambar','Ámbar (oscuro cálido)']].map(([k,v])=>`<option value="${k}" ${(localStorage.qn_theme||'obsidiana')===k?'selected':''}>${v}</option>`).join('')}</select>
+<h3>Datos en este dispositivo</h3><p class="mut" id="stor" style="margin:6px 0;font-size:13px;line-height:1.5">Los cuadernos se guardan en el navegador de este dispositivo y, si inicias sesión, también en la nube. Los <b>audios solo viven en este dispositivo</b>: descárgalos desde “Audios del cuaderno” o con el respaldo .qnotes.</p>
+<details class="adv"><summary>Avanzado: conexión Supabase</summary><label>Project URL</label><input id="cu" value="${esc(CFG.url)}" placeholder="https://xxxx.supabase.co"><label>Anon key</label><input id="ck" value="${esc(CFG.key)}"><button style="margin-top:10px;width:100%" onclick="saveCfg()">Guardar y conectar</button></details>
+<button style="margin-top:16px;width:100%" onclick="$('#m').remove()">Cerrar</button></div>`;document.body.appendChild(m);
+try{navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(e=>{const el=$('#stor');if(el)el.innerHTML+=`<br>Usando <b>${fmtMB(e.usage)}</b> de ${fmtMB(e.quota)} disponibles.`})}catch(_){}}
+
+
 
 // ===== PDFs =====
 async function importPdf(e){const f=e.target.files[0];if(!f)return;toast('Importando PDF…');try{const pdf=await pdfjsLib.getDocument(new Uint8Array(await f.arrayBuffer())).promise,n=Math.min(pdf.numPages,80);let at=S.i;
@@ -333,30 +616,11 @@ async function exportPdf(){toast('Generando PDF…');await Promise.all(S.pages.f
 for(let k=0;k<S.pages.length;k++){const pg=S.pages[k],c=document.createElement('canvas');c.width=W*2;c.height=H*2;const x=c.getContext('2d');x.scale(2,2);await new Promise(r=>drawPage(x,pg,r));if(k)doc.addPage([W,H]);doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,W,H)}
 doc.save((S.nb.title||'cuaderno')+'.pdf');toast('PDF exportado ✔')}
 
-// ===== Supabase: auth + sync offline-first =====
-function initSb(){if(!CFG.url||!CFG.key||!window.supabase)return;sb=supabase.createClient(CFG.url,CFG.key);
-sb.auth.onAuthStateChange((_,s)=>{user=s?.user||null;const el=$('#stat');if(el)el.textContent=user?'☁ '+user.email:'Solo local';if(user){sync();sb.channel('qn').on('postgres_changes',{event:'*',schema:'public'},syncSoon).subscribe()}})}
-function syncSoon(){clearTimeout(syncT);syncT=setTimeout(sync,1500)}
-let syncing=false;
-async function sync(){if(!sb||!user||syncing||!navigator.onLine)return;syncing=true;const el=$('#stat');try{if(el)el.textContent='⟳ sincronizando…';const last=+localStorage['qn_last_'+user.id]||0,t0=Date.now()-1500;
-const ln=await db.notebooks.where('updatedAt').above(last).toArray(),lp=await db.pages.where('updatedAt').above(last).toArray();
-if(ln.length){const{error}=await sb.from('notebooks').upsert(ln.map(d=>({id:d.id,user_id:user.id,data:d,updated_at:d.updatedAt})));if(error)throw error}
-for(let k=0;k<lp.length;k+=10){const{error}=await sb.from('pages').upsert(lp.slice(k,k+10).map(d=>({id:d.id,user_id:user.id,notebook_id:d.notebookId,data:d,updated_at:d.updatedAt})));if(error)throw error}
-for(const[tb,st]of[['notebooks',db.notebooks],['pages',db.pages]]){const{data,error}=await sb.from(tb).select('data').gt('updated_at',last);if(error)throw error;for(const r of data){const l=await st.get(r.data.id);if(!l||l.updatedAt<r.data.updatedAt){await st.put(r.data);if(tb==='pages'){delete imgs[r.data.id]}}}}
-localStorage['qn_last_'+user.id]=t0;await loadNbs();
-if(S.nb){const n=await db.notebooks.get(S.nb.id);if(n&&!drawing){S.nb=n;const id=cur?.id;S.pages=(await db.pages.where('notebookId').equals(n.id).toArray()).filter(p=>!p.deleted).sort((a,b)=>a.n-b.n);S.i=Math.max(0,S.pages.findIndex(p=>p.id===id));loadPage();tools()}}else if($('.shelf'))shelf();
-if(el)el.textContent='☁ '+user.email}catch(e){console.error(e);if(el)el.textContent='⚠ error de sync';toast('Error de sincronización: '+(e.message||e))}finally{syncing=false}}
-function cfgModal(){const m=document.createElement('div');m.className='modal';m.id='m';m.innerHTML=`<div class="box"><h2>⚙ Supabase</h2><p class="mut">Ejecuta <b>schema.sql</b> en el SQL Editor de tu proyecto y pega aquí la URL y la clave <i>anon/publishable</i>.</p>
-<label>Project URL</label><input id="cu" value="${esc(CFG.url)}" placeholder="https://xxxx.supabase.co"><label>Anon key</label><input id="ck" value="${esc(CFG.key)}">
-<button style="margin-top:10px;width:100%" onclick="saveCfg()">Guardar y conectar</button>
-<label>Estabilización del trazo</label><input type="range" min="0" max="80" value="${S.stab*100}" oninput="S.stab=this.value/100;localStorage.qn_stab=S.stab"><label>Borrador</label><p><input type="checkbox" style="width:auto" ${S.er.hl?'checked':''} onchange="S.er.hl=+this.checked"> Borrar solo el resaltador</p><p><input type="checkbox" style="width:auto" ${S.er.auto?'checked':''} onchange="S.er.auto=+this.checked"> Volver a la pluma al soltar</p><label>Tema de color</label><select onchange="setTheme(this.value)">${[['obsidiana','Obsidiana (oscuro + menta)'],['marfil','Marfil (claro)'],['ambar','Ámbar (oscuro cálido)']].map(([k,v])=>`<option value="${k}" ${(localStorage.qn_theme||'obsidiana')===k?'selected':''}>${v}</option>`).join('')}</select><label>Cuenta</label>${user?`<p>Sesión: ${esc(user.email)}</p><button onclick="sb.auth.signOut();$('#m').remove()">Cerrar sesión</button>`:`<div class="row"><input id="ce" type="email" placeholder="correo"><input id="cp" type="password" placeholder="contraseña"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div>`}
-<button style="margin-top:14px;width:100%" onclick="$('#m').remove()">Cerrar</button></div>`;document.body.appendChild(m)}
 function saveCfg(){CFG.url=$('#cu').value.trim();CFG.key=$('#ck').value.trim();localStorage.qn_cfg=JSON.stringify(CFG);initSb();toast(sb?'Conectado, ahora inicia sesión':'Faltan datos')}
 async function auth(up){if(!sb)return toast('Guarda primero URL y clave');const a={email:$('#ce').value.trim(),password:$('#cp').value},{error}=up?await sb.auth.signUp(a):await sb.auth.signInWithPassword(a);if(error)return toast(error.message);toast(up?'Revisa tu correo si pide confirmación':'Sesión iniciada');$('#m').remove()}
-addEventListener('online',sync);
+// ===== Arranque =====
 
-// ===== Arranque / PWA =====
-(async()=>{const mf={name:'Q-Notes',short_name:'Q-Notes',display:'standalone',background_color:'#0b1020',theme_color:'#0b1020',start_url:'.',icons:[{src:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#4f8cff"/><text x="50" y="68" font-size="56" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">Q</text></svg>'),sizes:'any',type:'image/svg+xml'}]};
-const l=document.createElement('link');l.rel='manifest';l.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(mf));document.head.appendChild(l);
-await loadNbs();shelf();initSb();if(sb){const{data}=await sb.auth.getSession();if(data.session){user=data.session.user;sync()}}})();
+(async()=>{try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
+await loadNbs();shelf();initSb()})();
+
 </script></body></html>
