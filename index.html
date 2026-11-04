@@ -356,8 +356,9 @@ if(!fromPanel){const fw=$('#dfw').value,nt=$('#dnt').value.slice(0,400),a=$('#ds
 toast('🎨 Extrayendo colores, tipografías y espaciados…');window.AIX=devAix();
 try{const d=await aiCall('tokens',DEV.img.split(',')[1]);DEV.tk=d.text||'';DEV.tab='tk';devPanel()}catch(e){console.error(e);errBox('No se pudieron extraer los estilos',e.message||String(e),()=>devTokens(1))}finally{window.AIX=null}}
 const devAix=()=>({framework:DEV.fw,notes:DEV.nt,shapes:JSON.stringify(DEV.sh||[]).slice(0,3000),annotations:JSON.stringify(DEV.an||[]).slice(0,2000),colors:JSON.stringify(DEV.co||[]),tokens:(DEV.tk||'').slice(0,3500)});
+function extractCode(t){t=String(t||'');const m=t.match(/```[\w-]*[ \t]*\r?\n([\s\S]*?)```/);if(m)return m[1].trim();const o=t.match(/```[\w-]*[ \t]*\r?\n([\s\S]*)$/);return(o?o[1]:t).trim()}
 async function devRun(){toast('✨ Analizando el boceto y generando código…');window.AIX=devAix();
-try{const d=await aiCall('code',DEV.img.split(',')[1]),m=(d.text||'').match(/```[\w-]*\n([\s\S]*?)```/);DEV.code=(m?m[1]:d.text||'').trim();devPanel()}catch(e){console.error(e);errBox('No se pudo generar el código',e.message||String(e),devRun)}finally{window.AIX=null}}
+try{const d=await aiCall('code',DEV.img.split(',')[1]);DEV.code=extractCode(d.text);if(!DEV.code)throw new Error('La IA devolvió una respuesta vacía. Reintenta.');devPanel()}catch(e){console.error(e);errBox('No se pudo generar el código',e.message||String(e),devRun)}finally{window.AIX=null}}
 function hl(c){return esc(c).replace(/(&lt;!--[\s\S]*?--&gt;)|(&quot;(?:(?!&quot;)[\s\S])*&quot;)|(&lt;\/?[a-zA-Z][\w-]*)|\b(class|className|import|export|default|const|return|function|from|href|src|type|setup)\b/g,(m,a,b,t)=>`<i class="${a?'hc':b?'hs':t?'ht':'hk'}">${m}</i>`)}
 function devPanel(){let o=$('#dev');o&&o.remove();o=document.createElement('div');o.id='dev';o.className='dev';const pv=DEV.fw==='html'||DEV.fw==='css';
 o.innerHTML=`<div class="dh"><b>${ic('code')} ${esc((FW.find(f=>f[0]===DEV.fw)||[])[1]||'')}</b><span style="flex:1"></span><div class="seg"><button data-t="code">Código</button><button data-t="edit">Editar</button>${pv?'<button data-t="view">Vista previa</button>':''}${DEV.tk?'<button data-t="tk">Estilos</button>':''}</div><button data-a="copy">${ic('copy')} Copiar</button><button data-a="save">${ic('plus')} Guardar</button><button data-a="tk">🎨 Estilos</button><button data-a="re">Regenerar</button><button class="p" data-a="x">${ic('x')}</button></div><div class="db"><div class="dl"><img src="${DEV.img}"></div><div class="dr" id="dr"></div></div>`;document.body.appendChild(o);
@@ -580,10 +581,12 @@ if(t==='mm'){for(let k=0;k<=W;k+=10){c.lineWidth=k%50?.4:.9;L(k,0,k,H,k%50?'#f6c
 if(t==='iso'){for(let x=0;x<=W;x+=30)L(x,0,x,H,'#cfd8e6');for(let j=-16;j<H/34.64+16;j++){const y=j*34.64;L(0,y,W,y+W*.57735,'#cfd8e6');L(0,y,W,y-W*.57735,'#cfd8e6')}}
 if(t==='cornell'){for(let y=90;y<H-200;y+=34)L(40,y,W-40,y,bl);L(230,40,230,H-200,'#f4a3a3');L(40,H-200,W-40,H-200,'#94a3b8');c.fillStyle='#94a3b8';c.font='bold 13px sans-serif';c.fillText('Ideas clave',44,60);c.fillText('Apuntes',244,60);c.fillText('Resumen',44,H-176)}
 if(t==='planner'){c.fillStyle='#64748b';c.font='bold 14px sans-serif';const d=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],bh=(H-100)/4;d.forEach((n,k)=>{const x=40+(k%2)*370,y=60+Math.floor(k/2)*bh;c.strokeStyle='#cbd5e1';c.strokeRect(x,y,360,bh-12);c.fillText(n,x+10,y+20)});c.strokeRect(410,60+3*bh,360,bh-12);c.fillText('Notas',420,80+3*bh)}}
-function ld(u){let m=imc[u];if(m&&m.complete&&m.naturalWidth)return Promise.resolve(m);m=imc[u]||(imc[u]=new Image());return new Promise(r=>{m.onload=m.onerror=()=>r(m);if(!m.src)m.src=u})}
+const imb={};
+function bmp(u,m){if((u in imb)||!window.createImageBitmap||!m.naturalWidth)return;imb[u]=0;createImageBitmap(m).then(b=>{const k=Object.keys(imb).filter(x=>imb[x]);if(k.length>=24){try{imb[k[0]].close()}catch(_){}delete imb[k[0]]}imb[u]=b}).catch(()=>{delete imb[u]})}
+function ld(u){let m=imc[u];if(m&&m.complete&&m.src){bmp(u,m);return Promise.resolve(m)}m=imc[u]||(imc[u]=new Image());return new Promise(r=>{m.onload=()=>{bmp(u,m);r(m)};m.onerror=()=>r(m);if(!m.src)m.src=u})}
 function stroke(c,s){c.save();c.lineCap=c.lineJoin='round';c.strokeStyle=c.fillStyle=s.c;const p=s.p;
 if(s.t==='x'){c.font=`${s.w*5+10}px ${s.ff||'-apple-system,sans-serif'}`;c.textBaseline='top';s.s.split('\n').forEach((l,i)=>c.fillText(l,p[0][0],p[0][1]+i*(s.w*6+12)))}
-else if(s.t==='i'){const m=imc[s.s];if(m&&m.complete&&m.naturalWidth)c.drawImage(m,p[0][0],p[0][1],p[1][0]-p[0][0],p[1][1]-p[0][1]);else ld(s.s).then(()=>{if(c===bctx)paint()})}
+else if(s.t==='i'){const m=imc[s.s];if(imb[s.s])c.drawImage(imb[s.s],p[0][0],p[0][1],p[1][0]-p[0][0],p[1][1]-p[0][1]);else if(m&&m.complete&&m.naturalWidth){c.drawImage(m,p[0][0],p[0][1],p[1][0]-p[0][0],p[1][1]-p[0][1]);bmp(s.s,m)}else ld(s.s).then(()=>{if(c===bctx)paint()})}
 else if(s.t==='s'){const[a,b]=p;c.lineWidth=s.w;c.beginPath();if(s.k==='rect')c.rect(a[0],a[1],b[0]-a[0],b[1]-a[1]);else if(s.k==='ell')c.ellipse((a[0]+b[0])/2,(a[1]+b[1])/2,Math.abs(b[0]-a[0])/2||1,Math.abs(b[1]-a[1])/2||1,0,0,7);else{c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);if(s.k==='arr'){const g=Math.atan2(b[1]-a[1],b[0]-a[0]),h=14+s.w*2;[.45,-.45].forEach(d=>{c.moveTo(b[0],b[1]);c.lineTo(b[0]+h*Math.cos(g+Math.PI+d),b[1]+h*Math.sin(g+Math.PI+d))})}}if(s.f&&(s.k==='rect'||s.k==='ell')){c.globalAlpha=.25;c.fill();c.globalAlpha=1}c.stroke()}
 else if(s.t==='b')stroke0(c,{...s,p:p.map(a=>[a[0],a[1],.45])});
 else if(s.t==='br')stroke0(c,{...s,w:s.w*1.7,p:p.map(a=>[a[0],a[1],Math.min(1.5,a[2]*1.9)])});
@@ -596,7 +599,7 @@ const m=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let lw=s.w;
 for(let i=1;i<p.length;i++){lw=lw*.7+s.w*(.5+(p[i][2]+p[i-1][2])/2*1.1)*.3;const a=i>1?m(p[i-2],p[i-1]):p[0],e=i<p.length-1?m(p[i-1],p[i]):p[i];c.lineWidth=lw;c.beginPath();c.moveTo(a[0],a[1]);c.quadraticCurveTo(p[i-1][0],p[i-1][1],e[0],e[1]);c.stroke()}}
 function drawPage(c,pg,done){tpl(c,pg.template,pg.paper);const fin=()=>{[...pg.strokes.filter(s=>s.t==='h'),...pg.strokes.filter(s=>s.t!=='h')].forEach(s=>{if(aud&&pg===cur&&s.ts!=null&&s.ts/1000>aud.currentTime){c.save();c.globalAlpha=.12;stroke(c,s);c.restore()}else stroke(c,s)});done&&done()};
 if(!pg.bg)return fin();let im=imgs[pg.id];if(im&&im.complete){c.drawImage(im,0,0,W,H);return fin()}
-im=imgs[pg.id]=new Image();im.onload=()=>{if(c===bctx&&pg===cur)paint();else if(done){c.drawImage(im,0,0,W,H);fin()}};im.src=pg.bg}
+im=imgs[pg.id]=new Image();im.onload=()=>{if(c===bctx&&pg===cur)paint();else if(done){c.drawImage(im,0,0,W,H);fin()}};im.onerror=()=>{if(c!==bctx&&done)fin()};im.src=pg.bg}
 function paint(){bctx.clearRect(0,0,W,H);drawPage(bctx,cur)}
 
 // ===== Editor v2 =====
@@ -636,12 +639,18 @@ ed.addEventListener('dragover',e=>e.preventDefault());ed.addEventListener('drop'
 RO=new ResizeObserver(()=>fit());RO.observe(ed);
 fit();loadPage(false);tools();gest();setStat()}
 const RV={s:0,x:0,y:0};
+let dragC=null,dragR=0;
+function dragBuild(){if(!sel||!base)return null;const c=document.createElement('canvas');c.width=base.width;c.height=base.height;const x=c.getContext('2d');x.setTransform(bctx.getTransform());x.beginPath();x.rect(0,0,W,H);x.clip();drawPage(x,{...cur,strokes:cur.strokes.filter((_,i)=>!sel.idx.includes(i))});return c}
+function dragPaint(){dragR=0;if(!sel||(sel.act!=='mv'&&sel.act!=='rs'))return;if(!dragC||dragC.width!==base.width||dragC.height!==base.height)dragC=dragBuild();if(!dragC){paint();selDraw();return}
+ bctx.save();bctx.setTransform(1,0,0,1,0,0);bctx.clearRect(0,0,base.width,base.height);bctx.drawImage(dragC,0,0);bctx.restore();sel.idx.forEach(i=>cur.strokes[i]&&stroke(bctx,cur.strokes[i]));selDraw()}
+const dragPaintSoon=()=>{if(!dragR)dragR=requestAnimationFrame(dragPaint)};
+function dragEnd(){if(dragR){cancelAnimationFrame(dragR);dragR=0}dragC=null;paint()}
 /* Render nítido: los lienzos solo cubren la pantalla (+margen) y se redibujan en vectorial a la escala real */
-function viewRender(){if(!base||!live||!(V.cw>1))return;
+function viewRender(){if(!base||!live||!(V.cw>1))return;dragC=null;
  const dpr=Math.min(devicePixelRatio||1,3),px=Math.round(V.cw*.25),py=Math.round(V.ch*.25),cw=V.cw+2*px,ch=V.ch+2*py;
  let k=dpr;const MAXP=20e6;if(cw*ch*k*k>MAXP)k=Math.sqrt(MAXP/(cw*ch));
  const f=V.w0/W;
- for(const c of[base,live]){c.width=Math.round(cw*k);c.height=Math.round(ch*k);const st=c.style;st.width=cw+'px';st.height=ch+'px';st.left=-px+'px';st.top=-py+'px';st.transformOrigin=(px+V.cw/2)+'px '+(py+V.ch/2)+'px';st.transform='none'}
+ for(const c of[base,live]){const nw=Math.round(cw*k),nh=Math.round(ch*k),cx=c.getContext('2d');if(c.width!==nw||c.height!==nh){c.width=nw;c.height=nh}else if(cx.reset)cx.reset();else c.width=nw;const st=c.style;st.width=cw+'px';st.height=ch+'px';st.left=-px+'px';st.top=-py+'px';st.transformOrigin=(px+V.cw/2)+'px '+(py+V.ch/2)+'px';st.transform='none'}
  bctx=base.getContext('2d');lctx=live.getContext('2d');
  const a=f*Z.s*k,e=(px+V.cw/2+Z.x-V.w0*Z.s/2)*k,g=(py+V.ch/2+Z.y-V.h0*Z.s/2)*k;
  bctx.setTransform(a,0,0,a,e,g);lctx.setTransform(a,0,0,a,e,g);
@@ -650,7 +659,7 @@ function viewRender(){if(!base||!live||!(V.cw>1))return;
  if(cur)paint();if(sel&&sel.box)selDraw()}
 const viewStale=()=>RV.s&&(Math.abs(Z.s-RV.s)>1e-6||Math.abs(Z.x-RV.x)>.01||Math.abs(Z.y-RV.y)>.01);
 function viewPreview(){if(!RV.s||!base)return;const k=Z.s/RV.s,tx=Z.x-k*RV.x,ty=Z.y-k*RV.y,t=(Math.abs(k-1)<1e-6&&Math.abs(tx)<.01&&Math.abs(ty)<.01)?'none':`translate3d(${tx}px,${ty}px,0) scale(${k})`;base.style.transform=t;live.style.transform=t}
-function schedView(){if(S.vt)return;const d=Math.max(0,100-(Date.now()-(S.vr||0)));S.vt=setTimeout(()=>{S.vt=0;if(!viewStale())return;if(drawing||erasing||S.pid!=null){schedView();return}viewRender()},d)}
+function schedView(){clearTimeout(S.vt);const far=Math.abs(Z.x-RV.x)>V.cw*.2||Math.abs(Z.y-RV.y)>V.ch*.2||(RV.s&&Math.abs(Math.log(Z.s/RV.s))>.5),d=far?Math.max(0,300-(Date.now()-(S.vr||0))):160;S.vt=setTimeout(()=>{S.vt=0;if(!viewStale())return;if(drawing||erasing||S.pid!=null){schedView();return}viewRender()},d)}
 const pr=()=>$('#paper').getBoundingClientRect();
 function fit(){const ed=$('#ed'),p=$('#paper');if(!ed||!p)return;const r=ed.getBoundingClientRect(),pad=12;V.cw=r.width;V.ch=r.height;const s=Math.max(.05,Math.min((r.width-pad*2)/W,(r.height-pad*2)/H));V.w0=W*s;V.h0=H*s;p.style.width=V.w0+'px';p.style.height=V.h0+'px';{const nl=$('#nl');if(nl){nl.style.width=V.w0+'px';nl.style.height=V.h0+'px';nl.style.left=(V.cw-V.w0)/2+'px';nl.style.top=(V.ch-V.h0)/2+'px'}}applyZ();viewRender();const nw=$('#notes');if(nw)nw.style.transform=`scale(${V.w0/W})`}
 function clampZ(){Z.s=clamp(Z.s,1,8);const ex=(V.w0*Z.s-V.cw)/2,ey=(V.h0*Z.s-V.ch)/2,mx=ex>0?ex+80:0,my=ey>0?ey+80:0;Z.x=clamp(Z.x,-mx,mx);Z.y=clamp(Z.y,-my,my)}
@@ -729,15 +738,15 @@ if(T==='eraser'){erasing=true;snapU();S.edirty=0;return erase(q)}
 if(T==='text'){S.pid=null;dlg.t('Texto:').then(t=>{if(t)commit({t:'x',c:S.color,w:S.size,p:[q],s:t})});return}
 if(T==='lasso'){const b=sel&&sel.box;
  if(b){const bc=[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]],cs=[[b[0]-8,b[1]-8],[b[2]+8,b[1]-8],[b[2]+8,b[3]+8],[b[0]-8,b[3]+8]],hi=cs.findIndex(c=>Math.hypot(c[0]-q[0],c[1]-q[1])<hsz()*2.4);
-  if(hi>=0){snapU();sel.act='rs';sel.o=bc[(hi+2)%4];sel.q0=Math.max(8,Math.hypot(cs[hi][0]-sel.o[0],cs[hi][1]-sel.o[1]));sel.sn=sel.idx.map(i=>cur.strokes[i]);sel.b0=b.slice();return}
-  if(inBox(q,b,10)){snapU();sel.act='mv';sel.q=q;return}}
+  if(hi>=0){snapU();sel.act='rs';dragC=null;sel.o=bc[(hi+2)%4];sel.q0=Math.max(8,Math.hypot(cs[hi][0]-sel.o[0],cs[hi][1]-sel.o[1]));sel.sn=sel.idx.map(i=>cur.strokes[i]);sel.b0=b.slice();return}
+  if(inBox(q,b,10)){snapU();sel.act='mv';dragC=null;sel.q=q;return}}
  sel={a:q,b:q,act:'rect',idx:[]};return}
 const sh=T==='shape';drawing={t:sh?'s':{highlighter:'h',pencil:'l',ball:'b',brush:'br',call:'c'}[T]||'p',k:S.shape,f:S.fill,c:S.color,w:T==='highlighter'?S.size*1.6:S.size,p:sh?[q,q]:[q]};stroke(lctx,drawing)}
 function pmove(e){if(e.pointerType==='pen'||(e.pointerId===S.pid&&S.ptype==='pen'))S.lp=Date.now();if(e.pointerId!==S.pid)return;S.lm=Date.now();const q=pt(e),T=S.tool;
 if(T==='laser'){if(lzd)lzr.push([q[0],q[1],Date.now()]);return}
 if(T==='lasso'&&sel&&sel.act){
- if(sel.act==='mv'){const dx=q[0]-sel.q[0],dy=q[1]-sel.q[1];sel.q=q;xf(x=>({...x,p:x.p.map(a=>[a[0]+dx,a[1]+dy,...a.slice(2)])}));sel.box=sel.box.map((v,i)=>v+(i%2?dy:dx));paint()}
- else if(sel.act==='rs'){const f=clamp(Math.hypot(q[0]-sel.o[0],q[1]-sel.o[1])/sel.q0,.1,12),o=sel.o;cur.strokes=cur.strokes.map((x,i)=>{const k=sel.idx.indexOf(i);if(k<0)return x;const s0=sel.sn[k];return{...s0,w:s0.t==='x'?s0.w*f:s0.w,p:s0.p.map(a=>[o[0]+(a[0]-o[0])*f,o[1]+(a[1]-o[1])*f,...a.slice(2)])}});sel.box=sel.b0.map((v,i)=>o[i%2]+(v-o[i%2])*f);paint()}
+ if(sel.act==='mv'){const dx=q[0]-sel.q[0],dy=q[1]-sel.q[1];sel.q=q;xf(x=>({...x,p:x.p.map(a=>[a[0]+dx,a[1]+dy,...a.slice(2)])}));sel.box=sel.box.map((v,i)=>v+(i%2?dy:dx));dragPaintSoon();return}
+ else if(sel.act==='rs'){const f=clamp(Math.hypot(q[0]-sel.o[0],q[1]-sel.o[1])/sel.q0,.1,12),o=sel.o;cur.strokes=cur.strokes.map((x,i)=>{const k=sel.idx.indexOf(i);if(k<0)return x;const s0=sel.sn[k];return{...s0,w:s0.t==='x'?s0.w*f:s0.w,p:s0.p.map(a=>[o[0]+(a[0]-o[0])*f,o[1]+(a[1]-o[1])*f,...a.slice(2)])}});sel.box=sel.b0.map((v,i)=>o[i%2]+(v-o[i%2])*f);dragPaintSoon();return}
  else sel.b=q;selDraw();return}
 if(erasing){erase(q);return}if(!drawing)return;
 if(drawing.t==='s')drawing.p[1]=q;else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2]]:n)});
@@ -755,7 +764,7 @@ if(S.tool==='laser'){lzd=false;return}
 if(S.tool==='lasso'&&sel){if(sel.act==='rect'){const x1=Math.min(sel.a[0],sel.b[0]),x2=Math.max(sel.a[0],sel.b[0]),y1=Math.min(sel.a[1],sel.b[1]),y2=Math.max(sel.a[1],sel.b[1]);
   if(x2-x1<6&&y2-y1<6){const h=hitTap(sel.a);sel.idx=h>=0?[h]:[]}else sel.idx=selectRect(x1,y1,x2,y2);
   sel.box=unionBox(sel.idx);if(!sel.box)sel=null}
- else if(sel.act==='mv'||sel.act==='rs')save();
+ else if(sel.act==='mv'||sel.act==='rs'){dragEnd();save()}
  if(sel)sel.act=null;if(sel)selDraw();else lctx.clearRect(0,0,W,H);tools();return}
 if(erasing){erasing=false;lctx.clearRect(0,0,W,H);if(S.edirty){save();paint()}else{S.undo.pop();ur()}if(S.er.auto)pick(S.prev||'pen');return}
 if(!drawing)return;const d=drawing;drawing=null;if(d.p.length<2&&d.t!=='s')dbg('trazo de 1 punto',e0());snapU();if(rec&&cur.id===recPid)d.ts=Date.now()-t0;cur.strokes=[...cur.strokes,d];if(d.t==='h')paint();else stroke(bctx,d);lctx.clearRect(0,0,W,H);save()}
@@ -905,10 +914,10 @@ m.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{const r=rows.find
 const AIA=[['convert','Convertir a texto'],['summary','Resumir'],['bullets','En viñetas'],['explain','Explicar o resolver'],['translate','Traducir (ES ⇄ EN)'],['latex','Fórmulas a LaTeX']];let AI_T='',AI_A='';const FONTS=[['-apple-system,sans-serif','Moderna'],['Georgia,serif','Serif'],['ui-monospace,Menlo,monospace','Mono'],['Snell Roundhand,Apple Chancery,cursive','Cursiva']];
 const wrap=(t,n=48)=>t.split('\n').flatMap(l=>{const o=[];while(l.length>n){let k=l.lastIndexOf(' ',n);if(k<1)k=n;o.push(l.slice(0,k));l=l.slice(k).trim()}o.push(l);return o}).join('\n');
 function aiMenu(whole){if(!user||!sb){toast('Inicia sesión en Ajustes para usar la IA');return cfgModal()}if(!whole&&!(sel&&sel.box))return toast('Primero selecciona algo con el lazo');const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:340px;display:flex;flex-direction:column;gap:8px"><h2 style="margin:0 0 6px">${ic('bolt')} IA · ${whole?'toda la página':'selección'}</h2>${AIA.map(([k,l])=>`<button style="justify-content:flex-start" onclick="$('#m').remove();aiRun('${k}',${whole})">${l}</button>`).join('')}<p class="mut" style="margin:6px 0 0;font-size:12px">Se envía una imagen de esto a la IA para procesarla.</p></div>`;document.body.appendChild(m)}
-async function aiCall(a,img,retry=1){const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Tu sesión expiró. Vuelve a iniciar sesión en Ajustes.');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),100000);
+async function aiCall(a,img,retry=1){const tS=Date.now();const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Tu sesión expiró. Vuelve a iniciar sesión en Ajustes.');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),(a==='code'||a==='tokens')?150000:100000);
 try{const r=await fetch(CFG.url+'/functions/v1/ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:CFG.key},body:JSON.stringify({action:a,image:img,mime:'image/jpeg',...(window.AIX||{})})});let j=null;try{j=await r.json()}catch(_){}
  if(!r.ok||(j&&j.error)){const e=new Error((j&&(j.error||j.msg||j.message))||('El servidor respondió '+r.status));e.status=r.status;throw e}return j}
-catch(e){if(e.name==='AbortError')throw new Error('La IA tardó demasiado en responder. Prueba con menos contenido.');if(e instanceof TypeError)throw new Error('No se pudo contactar a la IA. Revisa tu conexión a internet.');if(retry&&(e.status===502||e.status===503)){await new Promise(r=>setTimeout(r,1500));return aiCall(a,img,0)}throw e}finally{clearTimeout(to)}}
+catch(e){if(e.name==='AbortError')throw new Error('La IA tardó demasiado en responder. Prueba con menos contenido.');if(e instanceof TypeError)throw new Error('No se pudo contactar a la IA. Revisa tu conexión a internet.');if(retry&&(e.status===502||e.status===503)&&Date.now()-tS<25000){await new Promise(r=>setTimeout(r,1500));return aiCall(a,img,0)}throw e}finally{clearTimeout(to)}}
 function errBox(t,msg,retry){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:420px"><h2 style="margin:0">${esc(t)}</h2><p class="errb">${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="$('#m').remove()">Cerrar</button>${retry?'<button class="p" style="flex:1" id="rt2">Reintentar</button>':''}</div></div>`;document.body.appendChild(m);if(retry)m.querySelector('#rt2').onclick=()=>{m.remove();retry()}}
 async function aiRun(a,whole){if(!user||!sb)return toast('Inicia sesión en Ajustes para usar la IA');const c=document.createElement('canvas'),x=c.getContext('2d'),Z2=1.5;
 await Promise.all(cur.strokes.filter(k=>k.t==='i').map(k=>ld(k.s)));

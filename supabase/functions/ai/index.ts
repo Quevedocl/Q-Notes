@@ -28,6 +28,7 @@ function codeTask(fw: string, notes: string, shapes: string, annotations: string
     (notes ? `\nPreferencias del usuario: ${notes.slice(0, 400)}` : '') +
     (annotations ? `\nAnotaciones del diseñador (Post-its, con su posición en % de la página): ${annotations.slice(0, 2000)}\nInterpreta cada anotación como una INTENCIÓN: (1) si describe un comportamiento o animación (hover, efecto dock, zoom, modal, scroll, transición, menú), impleméntalo con clases de Tailwind (p. ej. transition-all duration-300 hover:scale-110) o con un bloque <script> de JavaScript/GSAP listo para funcionar (en HTML, carga GSAP desde https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js); (2) si describe datos o lógica de backend (por ejemplo una lista conectada a Supabase), conviértela en un comentario TODO limpio junto al elemento (<!-- TODO: ... --> en HTML, // TODO: en JS, {/* TODO: ... */} en JSX). Una flecha con texto en el boceto señala el elemento al que apunta; los Post-its también aparecen dibujados en la imagen junto al elemento que anotan.` : '') +
     (tokens ? `\nUsa exactamente estos design tokens (variables CSS y colores de Tailwind) en lugar de inventar colores: ${tokens.slice(0, 3500)}` : '');
+}
 
 function tokenTask(colors: string, shapes: string, annotations: string, notes: string) {
   return `Analiza este boceto de diseño hecho a mano y extrae sus DESIGN TOKENS. Observa los colores realmente usados (fondos, bloques rellenos, acentos para botones, trazos), el contraste y la jerarquía visual, y lee cualquier nota escrita sobre tipografías, espaciados o estilo. Devuelve EXACTAMENTE dos bloques de código markdown y nada más: (1) un bloque css con :root { ... } que defina variables semánticas (--color-primary, --color-surface, --color-background, --color-accent, --color-text, --color-muted, --color-border, más las que apliquen) en HEX, --font-sans / --font-mono si hay pistas, --radius-* y una escala de espaciado aproximada --space-1..--space-8 inferida del tamaño relativo de las cajas (asume una página de 820 px de ancho); (2) un bloque js con un tailwind.config.js completo (module.exports con content y theme.extend: colors primary/surface/accent/etc., spacing, borderRadius, fontFamily). Los colores deben ser los del boceto, ajustados a tonos limpios y coherentes; si falta alguno, completa con una paleta armónica.` +
@@ -35,7 +36,6 @@ function tokenTask(colors: string, shapes: string, annotations: string, notes: s
     (shapes ? `\nFormas detectadas (% de la página): ${shapes.slice(0, 2500)}` : '') +
     (annotations ? `\nNotas del diseñador: ${annotations.slice(0, 1500)}` : '') +
     (notes ? `\nPreferencias del usuario: ${notes.slice(0, 400)}` : '');
-}
 }
 
 const TASKS: Record<string, string> = {
@@ -64,7 +64,7 @@ function textTask(action: string, today: string, classDate: string): string {
 }
 
 type Media = { data: string; mime: string };
-type Opts = { sys: string; maxOut: number; timeout: number; json?: boolean };
+type Opts = { sys: string; maxOut: number; timeout: number; total?: number; json?: boolean };
 
 class AIError extends Error {
   constructor(msg: string, public status = 502) { super(msg); }
@@ -105,12 +105,16 @@ async function viaGemini(key: string, media: Media | null, prompt: string, o: Op
   let quota = false;
   const started = Date.now();
   for (const model of models()) {
-    if (Date.now() - started > o.timeout * 0.9 && model !== models()[0]) break; // no encadenar modelos pasado el tiempo útil
+    const deadline = started + (o.total || o.timeout * 2);
+    if (deadline - Date.now() < 8000 && model !== models()[0]) break; // no encadenar modelos sin tiempo útil
     for (let attempt = 0; attempt < 2; attempt++) {
+      const left = deadline - Date.now();
+      if (left < 5000 && !(model === models()[0] && attempt === 0)) break;
+      const oo = { ...o, timeout: Math.max(5000, Math.min(o.timeout, left)) };
       let res;
       try {
-        res = await gemini(key, model, true, media, prompt, o);
-        if (!res.ok && res.status === 400) res = await gemini(key, model, false, media, prompt, o); // modelo sin "thinkingBudget"
+        res = await gemini(key, model, true, media, prompt, oo);
+        if (!res.ok && res.status === 400) res = await gemini(key, model, false, media, prompt, oo); // modelo sin "thinkingBudget"
       } catch (e) {
         last = `${model}: ${(e as Error).name === 'AbortError' ? 'tiempo agotado' : (e as Error).message}`;
         console.error('gemini fetch', last);
@@ -200,7 +204,7 @@ Deno.serve(async (req: Request) => {
         : action === 'tokens'
           ? tokenTask(String(colors || ''), String(shapes || ''), String(annotations || ''), String(notes || ''))
           : TASKS[action];
-      o = { sys: big ? SYSTEM_CODE : SYSTEM, maxOut: big ? 16384 : 4096, timeout: big ? 60000 : 22000 };
+      o = { sys: big ? SYSTEM_CODE : SYSTEM, maxOut: big ? 16384 : 4096, timeout: big ? 90000 : 25000, total: big ? 135000 : 50000 };
     }
     const day = new Date().toISOString().slice(0, 10);
     const { data: row } = await admin.from('ai_usage').select('n').eq('user_id', uid).eq('day', day).maybeSingle();
