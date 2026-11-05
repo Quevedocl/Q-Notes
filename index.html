@@ -147,6 +147,32 @@ button:disabled{opacity:.35;pointer-events:none}
 #mn h6{margin:10px 8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 #mn button{padding:10px 12px;gap:12px;width:100%}#mn .ic{width:18px;height:18px;color:var(--mut)}
 #mn .mrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:2px}
+/* Fórmulas en resultados de IA */
+.aiout sup,.aiout sub{font-size:.7em;line-height:0}.aiout .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .2em;font-size:.92em}.aiout .fr>span{padding:0 .25em}.aiout .fr>span:first-child{border-bottom:1.5px solid currentColor}.aiout .sq{white-space:nowrap}.aiout .sqi{border-top:1.5px solid currentColor;padding:0 .12em}.aiout .rt{margin-right:-.15em}
+/* Ajustes (panel rediseñado) */
+.cfg{padding-top:0!important}
+.cfgh{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;margin:0 -24px 4px;padding:22px 24px 12px;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.cfgh h2{margin:0!important}
+.cfgx{width:36px;height:36px;padding:0;border-radius:50%;flex:none}.cfgx .ic{width:18px;height:18px}
+.box.cfg h3{margin:24px 4px 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.cfg .sl{background:var(--grp);border:1px solid var(--line);border-radius:18px;padding:0 16px}
+.cfg .sl.fm{padding:14px 16px 16px}.cfg .fm p{margin:0 0 4px;font-size:13px;line-height:1.45}.cfg .fm .row{margin:10px 0 0}
+.cfg .sl .set{padding:14px 0;border-bottom:1px solid var(--line)}.cfg .sl .set:last-child{border-bottom:0}
+.cfg .set>div:first-child{flex:1;min-width:0}.cfg .set>button,.cfg .set>.sw3{flex:none}
+.cfg .set small{line-height:1.4}
+.cfg .set.cstk{flex-direction:column;align-items:stretch;gap:8px}.cfg .set .cst{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.cfg .set .cst>div{min-width:0}
+.cfg .cval{flex:none;font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--tx);background:var(--hov);padding:3px 10px;border-radius:99px}
+.cfg .note{margin:0;padding:14px 0;font-size:13px;line-height:1.5;border-bottom:1px solid var(--line)}
+.cfg input:not([type=range]):not([type=checkbox]){background:var(--card);border:1px solid var(--line);border-radius:12px;height:44px;padding:0 12px}
+.cfg input.crg{-webkit-appearance:none;appearance:none;display:block;width:100%;height:28px;margin:0;padding:0;border:0;border-radius:0;background:none;cursor:pointer;touch-action:pan-y}
+.cfg input.crg::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(to right,var(--ac) var(--p,50%),var(--hov) var(--p,50%))}
+.cfg input.crg::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:#fff;border:0;box-shadow:0 2px 8px #0006,0 0 0 1px #0002}
+.cfg input.crg::-moz-range-track{height:6px;border-radius:99px;background:var(--hov)}.cfg input.crg::-moz-range-progress{height:6px;border-radius:99px;background:var(--ac)}
+.cfg input.crg::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 8px #0006,0 0 0 1px #0002}
+.cfg select.cs{-webkit-appearance:none;appearance:none;width:100%;height:46px;padding:0 40px 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a8f9c' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;cursor:pointer}
+.cfg details.adv{margin-top:20px;border:1px solid var(--line);border-radius:18px;padding:14px 16px;background:var(--grp)}.cfg details.adv summary{cursor:pointer;color:var(--mut);font-size:14px}.cfg details.adv[open] summary{margin-bottom:4px}
+.cfg .cfgdone{width:100%;height:48px;margin-top:20px;font-size:15px}
+@media(max-width:640px){.modal:has(.cfg){align-items:flex-end;padding:0}.box.cfg{max-width:none;border-radius:28px 28px 0 0;max-height:94dvh;padding-left:20px;padding-right:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}.cfgh{margin:0 -20px 4px;padding-left:20px;padding-right:20px}}
 /* Ajustes */
 .set{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}.set:last-child{border:0}
 .set small{display:block;color:var(--mut);font-size:12px;margin-top:2px;line-height:1.35}
@@ -345,7 +371,7 @@ nv=(t,k,l,c)=>`<button class="${S.tab===k&&(k!=='docs'||S.folder==='Todos')?'on'
 card=(n,i)=>`<div class="nb ${an}" style="--i:${i}" onclick="${tr?'':`openNb('${n.id}')`}">${coverHTML(n)}<div class="meta"><b>${esc(n.title)}</b><small>${ago(n.updatedAt)}${n.folder?' · '+esc(n.folder):''}${(n.tags||[]).map(t=>' #'+esc(t)).join('')}</small></div><div class="act" onclick="event.stopPropagation()">${tr?`<button title="Restaurar" onclick="restoreNb('${n.id}')">${ic('undo')}</button><span class="sp2"></span><button title="Borrar para siempre" onclick="permDel('${n.id}',1)">${ic('x')}</button>`:`<button class="${n.fav?'fv':''}" title="Favorito" onclick="fav('${n.id}')">${ic('star')}</button><span class="sp2"></span><button title="Duplicar" onclick="dupNb('${n.id}')">${ic('copy')}</button><button title="Editar" onclick="editNb('${n.id}')">${ic('pen')}</button><button title="Mover a la papelera" onclick="delNb('${n.id}')">${ic('trash')}</button>`}</div></div>`,
 ttl=tr?'Papelera':S.tab==='fav'?'Favoritos':S.tag?'#'+S.tag:S.folder==='Todos'?'Todos los cuadernos':S.folder.split('/').join(' › ');
 $('#app').innerHTML=`<header><button onclick="S.sbc=!S.sbc;shelf()" title="Panel lateral">${ic('side')}</button><span class="mark">${LOGO}</span><h1 style="flex:1"><span class="logo">Q-Notes</span></h1><label class="srch">${ic('search')}<input id="q" placeholder="Buscar cuadernos" value="${esc(S.q)}" oninput="S.q=this.value;shelf()"><kbd>⌘K</kbd></label><span class="pill2" id="stat"></span><button onclick="notesBoard()" title="Post-its">${ic('note')}</button><button onclick="cfgModal()" title="Ajustes">${ic('gear')}</button><button class="p" onclick="nuevoMenu()">${ic('plus')} Nuevo</button></header>
-<div class="lib ${S.sbc?'c':''}"><aside class="side">${nv('grid','docs','Documentos',S.nbs.length)}${nv('star','fav','Favoritos',S.nbs.filter(n=>n.fav).length)}${nv('trash','trash','Papelera',S.trash.length)}<button onclick="codeList()">${ic('code')}<span style="flex:1;text-align:left">Componentes</span></button><button onclick="tasksModal()">${ic('list')}<span style="flex:1;text-align:left">Pendientes</span><span class="mut">${pendCount()||''}</span></button><button onclick="searchAll()">${ic('search')}<span style="flex:1;text-align:left">Buscar en todo</span></button><button onclick="schedModal()">${ic('clock')}<span style="flex:1;text-align:left">Horario de clases</span></button><h6>Carpetas</h6>${folderTree(fs)}<button onclick="newFolder()">${ic('plus')}<span>Nueva carpeta</span></button>
+<div class="lib ${S.sbc?'c':''}"><aside class="side">${nv('grid','docs','Documentos',S.nbs.length)}${nv('star','fav','Favoritos',S.nbs.filter(n=>n.fav).length)}${nv('trash','trash','Papelera',S.trash.length)}<button onclick="codeList()">${ic('code')}<span style="flex:1;text-align:left">Componentes</span></button><button onclick="tasksModal()">${ic('list')}<span style="flex:1;text-align:left">Pendientes</span><span class="mut">${pendCount()||''}</span></button><button onclick="searchAll()">${ic('search')}<span style="flex:1;text-align:left">Buscar en todo</span></button><button onclick="askNotes()">${ic('bolt')}<span style="flex:1;text-align:left">Pregúntale a tus apuntes</span></button><button onclick="schedModal()">${ic('clock')}<span style="flex:1;text-align:left">Horario de clases</span></button><h6>Carpetas</h6>${folderTree(fs)}<button onclick="newFolder()">${ic('plus')}<span>Nueva carpeta</span></button>
 ${(()=>{const T=[...new Set(S.nbs.flatMap(n=>n.tags||[]))];return T.length?'<h6>Etiquetas</h6>'+T.map(t=>`<button class="${S.tag===t?'on':''}" onclick="S.tab='docs';S.folder='Todos';S.tag='${esc(t)}';shelf()"><i class="dotf" style="background:${hue(t)}"></i><span>#${esc(t)}</span></button>`).join(''):''})()}<div class="acct" onclick="cfgModal()"><i class="av">Q</i><div><b>Q-Notes</b><small>${S.nbs.filter(n=>n.fav).length} favorito${S.nbs.filter(n=>n.fav).length===1?'':'s'}</small></div></div></aside>
 <div class="shelf">${home?`<h1 class="gr">${gr}</h1><p class="mut" style="margin:0">${S.nbs.length} cuaderno${S.nbs.length>1?'s':''} · ${S.nbs.filter(n=>n.fav).length} favorito${S.nbs.filter(n=>n.fav).length===1?'':'s'}</p>
 <section class="hero ${an}"><div class="hc" onclick="openNb('${last.id}')">${coverHTML(last)}</div><div style="position:relative"><small>Continúa donde lo dejaste</small><h2>${esc(last.title)}</h2><p class="mut" style="margin:0 0 16px">Editado ${ago(last.updatedAt)}${last.folder?' · '+esc(last.folder):''}</p><button class="p" onclick="openNb('${last.id}')">Abrir cuaderno ${ic('br')}</button></div>
@@ -514,7 +540,7 @@ function freeY(){let m=40;for(const s of cur.strokes){try{const b=bbox(s);if(b&&
 function insText(t,pg){if(pg&&pg!==cur)return toast('Abre esa página para insertar el texto');if(S.ro)return toast('Estás en modo lectura');const y=freeY(),txt=wrap(t,52),h=txt.split('\n').length*24;commit({t:'x',c:S.color,w:2,p:[[44,y,.5]],s:txt});toast(y+h>H-30?'Insertado, pero se sale de la hoja: muévelo con el lazo':'Insertado: selecciónalo con el lazo para moverlo')}
 
 /* ---------- Estudiar con IA: apuntes, quiz, tarjetas, tareas ---------- */
-function pageText(pg){const o=[];if(pg.tr)pg.tr.segs.forEach(([s,t])=>o.push(`[${fmtH(s)}] ${t}`));if(pg.ocr)o.push('APUNTES MANUSCRITOS: '+pg.ocr);(pg.notes||[]).forEach(n=>n.t&&o.push('POST-IT: '+n.t));pg.strokes.filter(s=>s.t==='x'&&s.s).forEach(s=>o.push('TEXTO: '+s.s));return o.join('\n')}
+function pageText(pg){const o=[];if(pg.tr)pg.tr.segs.forEach(([s,t])=>o.push(`[${fmtH(s)}] ${t}`));if(pg.ocr)o.push('APUNTES MANUSCRITOS: '+pg.ocr);(pg.notes||[]).forEach(n=>n.t&&o.push('POST-IT: '+n.t));pg.strokes.filter(s=>s.t==='x'&&s.s).forEach(s=>o.push('TEXTO: '+txPlainAll(s.s)));return o.join('\n')}
 function studyMenu(){if(!cur)return;S.scope=S.scope||'pg';const b=(k,l,s)=>`<button style="justify-content:flex-start;text-align:left;flex-direction:column;align-items:flex-start;gap:2px" onclick="studyRun('${k}')"><b>${l}</b><small class="mut">${s}</small></button>`;
  mdlg(`<h2 style="margin:0 0 10px">${ic('bolt')} Estudiar con IA</h2><div class="seg" style="margin-bottom:12px"><button class="${S.scope==='pg'?'on':''}" onclick="S.scope='pg';studyMenu()">Esta página</button><button class="${S.scope==='nb'?'on':''}" onclick="S.scope='nb';studyMenu()">Todo el cuaderno</button></div><div style="display:flex;flex-direction:column;gap:8px">${b('classnotes','Apuntes y resumen','Resumen, puntos clave, definiciones y posibles preguntas')}${b('quiz','Quiz de práctica','8 preguntas de opción múltiple con explicación')}${b('cards','Tarjetas de estudio','Las mismas preguntas como flashcards')}${b('tasks','Detectar tareas y fechas','Tareas, entregas y exámenes que mencionó el profesor')}</div><p class="mut" style="font-size:12px;margin:12px 0 0">Usa la transcripción del audio, tus Post-its, textos y la letra que hayas indexado. Cada petición usa 1 consulta de IA.</p>`,420)}
 async function studyRun(kind,force){if(!needAI())return;const sc=S.scope==='nb';let text=sc?S.pages.map((p,i)=>{const t=pageText(p);return t?`=== Página ${i+1} ===\n${t}`:''}).filter(Boolean).join('\n\n'):pageText(cur);
@@ -554,6 +580,42 @@ async function tkClick(e){const b=e.target.closest('[data-a]');if(!b)return;cons
 function exportIcs(){const rows=allTasks().filter(t=>t.d&&!t.done);if(!rows.length)return toast('No hay pendientes con fecha');const z=s=>s.replace(/-/g,''),e2=s=>String(s).replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n'),o=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Q-Notes//ES','CALSCALE:GREGORIAN'];
  rows.forEach(t=>{const d2=new Date(t.d+'T00:00:00');d2.setDate(d2.getDate()+1);o.push('BEGIN:VEVENT','UID:'+t.id+'@qnotes','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z','DTSTART;VALUE=DATE:'+z(t.d),'DTEND;VALUE=DATE:'+z(isoD(d2)),'SUMMARY:'+e2(t.t+' ('+t.nbt+')'),'END:VEVENT')});o.push('END:VCALENDAR');qvDl(new Blob([o.join('\r\n')],{type:'text/calendar'}),'pendientes-qnotes.ics');toast('Calendario exportado')}
 
+/* ---------- Pregúntale a tus apuntes (RAG: búsqueda local + IA con citas) ---------- */
+const ASK={h:[],scope:'all',src:[],busy:0};
+const ASK_STOP=new Set('el la los las un una unos unas de del al en y o u que se su sus por para con sin sobre es son fue era ser dijo dijeron dice dicen profe profesor profesora clase clases me mi mis te lo le les mas como cual cuales cuando donde hay han si no ni pero muy ya este esta esto estos estas ese esa eso tema temas hablo hablaron explico dime cuentame sobre algo todo toda todos cosa cosas'.split(' '));
+async function askChunks(scope){const pages=(await db.pages.toArray()).filter(p=>!p.deleted&&(scope!=='nb'||!S.nb||p.notebookId===S.nb.id)),nbs=new Map(S.nbs.map(n=>[n.id,n])),C=[];
+ const add=(b,k,text,extra)=>{text=String(text||'').trim();if(text.length>=3)C.push({...b,...extra,k,text,f:fold(text)})};
+ nbs.forEach(n=>{if(scope==='nb'&&S.nb&&n.id!==S.nb.id)return;if(n.sum)add({nb:n.id,nbt:n.title},'Apuntes del cuaderno',n.sum.slice(0,2500))});
+ pages.sort((a,b)=>a.n-b.n).forEach(p=>{const n=nbs.get(p.notebookId);if(!n)return;const b={nb:p.notebookId,nbt:n.title,pid:p.id,pn:p.n};
+  if(p.tr&&p.tr.segs){let buf='',t0=0,first=true;const flush=()=>{if(buf){add(b,'Transcripción '+fmtH(t0),buf,{tr:1});buf=''}};p.tr.segs.forEach(([st,tx])=>{if(first||!buf){t0=st;first=false}buf+=(buf?' ':'')+tx;if(buf.length>520){flush();first=true}});flush()}
+  (p.notes||[]).forEach(x=>x.t&&add(b,'Post-it',x.t));
+  (p.strokes||[]).filter(s=>s.t==='x'&&s.s).forEach(s=>add(b,'Texto',txPlainAll(s.s)));
+  if(p.ocr){for(let o=0;o<p.ocr.length;o+=600)add(b,'Mi letra (IA)',p.ocr.slice(o,o+650))}
+  if(p.sum)add(b,'Apuntes de la página',p.sum.slice(0,2500))});
+ return C}
+function askTerms(q){return[...new Set(fold(q).split(/[^\p{L}\p{N}]+/u).filter(t=>t.length>=3&&!ASK_STOP.has(t)).map(t=>t.length>5?t.slice(0,5):t))]}
+function askRank(C,q){const T=askTerms(q);if(!T.length)return[];const N=C.length,df=T.map(t=>C.reduce((n,c)=>n+(c.f.includes(t)?1:0),0));
+ const sc=C.map(c=>{let s=0,hit=0;T.forEach((t,i)=>{if(!df[i])return;let m=0,p=-1;while(m<3&&(p=c.f.indexOf(t,p+1))>=0)m++;if(m){hit++;s+=Math.min(m,3)*(Math.log(1+N/df[i])+.5)}});return{c,s:s*(1+.35*hit)}}).filter(x=>x.s>0).sort((a,b)=>b.s-a.s);
+ return sc.slice(0,12).map(x=>x.c)}
+function askHtml(t,src){const used=[];let h=esc(t).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>').replace(/\[(\d{1,2})\]/g,(m,n)=>{const i=+n;if(!src[i-1])return m;if(!used.includes(i))used.push(i);return `<button class="chip" style="padding:0 7px;min-height:22px;font-size:12px;vertical-align:baseline" data-a="src" data-i="${i}">${i}</button>`});
+ used.sort((a,b)=>a-b);const list=used.map(i=>{const e=src[i-1];return `<div class="trw" style="cursor:pointer;padding:6px 8px" data-a="src" data-i="${i}"><span class="tx"><b>${i}</b> · ${esc(e.nbt||'')}${e.pn?' · pág. '+e.pn:''} · ${esc(e.k)}</span></div>`}).join('');
+ return h+(list?`<div class="trl" style="margin-top:10px"><small class="mut">Fuentes</small>${list}</div>`:'')}
+function askRender(){const w=$('#askm');if(!w)return;w.innerHTML=ASK.h.map(m=>m.r==='u'?`<div style="align-self:flex-end;max-width:86%;background:var(--acc,#2563eb);color:#fff;padding:9px 13px;border-radius:16px 16px 4px 16px;white-space:pre-wrap">${esc(m.t)}</div>`:`<div style="align-self:flex-start;max-width:94%;background:var(--grp);padding:10px 13px;border-radius:16px 16px 16px 4px;line-height:1.5;-webkit-user-select:text;user-select:text">${m.err?`<span class="errb">${esc(m.t)}</span>`:askHtml(m.t,m.src||[])}</div>`).join('')||`<p class="mut" style="margin:auto;text-align:center;font-size:13px;line-height:1.5">Pregunta sobre tus clases, por ejemplo:<br>«¿Qué dijo el profe sobre el examen?»<br>«¿Qué es el coeficiente de roce?»<br>Te respondo con tus transcripciones, Post-its y textos, e indico de qué página sale cada dato.</p>`;
+ if(ASK.busy)w.innerHTML+='<div class="mut" style="align-self:flex-start;padding:8px 12px">Buscando en tus apuntes…</div>';w.scrollTop=w.scrollHeight}
+function askNotes(){const m=mdlg(`<h2 style="margin:0 0 10px">${ic('bolt')} Pregúntale a tus apuntes</h2><div class="seg" style="margin-bottom:10px"><button id="as-all" onclick="ASK.scope='all';askNotes()">Todos los cuadernos</button><button id="as-nb" onclick="ASK.scope='nb';askNotes()" ${S.nb?'':'disabled'}>Este cuaderno</button></div><div id="askm" style="display:flex;flex-direction:column;gap:10px;height:46vh;overflow:auto;padding:2px"></div><form id="askf" style="display:flex;gap:8px;margin-top:10px"><input id="askq" placeholder="Escribe tu pregunta…" style="flex:1" autocomplete="off"><button class="p" type="submit">Preguntar</button></form><div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><button class="chip" onclick="ocrIndex()">Indexar mi letra con IA</button><button class="chip" onclick="ASK.h=[];askRender()">Limpiar chat</button><span class="mut" style="font-size:12px">Cada pregunta usa 1 consulta de IA.</span></div>`,640);
+ if(ASK.scope==='nb'&&!S.nb)ASK.scope='all';$(ASK.scope==='nb'?'#as-nb':'#as-all').classList.add('on');askRender();
+ m.querySelector('#askm').onclick=async e=>{const b=e.target.closest('[data-a="src"]');if(!b)return;const h=ASK.src[+b.dataset.i-1];if(!h)return;if(h.pid){await goNote(h.nb,h.pid);if(h.tr&&cur&&cur.tr)trModal(cur)}else{$('#m').remove();await openNb(h.nb)}};
+ m.querySelector('#askf').onsubmit=e=>{e.preventDefault();const i=$('#askq'),q=i.value.trim();if(q.length<3||ASK.busy)return;i.value='';askSend(q)};setTimeout(()=>{const i=$('#askq');i&&i.focus()},50)}
+async function askSend(q){if(!needAI())return;ASK.h.push({r:'u',t:q});ASK.busy=1;askRender();
+ try{const C=await askChunks(ASK.scope),prev=[...ASK.h].reverse().find((x,i)=>i>0&&x.r==='u'),T=askTerms(q);
+  let top=askRank(C,T.length<2&&prev?prev.t+' '+q:q);
+  if(!top.length){ASK.h.push({r:'a',t:C.length?'No encontré nada relacionado en tus apuntes. Si lo escribiste a mano, toca «Indexar mi letra con IA»; si es de una clase grabada, transcribe el audio primero (menú ⋯ → Transcripción).':'Aún no hay contenido que consultar: transcribe una clase o agrega Post-its, textos o letra indexada.',src:[]});ASK.busy=0;return askRender()}
+  let used=0;top=top.filter(c=>(used+=Math.min(c.text.length,700))<14000);ASK.src=top;
+  const ctx=top.map((c,i)=>`[${i+1}] Cuaderno «${c.nbt}»${c.pn?' · pág. '+c.pn:''} · ${c.k}\n${c.text.slice(0,700)}`).join('\n\n'),hist=ASK.h.slice(-7,-1).map(m=>(m.r==='u'?'Estudiante: ':'Asistente: ')+m.t.slice(0,300)).join('\n');
+  const d=await xCall({action:'ask',text:`PREGUNTA: ${q}\n\nHISTORIAL:\n${hist||'(sin historial)'}\n\nFUENTES:\n${ctx}`},80000);
+  ASK.h.push({r:'a',t:String(d.text||'').trim()||'No pude generar una respuesta.',src:top})}
+ catch(e){ASK.h.push({r:'a',t:e.message||String(e),err:1})}
+ ASK.busy=0;askRender()}
 /* ---------- Buscar en todo (transcripciones, Post-its, textos, letra indexada) ---------- */
 async function searchAll(){const m=mdlg(`<h2 style="margin:0 0 10px">${ic('search')} Buscar en todo</h2><input id="sq" placeholder="Palabra o frase… (transcripciones, Post-its, textos, letra indexada)" style="width:100%"><div id="sr" class="trl" style="margin-top:10px"></div><button class="chip" style="margin-top:10px" onclick="ocrIndex()">Indexar mi letra con IA</button> <span class="mut" style="font-size:12px">Permite buscar también lo que escribiste a mano.</span>`,620);
  const pages=(await db.pages.toArray()).filter(p=>!p.deleted),nbs=new Map(S.nbs.map(n=>[n.id,n])),IDX=[];
@@ -567,7 +629,7 @@ async function pageImg(pg){await Promise.all(pg.strokes.filter(k=>k.t==='i').map
 async function ocrIndex(){if(!needAI())return;const pages=(await db.pages.toArray()).filter(p=>!p.deleted&&(p.strokes||[]).some(s=>!['x','i','s','h'].includes(s.t))&&p.ocrN!==p.strokes.length);if(!pages.length)return toast('Todo tu manuscrito ya está indexado');const n=Math.min(pages.length,25);
  if(!await dlg.c(`Se analizarán ${n} de ${pages.length} páginas con IA (usa ${n} de tus consultas diarias). Después podrás buscar dentro de tu letra.`,'Indexar'))return;
  const bz=busyModal('Indexando tu letra…','0 / '+n);let ok=0;
- for(const p of pages.slice(0,n)){const pg=(S.nb&&S.pages.find(x=>x.id===p.id))||p;try{const d=await aiCall('convert',await pageImg(pg));pg.ocr=(d.text||'').slice(0,6000);pg.ocrN=pg.strokes.length;savePg(pg);ok++;const s=bz.querySelector('.sub');if(s)s.textContent=ok+' / '+n}catch(e){bz.remove();return errBox('Se detuvo la indexación','Se indexaron '+ok+' páginas. '+(e.message||e))}}
+ for(const p of pages.slice(0,n)){const pg=(S.nb&&S.pages.find(x=>x.id===p.id))||p;try{const d=await aiCall('convert',await pageImg(pg));pg.ocr=txPlainAll(normMath(d.text||'')).slice(0,6000);pg.ocrN=pg.strokes.length;savePg(pg);ok++;const s=bz.querySelector('.sub');if(s)s.textContent=ok+' / '+n}catch(e){bz.remove();return errBox('Se detuvo la indexación','Se indexaron '+ok+' páginas. '+(e.message||e))}}
  bz.remove();toast(`✔ ${ok} páginas indexadas`)}
 
 /* ---------- Horario de clases ---------- */
@@ -575,7 +637,20 @@ const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],sched=()=>{try{return J
 const tmin=s=>{const[a,b]=String(s||'0:0').split(':');return(+a||0)*60+(+b||0)};
 function nowClass(){const n=new Date(),d=n.getDay(),m=n.getHours()*60+n.getMinutes();return sched().find(c=>c.d===d&&m>=tmin(c.s)-10&&m<=tmin(c.e))||null}
 function classBanner(){document.querySelectorAll('#cb').forEach(e=>e.remove());const c=nowClass();if(!c||rec)return;const host=$('.shelf');if(!host)return;const d=document.createElement('div');d.id='cb';d.className='cbn';d.innerHTML=`<div><b>Clase ahora: ${esc(c.n||'Clase')}</b><small>${esc(c.s)}–${esc(c.e)}</small></div><button class="p" onclick="startClass('${esc(c.id)}')">Abrir y grabar</button>`;host.prepend(d)}
-async function startClass(id){const all=sched(),c=all.find(x=>x.id===id);if(!c)return;if(c.nb&&S.nbs.some(n=>n.id===c.nb))await openNb(c.nb);else{await quickNb(c.n||'Clase','lined');c.nb=S.nb.id;setSched(all)}}
+async function startClass(id){const all=sched(),c=all.find(x=>x.id===id);if(!c)return;if(rec)return toast('Ya hay una grabación en curso');
+ // 1) cuaderno del ramo (se crea la primera vez y se reutiliza después)
+ if(c.nb&&S.nbs.some(n=>n.id===c.nb))await openNb(c.nb);else{await quickNb(c.n||'Clase','lined');c.nb=S.nb.id;setSched(all)}
+ // 2) página de hoy, titulada con la fecha actual
+ const d=new Date(),key=isoD(d),lab=d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),title=lab.charAt(0).toUpperCase()+lab.slice(1);
+ let k=S.pages.findIndex(p=>p.cls===key);
+ if(k<0){const f=S.pages[0],fresh=S.pages.length===1&&!f.cls&&!f.audio&&!(f.strokes||[]).length;
+  if(!fresh){S.i=S.pages.length-1;await addPage()}
+  cur.cls=key;commit({t:'x',c:S.color,w:4,p:[[44,40,.5]],s:title});k=S.i}
+ else{S.i=k;loadPage();tools()}
+ const b=$('#cbar');b&&b.remove();
+ // 3) grabación automática
+ if(cur.audio){toast('Esta clase de hoy ya tiene audio: ábrelo desde el menú ⋯');return}
+ await recToggle()}
 function classBar(){const o=$('#cbar');o&&o.remove();const c=nowClass();if(!c||!S.nb||c.nb!==S.nb.id||rec||(cur&&cur.audio))return;const ed=$('#ed');if(!ed)return;const d=document.createElement('div');d.id='cbar';d.className='cbn fab';d.style.cssText='position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:7;width:max-content;max-width:92%';d.innerHTML=`<div><b>Es tu clase de ${esc(c.n||'')}</b></div><button class="p" onclick="this.parentNode.remove();recToggle()">🔴 Grabar clase</button><button onclick="this.parentNode.remove()">✕</button>`;ed.appendChild(d)}
 const _openNb=openNb;openNb=async function(){const r=await _openNb.apply(this,arguments);try{classBar()}catch(_){}return r};
 function schedModal(){const a=sched();mdlg(`<h2 style="margin:0 0 10px">${ic('clock')} Horario de clases</h2><p class="mut" style="margin:0 0 10px;font-size:13px">Cuando sea la hora, la biblioteca te muestra «Abrir y grabar» y el cuaderno te ofrece empezar a grabar con un toque. (Se guarda solo en este dispositivo.)</p><div style="max-height:46vh;overflow:auto">${a.map(c=>`<div class="srow"><select onchange="schedSet('${c.id}','d',+this.value)">${DAYS.map((x,i)=>`<option value="${i}" ${c.d===i?'selected':''}>${x}</option>`).join('')}</select><input type="time" value="${esc(c.s)}" onchange="schedSet('${c.id}','s',this.value)"><input type="time" value="${esc(c.e)}" onchange="schedSet('${c.id}','e',this.value)"><input value="${esc(c.n||'')}" placeholder="Materia" onchange="schedSet('${c.id}','n',this.value)"><select onchange="schedSet('${c.id}','nb',this.value)"><option value="">Cuaderno nuevo</option>${S.nbs.map(n=>`<option value="${n.id}" ${c.nb===n.id?'selected':''}>${esc(n.title)}</option>`).join('')}</select><button class="ti" onclick="schedDel('${c.id}')">✕</button></div>`).join('')||'<p class="mut">Aún no tienes clases.</p>'}</div><button class="p" style="width:100%;margin-top:12px" onclick="schedAdd()">Añadir clase</button>`,640)}
@@ -585,7 +660,7 @@ function schedDel(id){setSched(sched().filter(x=>x.id!==id));schedModal()}
 
 /* ---------- Exportar Markdown ---------- */
 function exportMd(){const nb=S.nb,o=['# '+nb.title,''];if(nb.sum)o.push('## Resumen del cuaderno','',nb.sum.replace(/^## /gm,'### '),'');
- S.pages.forEach((pg,i)=>{const t=[];if(pg.sum)t.push(pg.sum.replace(/^## /gm,'### '),'');const tx=pg.strokes.filter(s=>s.t==='x'&&s.s).map(s=>s.s);if(tx.length)t.push('**Texto**','',tx.join('\n\n'),'');if(pg.ocr)t.push('**Mi letra (IA)**','',pg.ocr,'');(pg.notes||[]).filter(n=>n.t).forEach(n=>t.push('> '+n.t.replace(/\n/g,'\n> '),''));
+ S.pages.forEach((pg,i)=>{const t=[];if(pg.sum)t.push(pg.sum.replace(/^## /gm,'### '),'');const tx=pg.strokes.filter(s=>s.t==='x'&&s.s).map(s=>txPlainAll(s.s));if(tx.length)t.push('**Texto**','',tx.join('\n\n'),'');if(pg.ocr)t.push('**Mi letra (IA)**','',pg.ocr,'');(pg.notes||[]).filter(n=>n.t).forEach(n=>t.push('> '+n.t.replace(/\n/g,'\n> '),''));
   if(pg.tr){t.push('**Transcripción**','');pg.tr.segs.forEach(([s,x],k)=>t.push((lostHit(pg,k)?'- 🚩 ':'- ')+'`'+fmtH(s)+'` '+x));t.push('')}if(t.length)o.push('## Página '+(i+1),'',...t)});
  if((nb.tasks||[]).length){o.push('## Pendientes','');nb.tasks.forEach(t=>o.push(`- [${t.done?'x':' '}] ${t.t}${t.d?' ('+t.d+')':''} — ${t.k}`))}
  qvDl(new Blob([o.join('\n')],{type:'text/markdown'}),(nb.title||'cuaderno')+'.md');toast('Markdown exportado')}
@@ -666,7 +741,7 @@ stop:'<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>',
 cu:'<path d="M7 14l5-5 5 5"/>',cd:'<path d="M7 10l5 5 5-5"/>',
 eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
 copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>'});
-Object.assign(S,{dbgOn:localStorage.qn_dbg==='1',snap:localStorage.qn_snap==='1',flip:localStorage.qn_flip!=='0',esz:+localStorage.qn_esz||14,emode:localStorage.qn_emode||'part',dtop:localStorage.qn_dtop==='1',dmin:localStorage.qn_dmin==='1',syncState:'',res:0,dpos:JSON.parse(localStorage.qn_dpos||'null'),bpos:JSON.parse(localStorage.qn_bpos||'null'),dai:1});
+Object.assign(S,{dbgOn:localStorage.qn_dbg==='1',snap:localStorage.qn_snap==='1',scr:localStorage.qn_scr!=='0',flip:localStorage.qn_flip!=='0',esz:+localStorage.qn_esz||14,emode:localStorage.qn_emode||'part',dtop:localStorage.qn_dtop==='1',dmin:localStorage.qn_dmin==='1',syncState:'',res:0,dpos:JSON.parse(localStorage.qn_dpos||'null'),bpos:JSON.parse(localStorage.qn_bpos||'null'),dai:1});
 const PENS=[['pen','Pluma fuente'],['ball','Bolígrafo'],['brush','Pincel'],['call','Caligrafía'],['pencil','Lápiz'],['highlighter','Resaltador']];
 const POPT=new Set(['title','fill','pen','ball','brush','call','pencil','highlighter','eraser','shape','text','lasso']);
 const Z={s:1,x:0,y:0},V={w0:1,h0:1,cw:1,ch:1},tp=new Map(),dirty=new Set();
@@ -853,7 +928,27 @@ if(S.tool==='lasso'&&sel){if(sel.act==='rect'){const x1=Math.min(sel.a[0],sel.b[
  else if(sel.act==='mv'||sel.act==='rs'){dragEnd();save()}
  if(sel)sel.act=null;if(sel)selDraw();else lctx.clearRect(0,0,W,H);tools();return}
 if(erasing){erasing=false;lctx.clearRect(0,0,W,H);if(S.edirty){save();paint()}else{S.undo.pop();ur()}if(S.er.auto)pick(S.prev||'pen');return}
-if(!drawing)return;const d=drawing;drawing=null;if(d.p.length<2&&d.t!=='s')dbg('trazo de 1 punto',e0());snapU();if(rec&&cur.id===recPid)d.ts=Date.now()-t0;cur.strokes=[...cur.strokes,d];if(d.t==='h')paint();else stroke(bctx,d);lctx.clearRect(0,0,W,H);save();if(S.tool==='title')titleQ(d)}
+if(!drawing)return;const d=drawing;drawing=null;if(S.scr&&S.tool!=='title'&&scribbleErase(d)){lctx.clearRect(0,0,W,H);return}if(d.p.length<2&&d.t!=='s')dbg('trazo de 1 punto',e0());snapU();if(rec&&cur.id===recPid)d.ts=Date.now()-t0;cur.strokes=[...cur.strokes,d];if(d.t==='h')paint();else stroke(bctx,d);lctx.clearRect(0,0,W,H);save();if(S.tool==='title')titleQ(d)}
+// --- Borrar rayando: un zigzag rápido sobre texto/dibujo lo borra ---
+function isScribble(P){if(P.length<12)return null;const R=resamplePath(P,90);if(!R||R.len<110)return null;const Q=R.pts,xs=Q.map(v=>v[0]),ys=Q.map(v=>v[1]),x1=Math.min(...xs),x2=Math.max(...xs),y1=Math.min(...ys),y2=Math.max(...ys),w=x2-x1,h=y2-y1,diag=Math.hypot(w,h);
+ if(diag<28||R.len/diag<2.4)return null; // un zigzag recorre mucho más que su diagonal
+ // eje principal (PCA) y cambios de sentido a lo largo de él
+ const mx=xs.reduce((a,v)=>a+v,0)/Q.length,my=ys.reduce((a,v)=>a+v,0)/Q.length;let sxx=0,syy=0,sxy=0;for(const q of Q){const dx=q[0]-mx,dy=q[1]-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy}
+ const th=.5*Math.atan2(2*sxy,sxx-syy),c=Math.cos(th),s=Math.sin(th),U=Q.map(q=>(q[0]-mx)*c+(q[1]-my)*s),V=Q.map(q=>-(q[0]-mx)*s+(q[1]-my)*c);
+ const cnt=A=>{const rg=Math.max(...A)-Math.min(...A),thr=Math.max(4,rg*.18);let n=0,dir=0,ext=A[0];for(let i=1;i<A.length;i++){const v=A[i];if(!dir){if(Math.abs(v-ext)>thr){dir=v>ext?1:-1;ext=v}}else if(dir>0){if(v>ext)ext=v;else if(ext-v>thr){n++;dir=-1;ext=v}}else{if(v<ext)ext=v;else if(v-ext>thr){n++;dir=1;ext=v}}}return n};
+ const rev=Math.max(cnt(U),cnt(V));if(rev<4)return null;
+ return[x1,y1,x2,y2]}
+function scribbleErase(d){if(!d||d.t==='h'||d.t==='s'||d.t==='x'||d.t==='i'||!d.p||d.p.length<12)return false;
+ const B=isScribble(d.p);if(!B)return false;const m=12,bx=[B[0]-m,B[1]-m,B[2]+m,B[3]+m],hit=[];
+ cur.strokes.forEach((s,i)=>{if(s.fill||s.t==='i')return;
+  if(s.t==='x'||s.t==='s'){const b=bbox(s),ix=Math.max(0,Math.min(b[2],bx[2])-Math.max(b[0],bx[0])),iy=Math.max(0,Math.min(b[3],bx[3])-Math.max(b[1],bx[1])),a=Math.max(1,(b[2]-b[0])*(b[3]-b[1]));
+   // texto/formas: el rayado debe cubrir la mayor parte de su caja
+   if(ix*iy/a>=.6)hit.push(i);return}
+  const P=s.p;if(!P||!P.length)return;let n=0;for(const a of P)if(a[0]>=bx[0]&&a[0]<=bx[2]&&a[1]>=bx[1]&&a[1]<=bx[3])n++;
+  if(n/P.length>=.7)hit.push(i)});
+ if(!hit.length)return false; // no cubre nada: se conserva como trazo normal
+ snapU();const rm=new Set(hit);cur.strokes=cur.strokes.filter((_,i)=>!rm.has(i));sel=null;paint();save();tools();
+ toast('Borrado rayando · deshacer lo restaura');navigator.vibrate&&navigator.vibrate(12);return true}
 function erase(q){const r=S.esz,out=[];let ch=false;
 for(const s of cur.strokes){
  if(S.er.hl&&s.t!=='h'){out.push(s);continue}
@@ -917,7 +1012,7 @@ it=(i,l,f)=>`<button onclick="$('#mn').remove();${f}">${ic(i)}<span>${l}</span><
 m.innerHTML=`<div class="mrow"><select onchange="cur.template=this.value;paint();save()">${op(Object.entries(TPLS),cur.template)}</select><select onchange="cur.paper=this.value;paint();save()">${op([['','Papel blanco'],['cream','Papel crema'],['dark','Papel oscuro']],cur.paper||'')}</select></div>
 <h6>Página</h6>${it('plus','Página nueva','addPage(false)')}${it('copy','Duplicar fondo','addPage(true)')}${it('trash','Limpiar página','clearPg()')}
 <h6>Insertar</h6>${it('note','Nuevo Post-it','addNote()')}${it('note','Tablero de Post-its','notesBoard()')}${it('image','Imagen de la galería','$(\'#imgin\').click()')}${it('scan','Foto con la cámara','$(\'#camin\').click()')}${it('up','Importar PDF','$(\'#pdfin\').click()')}
-<h6>Organización</h6>${it('list','Pendientes','tasksModal()')}${it('search','Buscar en todo','searchAll()')}${it('clock','Horario de clases','schedModal()')}
+<h6>Organización</h6>${it('list','Pendientes','tasksModal()')}${it('search','Buscar en todo','searchAll()')}${it('bolt','Pregúntale a tus apuntes','askNotes()')}${it('clock','Horario de clases','schedModal()')}
 <h6>Programadores</h6>${it('code','Boceto → Código','devModal()')}${it('code','Mis componentes','codeList()')}
 <h6>Inteligencia artificial</h6>${it('bolt','IA sobre toda la página','aiMenu(1)')}
 <h6>Audio y exportar</h6>${it('mic','Audios del cuaderno','audioModal()')}${it('list','Transcripción y marcas «me perdí»','trOpen()')}${it('bolt','Estudiar con IA: apuntes, quiz, tareas','studyMenu()')}${it('dl','Exportar PDF','exportPdf()')}${it('dl','Exportar PDF + transcripción','exportPdf(1)')}${it('dl','Exportar Markdown','exportMd()')}${it('dl','Exportar esta página (PNG)','exportPng()')}${it('dl','Respaldo .qnotes (con audios)','exportNb(S.nb.id)')}
@@ -999,20 +1094,20 @@ m.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{const r=rows.find
 
 // --- IA ---
 const AIA=[['convert','Convertir a texto'],['summary','Resumir'],['bullets','En viñetas'],['explain','Explicar o resolver'],['translate','Traducir (ES ⇄ EN)'],['latex','Fórmulas a LaTeX']];let AI_T='',AI_A='';const FONTS=[['-apple-system,sans-serif','Moderna'],['Georgia,serif','Serif'],['ui-monospace,Menlo,monospace','Mono'],['Snell Roundhand,Apple Chancery,cursive','Cursiva']];
-const wrap=(t,n=48)=>t.split('\n').flatMap(l=>{const o=[];while(l.length>n){let k=l.lastIndexOf(' ',n);if(k<1)k=n;o.push(l.slice(0,k));l=l.slice(k).trim()}o.push(l);return o}).join('\n');
+const wrap=(t,n=48)=>t.split('\n').flatMap(l=>{const lead=l.match(/^\s*/)[0],o=[];let cur='';for(const w of txSplit(l.trim())){const c=cur?cur+' '+w:w;if(txPlain(lead+c).length>n&&cur){o.push(cur);cur=w}else cur=c}o.push(cur);return o.map((x,i)=>(i?lead.replace(/\S/g,' '):lead)+x)}).join('\n');
 function aiMenu(whole){if(!user||!sb){toast('Inicia sesión en Ajustes para usar la IA');return cfgModal()}if(!whole&&!(sel&&sel.box))return toast('Primero selecciona algo con el lazo');const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:340px;display:flex;flex-direction:column;gap:8px"><h2 style="margin:0 0 6px">${ic('bolt')} IA · ${whole?'toda la página':'selección'}</h2>${whole?'':`<button style="justify-content:flex-start" onclick="$('#m').remove();smartRun()">Aa Escritura → tipografía (Smart Font)</button><button style="justify-content:flex-start" onclick="$('#m').remove();titleSel()">Poner título</button>`}${AIA.map(([k,l])=>`<button style="justify-content:flex-start" onclick="$('#m').remove();aiRun('${k}',${whole})">${l}</button>`).join('')}<p class="mut" style="margin:6px 0 0;font-size:12px">Se envía una imagen de esto a la IA para procesarla.</p></div>`;document.body.appendChild(m)}
 async function aiCall(a,img,retry=1){const tS=Date.now();const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Tu sesión expiró. Vuelve a iniciar sesión en Ajustes.');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),(a==='code'||a==='tokens')?150000:100000);
 try{const r=await fetch(CFG.url+'/functions/v1/ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:CFG.key},body:JSON.stringify({action:a,image:img,mime:'image/jpeg',...(window.AIX||{})})});let j=null;try{j=await r.json()}catch(_){}
  if(!r.ok||(j&&j.error)){const e=new Error((j&&(j.error||j.msg||j.message))||('El servidor respondió '+r.status));e.status=r.status;throw e}return j}
 catch(e){if(e.name==='AbortError')throw new Error('La IA tardó demasiado en responder. Prueba con menos contenido.');if(e instanceof TypeError)throw new Error('No se pudo contactar a la IA. Revisa tu conexión a internet.');if(retry&&(e.status===502||e.status===503)&&Date.now()-tS<25000){await new Promise(r=>setTimeout(r,1500));return aiCall(a,img,0)}throw e}finally{clearTimeout(to)}}
 function errBox(t,msg,retry){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:420px"><h2 style="margin:0">${esc(t)}</h2><p class="errb">${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="$('#m').remove()">Cerrar</button>${retry?'<button class="p" style="flex:1" id="rt2">Reintentar</button>':''}</div></div>`;document.body.appendChild(m);if(retry)m.querySelector('#rt2').onclick=()=>{m.remove();retry()}}
-async function aiRun(a,whole){if(!user||!sb)return toast('Inicia sesión en Ajustes para usar la IA');const c=document.createElement('canvas'),x=c.getContext('2d'),Z2=1.5;
+async function aiRun(a,whole){if(!user||!sb)return toast('Inicia sesión en Ajustes para usar la IA');const c=document.createElement('canvas'),x=c.getContext('2d'),Z2=2;
 await Promise.all(cur.strokes.filter(k=>k.t==='i').map(k=>ld(k.s)));
 if(whole){c.width=W*Z2;c.height=H*Z2;x.scale(Z2,Z2);await new Promise(r=>drawPage(x,cur,r))}
 else{const b=sel.box,m=30,sx=Math.max(0,b[0]-m),sy=Math.max(0,b[1]-m),w=Math.min(W,b[2]+m)-sx,h=Math.min(H,b[3]+m)-sy;c.width=Math.max(80,w*Z2);c.height=Math.max(80,h*Z2);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.scale(Z2,Z2);x.translate(-sx,-sy);sel.idx.forEach(i=>stroke(x,cur.strokes[i]))}
-toast('✨ Pensando…');const img=c.toDataURL('image/jpeg',.85).split(',')[1];
-try{const d=await aiCall(a,img);AI_T=d.text||'(sin resultado)';AI_A=a;aiShow(d.left)}catch(e){console.error(e);errBox('La IA no pudo responder',e.message||String(e),()=>aiRun(a,whole))}}
-function aiShow(left){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:520px"><h2 style="margin:0 0 12px">${ic('bolt')} Resultado</h2><div style="white-space:pre-wrap;max-height:50vh;overflow:auto;padding:14px;border-radius:14px;background:var(--grp);line-height:1.5;-webkit-user-select:text;user-select:text">${esc(AI_T)}</div><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="navigator.clipboard&&navigator.clipboard.writeText(AI_T);toast('Copiado')">Copiar</button><button class="p" style="flex:2" onclick="aiIns()">Insertar debajo</button></div>${AI_A==='convert'&&sel&&sel.box?`<label>Vista previa: reemplazar mi letra por…</label><div class="sw">${FONTS.map(([f,l])=>`<button class="chip" style="font-family:${f}" onclick="aiRep('${f}')">${l}</button>`).join('')}</div>`:''}${left!=null?`<p class="mut" style="margin:10px 0 0;font-size:12px">Te quedan ${left} consultas hoy.</p>`:''}</div>`;document.body.appendChild(m)}
+toast('✨ Pensando…');const img=c.toDataURL('image/jpeg',.92).split(',')[1];
+try{const d=await aiCall(a,img);AI_T=d.text?(a==='latex'?d.text:normMath(d.text)):'(sin resultado)';AI_A=a;aiShow(d.left)}catch(e){console.error(e);errBox('La IA no pudo responder',e.message||String(e),()=>aiRun(a,whole))}}
+function aiShow(left){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:520px"><h2 style="margin:0 0 12px">${ic('bolt')} Resultado</h2><div style="white-space:pre-wrap;max-height:50vh;overflow:auto;padding:14px;border-radius:14px;background:var(--grp);line-height:1.5;-webkit-user-select:text;user-select:text" class="aiout">${AI_A==='latex'?esc(AI_T):mathHTML(AI_T)}</div><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="navigator.clipboard&&navigator.clipboard.writeText(AI_A==='latex'?AI_T:txPlainAll(AI_T));toast('Copiado')">Copiar</button><button class="p" style="flex:2" onclick="aiIns()">Insertar debajo</button></div>${AI_A==='convert'&&sel&&sel.box?`<label>Vista previa: reemplazar mi letra por…</label><div class="sw">${FONTS.map(([f,l])=>`<button class="chip" style="font-family:${f}" onclick="aiRep('${f}')">${l}</button>`).join('')}</div>`:''}${left!=null?`<p class="mut" style="margin:10px 0 0;font-size:12px">Te quedan ${left} consultas hoy.</p>`:''}</div>`;document.body.appendChild(m)}
 function aiRep(f){if(!sel||!sel.box)return;const b=sel.box,n=Math.max(1,AI_T.split('\n').length),fs=clamp((b[3]-b[1])/n*.7,14,60),ix=sel.idx;snapU();cur.strokes=[...cur.strokes.filter((_,i)=>!ix.includes(i)),{t:'x',c:S.color,w:(fs-10)/5,ff:f,p:[[b[0],b[1],.5]],s:AI_T}];sel=null;lctx.clearRect(0,0,W,H);paint();save();$('#m').remove();tools();toast('Texto reemplazado · deshacer lo revierte')}
 function aiIns(){const b=sel&&sel.box;commit({t:'x',c:S.color,w:2,p:[[b?b[0]:60,b?b[3]+24:80,.5]],s:wrap(AI_T)});$('#m').remove();toast('Insertado: selecciónalo con el lazo para moverlo')}
 async function clearPg(){if(!await dlg.c('¿Limpiar los trazos de esta página?','Limpiar'))return;snapU();cur.strokes=[];sel=null;paint();save()}
@@ -1022,12 +1117,75 @@ function exportPng(){const c=document.createElement('canvas');c.width=W*2;c.heig
 const HWT=new Set(['p','l','b','br','c']); // trazos a mano (no resaltador, formas, imágenes ni texto)
 const hwMed=a=>{const s=[...a].sort((x,y)=>x-y),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):0};
 const hwPct=(a,q)=>{const s=[...a].sort((x,y)=>x-y);return s.length?s[Math.min(s.length-1,Math.round(q*(s.length-1)))]:0};
-// Marcas de ingeniería: μ_{k} (subíndice) y x^{2} (superíndice)
-function txRuns(l){const o=[],re=/([_^])\{([^}]*)\}/g;let i=0,m;while((m=re.exec(l))){if(m.index>i)o.push([l.slice(i,m.index),0]);o.push([m[2],m[1]==='_'?-1:1]);i=re.lastIndex}if(i<l.length)o.push([l.slice(i),0]);return o}
-const txPlain=l=>l.replace(/[_^]\{([^}]*)\}/g,'$1');
+// Motor de texto matemático: x^{2} · x_{k} · frac{a}{b} · sqrt{x} · root{n}{x} (+ símbolos Unicode). Sin LaTeX.
+const TX_GR={alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',vartheta:'θ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',phi:'φ',varphi:'φ',chi:'χ',psi:'ψ',omega:'ω',Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Xi:'Ξ',Pi:'Π',Sigma:'Σ',Phi:'Φ',Psi:'Ψ',Omega:'Ω',cdot:'·',times:'×',div:'÷',pm:'±',mp:'∓',leq:'≤',le:'≤',geq:'≥',ge:'≥',neq:'≠',ne:'≠',approx:'≈',equiv:'≡',infty:'∞',partial:'∂',nabla:'∇',sum:'∑',prod:'∏',int:'∫',to:'→',rightarrow:'→',leftarrow:'←',Rightarrow:'⇒',Leftarrow:'⇐',leftrightarrow:'↔',Leftrightarrow:'⇔',in:'∈',notin:'∉',subset:'⊂',cup:'∪',cap:'∩',forall:'∀',exists:'∃',degree:'°',circ:'°',ldots:'…',dots:'…',cdots:'⋯',angle:'∠',perp:'⊥',parallel:'∥',propto:'∝',sim:'∼',quad:' ',qquad:' '};
+const TX_SU={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-','ⁿ':'n','ⁱ':'i'},TX_SB={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','₊':'+','₋':'-'};
+// Limpia restos de LaTeX / superíndices Unicode que pueda devolver la IA y los lleva a la notación de arriba
+function normMath(t){let s=String(t??'');
+ s=s.replace(/\$\$?|\\\(|\\\)|\\\[|\\\]/g,'').replace(/\\(?:d|t)?frac\s*\{/g,'frac{').replace(/\\sqrt\s*\[([^\]]*)\]\s*\{/g,(m,n)=>'root{'+n+'}{').replace(/\\sqrt\s*\{/g,'sqrt{')
+  .replace(/\\(?:left|right|big|Big|bigg|Bigg)(?![A-Za-z])\s*/g,'').replace(/\\(?:text|mathrm|mathbf|textbf|operatorname|mathit|mathcal)\s*\{([^{}]*)\}/g,'$1')
+  .replace(/\\([A-Za-z]+)/g,(m,w)=>TX_GR[w]??w).replace(/\\[,;:! ]/g,' ').replace(/\\([%&_#{}])/g,'$1')
+  .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿⁱ]+/g,m=>'^{'+[...m].map(c=>TX_SU[c]).join('')+'}').replace(/[₀₁₂₃₄₅₆₇₈₉₊₋]+/g,m=>'_{'+[...m].map(c=>TX_SB[c]).join('')+'}')
+  .replace(/\^(-?\d+|[A-Za-z])(?![A-Za-z0-9{])/g,'^{$1}').replace(/_([A-Za-z0-9])(?![A-Za-z0-9{])/g,'_{$1}');
+ return s}
+function txGrp(l,i){if(l[i]!=='{')return null;let d=0;for(let j=i;j<l.length;j++){const c=l[j];if(c==='{')d++;else if(c==='}'&&--d===0)return[l.slice(i+1,j),j+1]}return null}
+const txPC=new Map();
+function txParse(l){let r=txPC.get(l);if(r)return r;
+ const o=[];let b='',i=0;const fl=()=>{if(b){o.push({k:'t',s:b});b=''}};
+ while(i<l.length){const ch=l[i];
+  if(ch==='^'||ch==='_'){const g=txGrp(l,i+1);if(g){fl();o.push({k:ch==='^'?'sup':'sub',c:txParse(g[0])});i=g[1];continue}}
+  else if(!(i>0&&/[A-Za-z]/.test(l[i-1]))){
+   if(l.startsWith('frac{',i)){const a=txGrp(l,i+4),c=a&&txGrp(l,a[1]);if(c){fl();o.push({k:'frac',n:txParse(a[0]),d:txParse(c[0])});i=c[1];continue}}
+   else if(l.startsWith('sqrt{',i)){const a=txGrp(l,i+4);if(a){fl();o.push({k:'sqrt',c:txParse(a[0])});i=a[1];continue}}
+   else if(l.startsWith('root{',i)){const a=txGrp(l,i+4),c=a&&txGrp(l,a[1]);if(c){fl();o.push({k:'sqrt',i:txParse(a[0]),c:txParse(c[0])});i=c[1];continue}}}
+  b+=ch;i++}
+ fl();if(txPC.size>400)txPC.clear();txPC.set(l,o);return o}
+// Medida: {w, t, b} = ancho y extensión vertical de la tinta respecto al borde superior de la línea (todo en px, f = tamaño de letra)
+function txM(c,s,N,f){let w=0,t=1e9,b=-1e9;for(const n of N){const m=txMn(c,s,n,f);w+=m.w;if(m.t<t)t=m.t;if(m.b>b)b=m.b}return N.length?{w,t,b}:{w:0,t:.08*f,b:.98*f}}
+function txMn(c,s,n,f){
+ if(n.k==='t'){c.font=tf(s,f);return{w:c.measureText(n.s).width,t:.08*f,b:.98*f}}
+ if(n.k==='sup'||n.k==='sub'){const g=Math.max(f*.68,7),m=txM(c,s,n.c,g),o=n.k==='sup'?-.1*f:.32*f;return{w:m.w,t:o+m.t,b:o+m.b}}
+ if(n.k==='frac'){const g=Math.max(f*.66,7),a=txM(c,s,n.n,g),d=txM(c,s,n.d,g);const on=.44*f-Math.max(.8*g,a.b-.18*g),od=.68*f-(d.t+.02*g);return{w:Math.max(a.w,d.w)+.3*f,t:on+a.t,b:od+d.b}}
+ const cm=txM(c,s,n.c,f),ix=n.i?txM(c,s,n.i,f*.5).w:0;return{w:(ix?Math.max(0,ix-.15*f):0)+.58*f+cm.w+.1*f,t:Math.min(cm.t,.08*f)-.16*f,b:Math.max(.9*f,Math.min(cm.b,1.15*f))}}
+function txDn(c,s,N,x,y,f){for(const n of N)x=txD1(c,s,n,x,y,f);return x}
+function txD1(c,s,n,x,y,f){
+ if(n.k==='t'){c.font=tf(s,f);c.fillText(n.s,x,y);return x+c.measureText(n.s).width}
+ if(n.k==='sup'||n.k==='sub')return txDn(c,s,n.c,x,y+(n.k==='sup'?-.1*f:.32*f),Math.max(f*.68,7));
+ if(n.k==='frac'){const g=Math.max(f*.66,7),a=txM(c,s,n.n,g),d=txM(c,s,n.d,g),w=Math.max(a.w,d.w),ay=y+.56*f,pd=.15*f;
+  txDn(c,s,n.n,x+pd+(w-a.w)/2,ay-.12*f-Math.max(.8*g,a.b-.18*g),g);txDn(c,s,n.d,x+pd+(w-d.w)/2,ay+.12*f-(d.t+.02*g),g);
+  c.save();c.lineWidth=Math.max(1,f*.06);c.lineCap='butt';c.beginPath();c.moveTo(x+.04*f,ay);c.lineTo(x+w+2*pd-.04*f,ay);c.stroke();c.restore();return x+w+2*pd}
+ const cm=txM(c,s,n.c,f),ix=n.i?txM(c,s,n.i,f*.5).w:0,sh=ix?Math.max(0,ix-.15*f):0,ov=y+Math.min(cm.t,.08*f)-.1*f,hb=y+Math.max(.9*f,Math.min(cm.b,1.15*f)),mid=(ov+hb)/2,x0=x+sh;
+ if(n.i)txDn(c,s,n.i,x,mid-.5*f,f*.5);
+ c.save();c.lineWidth=Math.max(1,f*.06);c.lineJoin='miter';c.lineCap='butt';c.beginPath();c.moveTo(x0+.02*f,mid+.04*f);c.lineTo(x0+.1*f,mid-.01*f);c.lineTo(x0+.24*f,hb);c.lineTo(x0+.5*f,ov);c.lineTo(x0+.58*f+cm.w+.06*f,ov);c.stroke();c.restore();
+ txDn(c,s,n.c,x0+.58*f,y,f);return x0+.58*f+cm.w+.1*f}
+function txW(c,s,l,fs){return txM(c,s,txParse(l),fs).w}
+function txDraw(c,s,l,x,y,fs){txDn(c,s,txParse(l),x,y,fs)}
+// Texto plano legible (exportar, buscar, copiar): x^{2}→x², frac{a}{b}→a/b, sqrt{x}→√x
+const TX_P={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','n':'ⁿ','i':'ⁱ','(':'⁽',')':'⁾'},TX_Q={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','+':'₊','-':'₋','(':'₍',')':'₎'};
+function txPl(N){return N.map(n=>{
+ if(n.k==='t')return n.s;
+ if(n.k==='sup'||n.k==='sub'){const p=txPl(n.c),M=n.k==='sup'?TX_P:TX_Q,A=[...p];return A.length&&A.every(ch=>M[ch])?A.map(ch=>M[ch]).join(''):(n.k==='sup'?'^':'_')+(A.length>1?'('+p+')':p)}
+ const w=v=>/^[\w.]+$/.test(v)?v:'('+v+')';
+ if(n.k==='frac')return w(txPl(n.n))+'/'+w(txPl(n.d));
+ const c=txPl(n.c),ix=n.i?txPl(n.i):'';return (ix?(/^\w+$/.test(ix)&&[...ix].every(ch=>TX_P[ch])?[...ix].map(ch=>TX_P[ch]).join(''):'root('+ix+')'):'')+'√'+(/^[\w.]+$/.test(c)?c:'('+c+')')}).join('')}
+const txPlain=l=>txPl(txParse(l)),txPlainAll=t=>String(t??'').split('\n').map(txPlain).join('\n');
+// Parte por espacios solo fuera de llaves (para no romper frac{a}{b} al ajustar líneas)
+function txSplit(t){const o=[];let d=0,b='';for(const ch of t){if(ch==='{')d++;else if(ch==='}')d=Math.max(0,d-1);if(/\s/.test(ch)&&!d){if(b){o.push(b);b=''}}else b+=ch}if(b)o.push(b);return o}
+// HTML para el panel de resultados de la IA
+function mathHTML(t){const h=N=>N.map(n=>n.k==='t'?esc(n.s):n.k==='sup'?'<sup>'+h(n.c)+'</sup>':n.k==='sub'?'<sub>'+h(n.c)+'</sub>':n.k==='frac'?'<span class="fr"><span>'+h(n.n)+'</span><span>'+h(n.d)+'</span></span>':(n.i?'<sup class="rt">'+h(n.i)+'</sup>':'')+'<span class="sq">√<span class="sqi">'+h(n.c)+'</span></span>').join('');return String(t??'').split('\n').map(l=>h(txParse(l))).join('\n')}
 function hwLines(strokes){
  const it=strokes.map(s=>{const b=bbox(s);return{s,x0:b[0],y0:b[1],x1:b[2],y1:b[3],w:b[2]-b[0],h:b[3]-b[1],cy:(b[1]+b[3])/2}});
- const rules=it.filter(o=>o.w>=70&&o.h<=.15*o.w),tx=it.filter(o=>!rules.includes(o));if(!tx.length)return[];
+ // Fracciones a mano: una barra horizontal con trazos arriba (numerador) y abajo (denominador) dentro de su ancho.
+ // Todo ese bloque se trata como UNA sola línea (si no, el numerador y el denominador salían como líneas aparte y la barra como subrayado).
+ {const sr=hwPct(it.map(o=>o.h),.75);
+  for(const r of it.filter(o=>o.w>=18&&o.h<=.2*o.w&&o.w<=9*sr)){
+   const ov=o=>o!==r&&!o.bar&&o.x1>r.x0-.15*r.w&&o.x0<r.x1+.15*r.w,up=it.filter(o=>ov(o)&&o.cy<r.cy&&o.y1<=r.cy+.3*sr&&o.y1>=r.cy-1.3*sr),dn=it.filter(o=>ov(o)&&o.cy>r.cy&&o.y0>=r.cy-.3*sr&&o.y0<=r.cy+1.3*sr);
+   if(!up.length||!dn.length)continue;
+   const ex=a=>[Math.min(...a.map(v=>v.x0)),Math.max(...a.map(v=>v.x1))],ok=e=>e[0]>=r.x0-.2*r.w&&e[1]<=r.x1+.2*r.w;
+   if(!ok(ex(up))||!ok(ex(dn)))continue;
+   const top=Math.min(...up.map(v=>v.y0)),bot=Math.max(...dn.map(v=>v.y1)),mem=it.filter(o=>ov(o)&&o.y0>=top-.3*sr&&o.y1<=bot+.3*sr&&!o.fr);
+   r.bar=1;[r,...mem].forEach(v=>{v.fr=1;v.cy=r.cy})}}
+ const rules=it.filter(o=>!o.bar&&o.w>=70&&o.h<=.15*o.w),tx=it.filter(o=>!rules.includes(o));if(!tx.length)return[];
  let ls=[];
  for(const o of tx.sort((a,b)=>a.cy-b.cy)){let L=null,best=1e9;for(const l of ls){const d=Math.abs(o.cy-l.cy);if(d<best){best=d;L=l}}
   if(L&&best<=.62*Math.max(L.hm,o.h)){L.o.push(o);L.cy=L.o.reduce((s,v)=>s+v.cy,0)/L.o.length;L.hm=hwMed(L.o.map(v=>v.h))}else ls.push({o:[o],cy:o.cy,hm:o.h})}
@@ -1039,8 +1197,8 @@ function hwLines(strokes){
  for(let again=true;again;){again=false;ls.sort((a,b)=>a.cy-b.cy);for(let i=0;i+1<ls.length;i++){const A=ext(ls[i]),B=ext(ls[i+1]),ov=Math.min(A[1],B[1])-Math.max(A[0],B[0]);
   if(ov>.5*Math.min(A[1]-A[0],B[1]-B[0])){const m={o:[...ls[i].o,...ls[i+1].o]};m.cy=m.o.reduce((s,v)=>s+v.cy,0)/m.o.length;m.hm=hwMed(m.o.map(v=>v.h));ls.splice(i,2,m);again=true;break}}}
  const sref=hwPct(tx.map(v=>v.h),.75),cores=l=>{const c=l.o.filter(v=>v.h>=.3*sref);return c.length?c:l.o};
- const out=ls.map(l=>{const K=cores(l),y0=Math.min(...K.map(v=>v.y0)),y1=Math.max(...K.map(v=>v.y1)),x0=Math.min(...l.o.map(v=>v.x0)),x1=Math.max(...l.o.map(v=>v.x1)),hs=K.map(v=>v.h),cc={};l.o.forEach(v=>{cc[v.s.c]=(cc[v.s.c]||0)+1});
-  return{x0,x1,y0,y1,cy:(y0+y1)/2,fs0:Math.max((y1-y0)/.95,hwPct(hs,.8)*1.15),under:false,col:Object.entries(cc).sort((a,b)=>b[1]-a[1])[0][0],strokes:l.o.map(v=>v.s)}});
+ const out=ls.map(l=>{const nf=l.o.filter(v=>!v.fr),K=nf.length?cores({o:nf}):cores(l),pf=nf.length?1:2.1,y0=Math.min(...K.map(v=>v.y0)),y1=Math.max(...K.map(v=>v.y1)),x0=Math.min(...l.o.map(v=>v.x0)),x1=Math.max(...l.o.map(v=>v.x1)),hs=K.map(v=>v.h),cc={};l.o.forEach(v=>{cc[v.s.c]=(cc[v.s.c]||0)+1});
+  return{x0,x1,y0,y1,cy:(y0+y1)/2,fs0:Math.max((y1-y0)/.95/pf,hwPct(hs,.8)*1.15),under:false,col:Object.entries(cc).sort((a,b)=>b[1]-a[1])[0][0],strokes:l.o.map(v=>v.s)}});
  for(const r of rules){let L=null,bo=0;for(const l of out){const ov=Math.min(r.x1,l.x1)-Math.max(r.x0,l.x0);if(ov>bo&&r.cy>=l.cy&&r.cy-l.y1<1.2*(l.y1-l.y0)){bo=ov;L=l}}if(L&&bo>.4*Math.min(r.w,L.x1-L.x0)){L.under=true;L.strokes.push(r.s)}}
  return out}
 // Reparte N líneas leídas por la IA sobre las líneas geométricas detectadas (si no coinciden en número)
@@ -1052,7 +1210,7 @@ function hwTitleGuess(L,i){if(L.length<2)return L[i].under;const o=L.filter((_,k
 function hwBuild(L,T,F,o){const n=L.length,body=L.filter((_,i)=>!F[i]);let M=hwMed((body.length?body:L).map(v=>v.fs0));const bodyFs=Math.round(Math.min(48,Math.max(14,M)));
  const mk=(x,y,fs,c,s,ex)=>({t:'x',c,w:(fs-10)/5,ff:o.ff,p:[[Math.round(x),Math.round(y),.5]],s,...ex});
  const minX=Math.min(...body.map(v=>v.x0).concat([1e9])),bx0=Math.min(...L.map(v=>v.x0)),bx1=Math.max(...L.map(v=>v.x1)),bcx=(bx0+bx1)/2,res=[];
- const wrapPx=(t,fs,bold,maxW)=>{const lead=t.match(/^ */)[0],ws=t.trim().split(/\s+/),out=[];let cur=lead;ws.forEach(w=>{const c=cur.trim()?cur+' '+w:cur+w;if(o.meas(c,fs,bold)>maxW&&cur.trim()){out.push(cur);cur=w}else cur=c});out.push(cur);return out};
+ const wrapPx=(t,fs,bold,maxW)=>{const lead=t.match(/^ */)[0],ws=txSplit(t.trim()),out=[];let cur=lead;ws.forEach(w=>{const c=cur.trim()?cur+' '+w:cur+w;if(o.meas(c,fs,bold)>maxW&&cur.trim()){out.push(cur);cur=w}else cur=c});out.push(cur);return out};
  let i=0;
  while(i<n){const l=L[i],t=(T[i]||'').trim();if(!t){i++;continue}
   if(F[i]){const fs=Math.round(Math.min(64,Math.max(bodyFs*1.4,l.fs0),bodyFs*2.6+8)),lines=wrapPx(t,fs,1,o.W-60),w=Math.max(...lines.map(x=>o.meas(x,fs,1))),cen=n>1?Math.abs((l.x0+l.x1)/2-bcx)<.06*o.W&&(l.x1-l.x0)<.85*(bx1-bx0)&&bx1-bx0>.2*o.W:Math.abs((l.x0+l.x1)/2-o.W/2)<.06*o.W,x=cen?(n>1?bcx:o.W/2)-w/2:l.x0;
@@ -1065,8 +1223,6 @@ function hwBuild(L,T,F,o){const n=L.length,body=L.filter((_,i)=>!F[i]);let M=hwM
 
 // ---- Smart Font: interfaz, IA y herramienta «Título» ----
 const MC=document.createElement('canvas').getContext('2d'),tf=(s,fs)=>`${s.b?'700 ':''}${fs}px ${s.ff||'-apple-system,sans-serif'}`;
-function txW(c,s,l,fs){let w=0;for(const[t,k]of txRuns(l)){c.font=tf(s,k?fs*.68:fs);w+=c.measureText(t).width}return w}
-function txDraw(c,s,l,x,y,fs){let cx=x;for(const[t,k]of txRuns(l)){const f=k?fs*.68:fs;c.font=tf(s,f);c.fillText(t,cx,y+(k<0?fs*.32:k>0?-fs*.1:0));cx+=c.measureText(t).width}}
 const smartFont=()=>{try{return localStorage.qn_sfont||FONTS[0][0]}catch(_){return FONTS[0][0]}};
 let SF=null;
 const hwSel=()=>sel&&sel.idx?sel.idx.map(i=>cur.strokes[i]).filter(s=>s&&HWT.has(s.t)&&!s.fill&&s.p&&s.p.length):[];
@@ -1074,8 +1230,8 @@ function hwImg(list){const B=list.map(bbox),m=24,sx=Math.max(0,Math.min(...B.map
  c.width=Math.max(80,Math.round(w*Z));c.height=Math.max(80,Math.round(h*Z));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.scale(Z,Z);x.translate(-sx,-sy);list.forEach(s=>stroke(x,{...s,c:'#000'}));return c.toDataURL('image/jpeg',.85).split(',')[1]}
 // Si el servidor aún no tiene las acciones nuevas ('lines'/'title'), usa 'convert'
 async function aiText(a,img){try{return(await aiCall(a,img)).text||''}catch(e){if(e.status===400&&(a==='lines'||a==='title'))return(await aiCall('convert',img)).text||'';throw e}}
-function parseLines(t){try{const m=t.match(/\[[\s\S]*\]/),a=JSON.parse(m?m[0]:t);if(Array.isArray(a))return a.map(x=>typeof x==='string'?{t:x}:{t:String(x.t??x.text??''),title:!!x.title}).filter(x=>x.t.trim())}catch(_){}return t.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t}))}
-const cleanTitle=t=>t.split('\n').map(s=>s.trim()).filter(Boolean).join(' ').replace(/^(t[ií]tulo\s*:\s*)/i,'').replace(/^["“'«\s]+|["”'»\s.]+$/g,'').replace(/\s+/g,' ');
+function parseLines(t){try{const m=t.match(/\[[\s\S]*\]/),r=(m?m[0]:t).replace(/(?<!\\)\\(?=[A-Za-z])/g,'\\\\'),a=JSON.parse(r);if(Array.isArray(a))return a.map(x=>typeof x==='string'?{t:normMath(x)}:{t:normMath(x.t??x.text??''),title:!!x.title}).filter(x=>x.t.trim())}catch(_){}return t.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t:normMath(t)}))}
+const cleanTitle=t=>normMath(t).split('\n').map(s=>s.trim()).filter(Boolean).join(' ').replace(/^(t[ií]tulo\s*:\s*)/i,'').replace(/^["“'«\s]+|["”'»\s.]+$/g,'').replace(/\s+/g,' ');
 function needLogin(){if(user&&sb)return false;toast('Inicia sesión en Ajustes para usar la IA');cfgModal();return true}
 async function smartRun(){if(needLogin())return;const hw=hwSel();if(!hw.length)return toast('Selecciona con el lazo tu escritura a mano');const o=$('#m');o&&o.remove();toast('✨ Leyendo tu letra…');const pid=cur.id;
  try{const A=parseLines(await aiText('lines',hwImg(hw)));if(!A.length)return toast('No encontré texto legible');if(cur.id!==pid)return;const G=hwLines(hw);if(!G.length)return toast('No encontré texto en la selección');
@@ -1083,7 +1239,7 @@ async function smartRun(){if(needLogin())return;const hw=hwSel();if(!hw.length)r
  catch(e){console.error(e);errBox('No se pudo convertir tu letra',e.message||String(e),smartRun)}}
 function smartModal(){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};
  const row=(t,f,i)=>`<div class="sfr" style="display:flex;gap:6px;align-items:center"><button class="chip ${f?'on':''}" title="Marcar como título" onclick="SF.F[${i}]=!SF.F[${i}];this.classList.toggle('on');sfStyle()">T</button><input data-i="${i}" value="${esc(t)}" style="flex:1;min-width:0"></div>`;
- m.innerHTML=`<div class="box" style="max-width:580px"><h2 style="margin:0 0 4px">Escritura → tipografía</h2><p class="mut" style="margin:0 0 10px">Revisa el texto (puedes corregirlo). Toca <b>T</b> para marcar o quitar un título. Los títulos van en negrita y más grandes; el resto queda con un tamaño uniforme. Escribe <code>μ_{k}</code> para subíndices y <code>x^{2}</code> para potencias.</p><div id="sfl" style="max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:6px">${SF.T.map((t,i)=>row(t,SF.F[i],i)).join('')}</div>
+ m.innerHTML=`<div class="box" style="max-width:580px"><h2 style="margin:0 0 4px">Escritura → tipografía</h2><p class="mut" style="margin:0 0 10px">Revisa el texto (puedes corregirlo). Toca <b>T</b> para marcar o quitar un título. Los títulos van en negrita y más grandes; el resto queda con un tamaño uniforme. Para fórmulas: <code>x^{2}</code> potencias, <code>μ_{k}</code> subíndices, <code>frac{a}{b}</code> fracciones y <code>sqrt{x}</code> raíces.</p><div id="sfl" style="max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:6px">${SF.T.map((t,i)=>row(t,SF.F[i],i)).join('')}</div>
  <label style="display:block;margin-top:12px">Tipo de letra</label><div class="sw">${FONTS.map(([f,l])=>`<button class="chip ${SF.ff===f?'on':''}" style="font-family:${f}" onclick="SF.ff='${f}';localStorage.qn_sfont='${f}';document.querySelectorAll('#m .sw .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');sfStyle()">${l}</button>`).join('')}</div>
  <div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="$('#m').remove()">Cancelar</button><button class="p" style="flex:2" onclick="smartApply()">Reemplazar mi letra</button></div></div>`;document.body.appendChild(m);sfStyle()}
 function sfStyle(){document.querySelectorAll('#sfl .sfr input').forEach((inp,i)=>{const t=SF.F[i];inp.style.fontFamily=SF.ff;inp.style.fontWeight=t?'700':'400';inp.style.fontSize=t?'20px':'15px'})}
@@ -1225,22 +1381,18 @@ addEventListener('online',()=>{setStat();if(!sb)initSb();sync()});addEventListen
 // ===== Ajustes =====
 function cfgModal(){const o=$('#m');o&&o.remove();const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};
 const sw=(on,f)=>`<span class="sw3"><input type="checkbox" ${on?'checked':''} onchange="${f}"><i></i></span>`;
-m.innerHTML=`<div class="box"><h2>Ajustes</h2>
-<h3>Cuenta</h3>${user?`<div class="set"><div><b>${esc(maskMail(user.email))}</b><small>Cuenta conectada</small></div><button onclick="sb.auth.signOut();$('#m').remove()">Salir</button></div><div class="set"><div>Restaurar desde la nube<small>Vuelve a descargar todos tus cuadernos guardados en tu cuenta (no borra nada local)</small></div><button onclick="$('#m').remove();restoreCloud()">Restaurar</button></div>`:`<p class="mut" style="margin:6px 0 10px;font-size:13px">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="correo" autocomplete="email"><input id="cp" type="password" placeholder="contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div>`}
-<h3>Exportar</h3>
-<div class="set"><div>Logo Q&amp;V en los PDF<small>Aparece en la esquina de cada página exportada</small></div>${sw(localStorage.qn_logo!=='0',"localStorage.qn_logo=this.checked?'1':'0'")}</div>
-<h3>Escritura</h3>
-<div class="set"><div>Dibujar con el dedo<small>Apagado: solo el lápiz dibuja y 1 dedo mueve la página. El zoom se hace con la lupa (+ / −)</small></div>${sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()")}</div><div class="set"><div>Mi lápiz se detecta como dedo<small>Para lápices genéricos o capacitivos: un contacto pequeño escribe y los grandes (palma) se ignoran</small></div>${sw(S.altPen,"S.altPen=this.checked;localStorage.qn_alt=S.altPen?'1':'0'")}</div><div class="set"><div>Tamaño máximo de la punta<small>Si la palma escribe, bájalo; si el lápiz no escribe, súbelo. El Diagnóstico (menú ⋯) muestra los tamaños.</small></div><input type="range" min="6" max="60" value="${S.altW}" style="width:140px" oninput="S.altW=+this.value;localStorage.qn_altw=this.value"></div><div class="set"><div>Gestos de toque<small>2 dedos = deshacer · 3 dedos = rehacer (la palma puede activarlos)</small></div>${sw(S.tapg,"S.tapg=this.checked;localStorage.qn_tapg=S.tapg?'1':'0'")}</div>
-<div class="set"><div>Deslizar con un dedo para cambiar de página<small>Solo con la página a tamaño completo</small></div>${sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'")}</div>
-<div class="set"><div>Recortar al insertar una imagen<small>Muestra el recorte antes de colocar la foto en la hoja (también puedes recortar una imagen ya puesta: selecciónala y toca «Recortar»)</small></div>${sw(cropOn(),"localStorage.qn_crop=this.checked?1:0")}</div>
-<div class="set"><div>Autoforma al mantener pulsado<small>Convierte tu trazo en línea, círculo, elipse o rectángulo (también inclinado) si dejas el lápiz quieto; sin soltar, puedes arrastrar para ajustar el tamaño. Apagado por defecto para no alterar tu letra</small></div>${sw(S.snap,"S.snap=this.checked;localStorage.qn_snap=S.snap?1:0")}</div>
-<div class="set"><div>Volver al lápiz al soltar el borrador</div>${sw(S.er.auto,"S.er.auto=+this.checked")}</div>
-<label>Estabilización del trazo</label><input type="range" min="0" max="80" value="${S.stab*100}" oninput="S.stab=this.value/100;localStorage.qn_stab=S.stab">
-<h3>Apariencia</h3><select onchange="setTheme(this.value)">${[['perla','Perla (claro + esmeralda)'],['obsidiana','Obsidiana (oscuro + menta)'],['marfil','Marfil (claro)'],['ambar','Ámbar (oscuro cálido)']].map(([k,v])=>`<option value="${k}" ${(localStorage.qn_theme||'perla')===k?'selected':''}>${v}</option>`).join('')}</select>
-<h3>Datos en este dispositivo</h3><p class="mut" id="stor" style="margin:6px 0;font-size:13px;line-height:1.5">Los cuadernos se guardan en el navegador de este dispositivo y, si inicias sesión, también en la nube. Los <b>audios solo viven en este dispositivo</b>: descárgalos desde “Audios del cuaderno” o con el respaldo .qnotes.</p>
-<div class="set"><div>Modo diagnóstico<small>Muestra un panel con lo que detecta la app al escribir (para encontrar fallos del lápiz o la palma)</small></div>${sw(S.dbgOn,"S.dbgOn=this.checked;localStorage.qn_dbg=S.dbgOn?1:0;const d=$('#dbg');if(d&&!S.dbgOn)d.remove();if(S.dbgOn)dbg('activado')")}</div>
-<details class="adv"><summary>Avanzado: conexión Supabase</summary><label>Project URL</label><input id="cu" value="${esc(CFG.url)}" placeholder="https://xxxx.supabase.co"><label>Anon key</label><input id="ck" value="${esc(CFG.key)}"><button style="margin-top:10px;width:100%" onclick="saveCfg()">Guardar y conectar</button></details>
-<button style="margin-top:16px;width:100%" onclick="$('#m').remove()">Cerrar</button></div>`;document.body.appendChild(m);
+// Fila con interruptor (título + ayuda a la izquierda, control a la derecha)
+const row=(t,sm,ctl)=>`<div class="set"><div>${t}${sm?`<small>${sm}</small>`:''}</div>${ctl}</div>`;
+// Fila con deslizador: título y valor arriba, deslizador a todo el ancho abajo
+const rng=(t,sm,min,max,val,fn,fmt)=>`<div class="set cstk"><div class="cst"><div>${t}${sm?`<small>${sm}</small>`:''}</div><span class="cval">${fmt(val)}</span></div><input type="range" class="crg" min="${min}" max="${max}" value="${val}" style="--p:${(val-min)/(max-min)*100}%" oninput="this.style.setProperty('--p',(this.value-this.min)/(this.max-this.min)*100+'%');${fn};this.closest('.set').querySelector('.cval').textContent=this.value+'${fmt(0).replace(/^0/,'')}'"></div>`;
+m.innerHTML=`<div class="box cfg"><div class="cfgh"><h2>Ajustes</h2><button class="cfgx" aria-label="Cerrar" onclick="$('#m').remove()">${ic('x')}</button></div>
+<h3>Cuenta</h3>${user?`<div class="sl">${row(`<b>${esc(maskMail(user.email))}</b>`,'Cuenta conectada',`<button onclick="sb.auth.signOut();$('#m').remove()">Salir</button>`)}${row('Restaurar desde la nube','Vuelve a descargar todos tus cuadernos guardados en tu cuenta (no borra nada local)',`<button onclick="$('#m').remove();restoreCloud()">Restaurar</button>`)}</div>`:`<div class="sl fm"><p class="mut">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="Correo" autocomplete="email"><input id="cp" type="password" placeholder="Contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div></div>`}
+<h3>Exportar</h3><div class="sl">${row('Logo Q&amp;V en los PDF','Aparece en la esquina de cada página exportada',sw(localStorage.qn_logo!=='0',"localStorage.qn_logo=this.checked?'1':'0'"))}</div>
+<h3>Escritura</h3><div class="sl">${row('Dibujar con el dedo','Apagado: solo el lápiz dibuja y 1 dedo mueve la página. El zoom se hace con la lupa (+ / −)',sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()"))}${row('Mi lápiz se detecta como dedo','Para lápices genéricos o capacitivos: un contacto pequeño escribe y los grandes (palma) se ignoran',sw(S.altPen,"S.altPen=this.checked;localStorage.qn_alt=S.altPen?'1':'0'"))}${rng('Tamaño máximo de la punta','Si la palma escribe, bájalo; si el lápiz no escribe, súbelo. El Diagnóstico (menú ⋯) muestra los tamaños.',6,60,S.altW,"S.altW=+this.value;localStorage.qn_altw=this.value",v=>v+' px')}${rng('Estabilización del trazo','Más alto suaviza más la línea, pero responde con algo de retraso.',0,80,Math.round(S.stab*100),"S.stab=this.value/100;localStorage.qn_stab=S.stab",v=>v+'%')}${row('Gestos de toque','2 dedos = deshacer · 3 dedos = rehacer (la palma puede activarlos)',sw(S.tapg,"S.tapg=this.checked;localStorage.qn_tapg=S.tapg?'1':'0'"))}${row('Deslizar con un dedo para cambiar de página','Solo con la página a tamaño completo',sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'"))}${row('Recortar al insertar una imagen','Muestra el recorte antes de colocar la foto en la hoja (también puedes recortar una imagen ya puesta: selecciónala y toca «Recortar»)',sw(cropOn(),"localStorage.qn_crop=this.checked?1:0"))}${row('Borrar rayando','Tacha un texto o dibujo con un zigzag rápido del lápiz y se borra lo que quede cubierto (deshacer lo restaura). Si el rayado no cubre nada, queda como trazo normal',sw(S.scr,"S.scr=this.checked;localStorage.qn_scr=S.scr?1:0"))}${row('Autoforma al mantener pulsado','Convierte tu trazo en línea, círculo, elipse o rectángulo (también inclinado) si dejas el lápiz quieto; sin soltar, puedes arrastrar para ajustar el tamaño. Apagado por defecto para no alterar tu letra',sw(S.snap,"S.snap=this.checked;localStorage.qn_snap=S.snap?1:0"))}${row('Volver al lápiz al soltar el borrador','',sw(S.er.auto,"S.er.auto=+this.checked"))}</div>
+<h3>Apariencia</h3><div class="sl"><div class="set cstk"><div class="cst"><div>Tema</div></div><select class="cs" onchange="setTheme(this.value)">${[['perla','Perla (claro + esmeralda)'],['obsidiana','Obsidiana (oscuro + menta)'],['marfil','Marfil (claro)'],['ambar','Ámbar (oscuro cálido)']].map(([k,v])=>`<option value="${k}" ${(localStorage.qn_theme||'perla')===k?'selected':''}>${v}</option>`).join('')}</select></div></div>
+<h3>Datos en este dispositivo</h3><div class="sl"><p class="mut note" id="stor">Los cuadernos se guardan en el navegador de este dispositivo y, si inicias sesión, también en la nube. Los <b>audios solo viven en este dispositivo</b>: descárgalos desde “Audios del cuaderno” o con el respaldo .qnotes.</p>${row('Modo diagnóstico','Muestra un panel con lo que detecta la app al escribir (para encontrar fallos del lápiz o la palma)',sw(S.dbgOn,"S.dbgOn=this.checked;localStorage.qn_dbg=S.dbgOn?1:0;const d=$('#dbg');if(d&&!S.dbgOn)d.remove();if(S.dbgOn)dbg('activado')"))}</div>
+<details class="adv"><summary>Avanzado: conexión Supabase</summary><label>Project URL</label><input id="cu" value="${esc(CFG.url)}" placeholder="https://xxxx.supabase.co"><label>Anon key</label><input id="ck" value="${esc(CFG.key)}"><button style="margin-top:12px;width:100%" onclick="saveCfg()">Guardar y conectar</button></details>
+<button class="p cfgdone" onclick="$('#m').remove()">Listo</button></div>`;document.body.appendChild(m);
 try{navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(e=>{const el=$('#stor');if(el)el.innerHTML+=`<br>Usando <b>${fmtMB(e.usage)}</b> de ${fmtMB(e.quota)} disponibles.`})}catch(_){}}
 
 
@@ -1257,6 +1409,7 @@ doc.save((S.nb.title||'cuaderno')+'.pdf');toast('PDF vectorial exportado ✔ (tr
 function vecStroke(doc,s){const h=s.c||'#000',rgb=h.length===7?[1,3,5].map(i=>parseInt(h.substr(i,2),16)):[0,0,0];doc.setDrawColor(...rgb);doc.setFillColor(...rgb);doc.setTextColor(...rgb);doc.setLineCap('round');doc.setLineJoin('round');
 const al=s.t==='h'?.35:s.t==='l'?.7:1,P=s.p;doc.setGState(new doc.GState({opacity:al,'stroke-opacity':al}));
 try{if(s.t==='i')doc.addImage(s.s,/png/.test(s.s.slice(0,30))?'PNG':'JPEG',P[0][0],P[0][1],P[1][0]-P[0][0],P[1][1]-P[0][1]);
+else if(s.t==='x'&&/[^\x20-\x7E\u00A0-\u00FF\n]|[\^_]\{|(?:frac|sqrt|root)\{/.test(s.s)){const bb=bbox(s),pd=8,Z=3,w=bb[2]-bb[0]+2*pd,h=bb[3]-bb[1]+2*pd+.4*(s.w*5+10),cv=document.createElement('canvas');cv.width=Math.ceil(w*Z);cv.height=Math.ceil(h*Z);const cx=cv.getContext('2d');cx.scale(Z,Z);cx.translate(pd-bb[0],pd-bb[1]);stroke(cx,s);doc.addImage(cv.toDataURL('image/png'),'PNG',bb[0]-pd,bb[1]-pd,w,h)}
 else if(s.t==='x'){doc.setFontSize(s.w*5+10);try{doc.setFont(undefined,s.b?'bold':'normal')}catch(_){}s.s.split('\n').forEach((l,i)=>doc.text(txPlain(l),P[0][0],P[0][1]+i*(s.w*6+12),{baseline:'top'}));if(s.u){const fs=s.w*5+10,n=s.s.split('\n').length,ww=Math.max(...s.s.split('\n').map(l=>doc.getTextWidth(txPlain(l))));doc.setLineWidth(Math.max(2,fs*.07));doc.line(P[0][0],P[0][1]+n*(s.w*6+12),P[0][0]+ww,P[0][1]+n*(s.w*6+12))}}
 else if(s.t==='s'){doc.setLineWidth(s.w);const[a,b]=P;if(s.k==='quad')doc.lines([1,2,3].map(i=>[P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]]),P[0][0],P[0][1],[1,1],'S',true);else if(s.k==='rect')doc.rect(a[0],a[1],b[0]-a[0],b[1]-a[1],'S');else if(s.k==='ell')doc.ellipse((a[0]+b[0])/2,(a[1]+b[1])/2,Math.abs(b[0]-a[0])/2||1,Math.abs(b[1]-a[1])/2||1,'S');else{doc.line(a[0],a[1],b[0],b[1]);if(s.k==='arr'){const g=Math.atan2(b[1]-a[1],b[0]-a[0]),q=14+s.w*2;[.45,-.45].forEach(d=>doc.line(b[0],b[1],b[0]+q*Math.cos(g+Math.PI+d),b[1]+q*Math.sin(g+Math.PI+d)))}}}
 else{doc.setLineWidth(s.t==='h'?s.w*5:s.t==='br'?s.w*1.7:s.w);if(P.length===1)doc.circle(P[0][0],P[0][1],s.w/2,'F');else doc.lines(P.slice(1).map((a,i)=>[a[0]-P[i][0],a[1]-P[i][1]]),P[0][0],P[0][1],[1,1],'S',false)}}catch(_){}
