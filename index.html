@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="favicon.png"><meta name="apple-mobile-web-app-title" content="Q-Notes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#eef0f1">
 <title>Q-Notes</title>
@@ -328,6 +328,45 @@ html body #app #tools.rdy{visibility:visible}
 .pill2.hid{display:none}
 /* Bloque inferior de la barra lateral: sin correo ni estado de nube */
 .acct small{display:block}
+
+/* ===== Q-Notes v6: sin zoom de página, HUD en cabecera, iPad vertical, carpetas ===== */
+html,body,#app,header,.side,.modal,.box{touch-action:pan-x pan-y}
+.ed,#ed,#ed canvas{touch-action:none}
+.shelf{touch-action:pan-y}
+/* Zoom y páginas viven en la cabecera, junto a deshacer / ajustes: ya no tapan la hoja */
+header.eh .hud{position:static;right:auto;bottom:auto;left:auto;flex:none;animation:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--grp);border:0;padding:3px;gap:0}
+header.eh .hud button{width:34px;height:34px}
+header.eh .hud button.zp{width:auto;min-width:50px;height:34px;padding:0 6px}
+header.eh .hud span{min-width:46px;padding:0 4px}
+header.eh .hud .vs{margin:0 3px;height:18px}
+header.eh .tt{min-width:0;flex:0 1 auto}
+header.eh{gap:6px;flex-wrap:nowrap}header.eh>button{flex:none}
+/* Tarjetas de carpeta */
+.fcd .cover{background:linear-gradient(145deg,color-mix(in srgb,var(--fh) 26%,var(--card)),var(--card) 75%);border:1.5px solid color-mix(in srgb,var(--fh) 55%,var(--line));box-shadow:0 14px 30px #0003;padding:0;display:grid;place-items:center}
+.fcd .cover::before,.fcd .cover::after{display:none}
+.fcd .cover .ic{width:52px;height:52px;color:var(--fh);fill:color-mix(in srgb,var(--fh) 22%,transparent);stroke-width:1.5}
+.grid.list .fcd .cover .ic{width:22px;height:22px}
+/* iPad en vertical / pantallas medianas */
+@media(max-width:900px){
+ .dsc{flex-wrap:wrap;overflow:visible;justify-content:center;row-gap:6px;column-gap:8px;padding:2px}
+ .dock{border-radius:26px;align-items:center;gap:2px;padding:6px}
+ #app .tb{width:38px;height:38px;border-radius:13px}#app .tb.sm{width:32px;height:32px}.tb .ic{width:20px;height:20px}#app .cbtn{width:38px;height:38px}.tg2{padding:2px;gap:1px}
+ .hero{padding:22px;gap:20px;border-radius:28px}.hero h2{font-size:28px}.hc{width:104px}
+ .gr{font-size:30px}.shelf{padding:24px 20px 80px}
+ .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:26px 18px}
+ header{padding:10px 14px;gap:8px}.srch{width:auto;flex:1;min-width:0}.srch kbd{display:none}
+ .side{padding:16px 10px}
+ .sh{flex-wrap:wrap;gap:10px}
+ .db{grid-template-columns:1fr;grid-template-rows:34% 1fr}.dl{border-right:0;border-bottom:1px solid var(--line)}
+ .pop2{max-width:calc(100vw - 16px)}.pop2 .szr{min-width:0;width:100%}
+ .sws{grid-template-columns:repeat(6,34px)}
+ .box{max-height:94dvh}
+ .tg{grid-template-columns:repeat(auto-fill,minmax(105px,1fr))}
+ .kb{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+#mn .mrow select{min-width:0;width:100%;padding:9px 28px 9px 10px;text-overflow:ellipsis}
+@media(max-width:820px){.mark{display:none}}
+@media(max-width:700px){header.eh .hud button{width:30px;height:34px}header.eh .hud button.zp{min-width:42px}header.eh .hud span{min-width:38px;padding:0 2px}header.eh .hud .vs{margin:0 1px}}
 </style></head><body><div id="app"></div><div id="toast"></div>
 <script>
 // ===== Config Supabase (también editable desde ⚙ en la app) =====
@@ -370,6 +409,8 @@ list=(tr?S.trash:S.nbs).filter(n=>(S.tab!=='fav'||n.fav)&&(tr||S.folder==='Todos
 home=!tr&&S.tab==='docs'&&S.folder==='Todos'&&!q&&S.nbs.length,last=S.nbs[0],hr=new Date().getHours(),gr=hr<6?'Buenas noches':hr<13?'Buenos días':hr<20?'Buenas tardes':'Buenas noches',
 nv=(t,k,l,c)=>`<button class="${S.tab===k&&(k!=='docs'||S.folder==='Todos')?'on':''}" onclick="S.tab='${k}';S.folder='Todos';S.tag='';shelf()">${ic(t)}<span style="flex:1;text-align:left">${l}</span><span class="mut">${c}</span></button>`,
 card=(n,i)=>`<div class="nb ${an}" style="--i:${i}" onclick="${tr?'':`openNb('${n.id}')`}">${coverHTML(n)}<div class="meta"><b>${esc(n.title)}</b><small>${ago(n.updatedAt)}${n.folder?' · '+esc(n.folder):''}${(n.tags||[]).map(t=>' #'+esc(t)).join('')}</small></div><div class="act" onclick="event.stopPropagation()">${tr?`<button title="Restaurar" onclick="restoreNb('${n.id}')">${ic('undo')}</button><span class="sp2"></span><button title="Borrar para siempre" onclick="permDel('${n.id}',1)">${ic('x')}</button>`:`<button class="${n.fav?'fv':''}" title="Favorito" onclick="fav('${n.id}')">${ic('star')}</button><span class="sp2"></span><button title="Duplicar" onclick="dupNb('${n.id}')">${ic('copy')}</button><button title="Editar" onclick="editNb('${n.id}')">${ic('pen')}</button><button title="Mover a la papelera" onclick="delNb('${n.id}')">${ic('trash')}</button>`}</div></div>`,
+kids=!tr&&S.tab==='docs'&&S.folder!=='Todos'&&!q&&!S.tag?fs.filter(x=>x.startsWith(S.folder+'/')&&x.split('/').length===S.folder.split('/').length+1):[],
+fcard=(k,i)=>{const nn=S.nbs.filter(n=>inFolder(n.folder,k)).length,ns=fs.filter(x=>x.startsWith(k+'/')).length;return `<div class="nb fcd ${an}" style="--i:${i};--fh:${hue(k)}" onclick="goFolder('${esc(k)}')"><div class="cover">${ic('folder')}</div><div class="meta"><b>${esc(k.split('/').pop())}</b><small>${nn} cuaderno${nn===1?'':'s'}${ns?' · '+ns+' subcarpeta'+(ns===1?'':'s'):''}</small></div></div>`},
 ttl=tr?'Papelera':S.tab==='fav'?'Favoritos':S.tag?'#'+S.tag:S.folder==='Todos'?'Todos los cuadernos':S.folder.split('/').join(' › ');
 $('#app').innerHTML=`<header><button onclick="S.sbc=!S.sbc;shelf()" title="Panel lateral">${ic('side')}</button><span class="mark">${LOGO}</span><h1 style="flex:1"><span class="logo">Q-Notes</span></h1><label class="srch">${ic('search')}<input id="q" placeholder="Buscar cuadernos" value="${esc(S.q)}" oninput="S.q=this.value;shelf()"><kbd>⌘K</kbd></label><span class="pill2" id="stat"></span><button onclick="notesBoard()" title="Post-its">${ic('note')}</button><button onclick="cfgModal()" title="Ajustes">${ic('gear')}</button><button class="p" onclick="nuevoMenu()">${ic('plus')} Nuevo</button></header>
 <div class="lib ${S.sbc?'c':''}"><aside class="side">${nv('grid','docs','Documentos',S.nbs.length)}${nv('star','fav','Favoritos',S.nbs.filter(n=>n.fav).length)}${nv('trash','trash','Papelera',S.trash.length)}<button onclick="codeList()">${ic('code')}<span style="flex:1;text-align:left">Componentes</span></button><button onclick="tasksModal()">${ic('list')}<span style="flex:1;text-align:left">Pendientes</span><span class="mut">${pendCount()||''}</span></button><button onclick="searchAll()">${ic('search')}<span style="flex:1;text-align:left">Buscar en todo</span></button><button onclick="askNotes()">${ic('bolt')}<span style="flex:1;text-align:left">Pregúntale a tus apuntes</span></button><button onclick="schedModal()">${ic('clock')}<span style="flex:1;text-align:left">Horario de clases</span></button><h6>Carpetas</h6>${folderTree(fs)}<button onclick="newFolder()">${ic('plus')}<span>Nueva carpeta</span></button>
@@ -378,7 +419,7 @@ ${(()=>{const T=[...new Set(S.nbs.flatMap(n=>n.tags||[]))];return T.length?'<h6>
 <section class="hero ${an}"><div class="hc" onclick="openNb('${last.id}')">${coverHTML(last)}</div><div style="position:relative"><small>Continúa donde lo dejaste</small><h2>${esc(last.title)}</h2><p class="mut" style="margin:0 0 16px">Editado ${ago(last.updatedAt)}${last.folder?' · '+esc(last.folder):''}</p><button class="p" onclick="openNb('${last.id}')">Abrir cuaderno ${ic('br')}</button></div>
 <div class="qa">${[['doc','Cuaderno','newModal()'],['bolt','Nota rápida','quick()'],['up','Importar',"$('#fi').click()"],['scan','Escanear',"$('#fs').click()"]].map(([i,l,f])=>`<button onclick="${f}">${ic(i)}${l}</button>`).join('')}</div></section>`:''}
 ${folderBar()}<div class="sh"><h2>${esc(ttl)} <span class="mut" style="font-size:14px;font-weight:500">${list.length}</span>${tr&&S.trash.length?'<button style="margin-left:12px;font-size:13px" onclick="emptyTrash()">Vaciar</button>':''}</h2><div class="tl"><select style="width:auto" onchange="S.sort=this.value;shelf()"><option value="recent" ${S.sort==='recent'?'selected':''}>Recientes</option><option value="name" ${S.sort==='name'?'selected':''}>Nombre</option></select><div class="seg"><button class="${S.view!=='list'?'on':''}" onclick="S.view='grid';localStorage.qn_view='grid';shelf()">${ic('grid')}</button><button class="${S.view==='list'?'on':''}" onclick="S.view='list';localStorage.qn_view='list';shelf()">${ic('list')}</button></div></div></div>
-${list.length||(!tr&&S.tab==='docs'&&!q)?`<div class="grid ${S.view==='list'?'list':''}">${list.map(card).join('')}${!tr&&S.tab==='docs'&&!q?`<div class="nb newt ${an}" style="--i:${list.length}" onclick="newModal()"><div class="cover">${ic('plus')}</div><div class="meta"><b>Nuevo cuaderno</b><small>Personaliza portada y papel</small></div></div>`:''}</div>`:`<div class="empty">${ic(tr?'trash':q?'search':'star')}<h3>${q?'Sin resultados':tr?'La papelera está vacía':'Aún no tienes favoritos'}</h3><p>${q?'Prueba con otro nombre.':tr?'Los cuadernos que borres aparecerán aquí.':'Toca la estrella de un cuaderno para fijarlo aquí.'}</p></div>`}</div></div><input type="file" id="fi" accept="application/pdf,.qnotes,.json,image/*" hidden onchange="impFile(event)"><input type="file" id="fs" accept="image/*" capture="environment" hidden onchange="scan(event)">`;
+${list.length||(!tr&&S.tab==='docs'&&!q)?`<div class="grid ${S.view==='list'?'list':''}">${kids.map(fcard).join('')}${list.map((n,i)=>card(n,i+kids.length)).join('')}${!tr&&S.tab==='docs'&&!q?`<div class="nb newt ${an}" style="--i:${list.length}" onclick="newModal()"><div class="cover">${ic('plus')}</div><div class="meta"><b>Nuevo cuaderno</b><small>Personaliza portada y papel</small></div></div>`:''}</div>`:`<div class="empty">${ic(tr?'trash':q?'search':'star')}<h3>${q?'Sin resultados':tr?'La papelera está vacía':'Aún no tienes favoritos'}</h3><p>${q?'Prueba con otro nombre.':tr?'Los cuadernos que borres aparecerán aquí.':'Toca la estrella de un cuaderno para fijarlo aquí.'}</p></div>`}</div></div><input type="file" id="fi" accept="application/pdf,.qnotes,.json,image/*" hidden onchange="impFile(event)"><input type="file" id="fs" accept="image/*" capture="environment" hidden onchange="scan(event)">`;
 setStat();classBanner();S.noan=1;if(S.q){const q=$('#q');q.focus();q.setSelectionRange(99,99)}}
 addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){const q=$('#q');if(q){e.preventDefault();q.focus()}}});
 async function dupNb(id){const n=await db.notebooks.get(id),ps=(await db.pages.where('notebookId').equals(id).toArray()).filter(x=>!x.deleted),nid=uid();await db.notebooks.add({...n,id:nid,title:n.title+' (copia)',updatedAt:Date.now()});for(const x of ps)await db.pages.add({...x,id:uid(),notebookId:nid,audio:0,updatedAt:Date.now()});await loadNbs();shelf();syncSoon();toast('Cuaderno duplicado')}
@@ -457,7 +498,7 @@ m.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{if(!await dlg.c('�
 async function fav(id){const n=await db.notebooks.get(id);n.fav=!n.fav;n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
 async function restoreNb(id){const n=await db.notebooks.get(id);n.deleted=false;n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
 async function emptyTrash(){if(!S.trash.length||!await dlg.c('¿Vaciar la papelera?','Vaciar'))return;for(const n of S.trash)await permDel(n.id,0)}
-function nuevoMenu(){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:320px;display:flex;flex-direction:column;gap:8px"><h2>Nuevo</h2>${[['📓 Cuaderno','newModal()'],['📁 Carpeta','newFolder()'],['⚡ Nota rápida','quick()'],['📥 Importar (PDF, .qnotes)',"$('#fi').click()"],['📷 Escanear documento',"$('#fs').click()"]].map(([l,f])=>`<button style="text-align:left" onclick="$('#m').remove();${f}">${l}</button>`).join('')}</div>`;document.body.appendChild(m)}
+function nuevoMenu(){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:320px;display:flex;flex-direction:column;gap:8px"><h2>Nuevo</h2>${[['📓 Cuaderno','newModal()'],['📁 '+(curFolder()?'Subcarpeta':'Carpeta'),curFolder()?`newFolder('${esc(curFolder())}')`:'newFolder()'],['⚡ Nota rápida','quick()'],['📥 Importar (PDF, .qnotes)',"$('#fi').click()"],['📷 Escanear documento',"$('#fs').click()"]].map(([l,f])=>`<button style="text-align:left" onclick="$('#m').remove();${f}">${l}</button>`).join('')}</div>`;document.body.appendChild(m)}
 
 /* ===================== Q&V extras: carpetas anidadas, transcripción, estudio, búsqueda, horario ===================== */
 IC.clock='<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>';IC.flag='<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>';IC.mic2='<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>';
@@ -478,6 +519,7 @@ function jsonArr(t){t=String(t||'').replace(/```json|```/g,'').trim();const a=t.
 const needAI=()=>{if(!user||!sb){toast('Inicia sesión en Ajustes para usar la IA');cfgModal();return false}return true};
 
 /* ---------- Carpetas dentro de carpetas (ruta "A/B/C") ---------- */
+const curFolder=()=>S.tab==='docs'&&S.folder&&S.folder!=='Todos'?S.folder:'';
 function cleanPath(p){return(p||'').split('/').map(x=>x.replace(/['"<>\\`]/g,'').trim()).filter(Boolean).join('/')}
 function allFolders(){const fl=JSON.parse(localStorage.qn_folders||'[]'),set=new Set();[...S.nbs.map(n=>n.folder),...fl].filter(Boolean).forEach(f=>{const p=cleanPath(f).split('/');p.forEach((_,i)=>{const q=p.slice(0,i+1).join('/');q&&set.add(q)})});return[...set].sort((a,b)=>a.localeCompare(b,'es'))}
 const inFolder=(f,base)=>!!f&&(f===base||f.startsWith(base+'/'));
@@ -489,8 +531,8 @@ function goFolder(p){S.tab='docs';S.folder=p||'Todos';S.tag='';shelf()}
 function toggleFolder(i){const f=window.FL[i],c=new Set(JSON.parse(localStorage.qn_fclosed||'[]'));c.has(f)?c.delete(f):c.add(f);localStorage.qn_fclosed=JSON.stringify([...c]);shelf()}
 function folderBar(){if(S.tab!=='docs'||S.folder==='Todos'||S.q||S.tag)return'';const f=S.folder,p=f.split('/'),kids=allFolders().filter(x=>x.startsWith(f+'/')&&x.split('/').length===p.length+1);
  const crumbs=[['Todos','']].concat(p.map((x,i)=>[x,p.slice(0,i+1).join('/')])).map(([n,path],i,a)=>`<button class="chip ${i===a.length-1?'on':''}" onclick="goFolder('${esc(path)}')">${esc(n)}</button>`).join('<span class="mut">›</span>');
- return `<div class="fbar"><div class="chips" style="align-items:center">${crumbs}</div><div class="chips" style="align-items:center;margin-top:8px">${kids.map(k=>`<button class="chip" onclick="goFolder('${esc(k)}')"><i class="dotf" style="background:${hue(k)}"></i> ${esc(k.split('/').pop())}</button>`).join('')}<button class="chip" onclick="newFolder('${esc(f)}')">${ic('plus')} Subcarpeta</button><button class="chip" onclick="renameFolder()">Renombrar</button><button class="chip" onclick="deleteFolder()">Eliminar carpeta</button></div></div>`}
-async function newFolder(parent){const n=await dlg.t(parent?'Nombre de la subcarpeta dentro de «'+parent.split('/').pop()+'»':'Nombre de la carpeta');const name=cleanPath((n||'').replace(/\//g,' '));if(!name)return;const path=parent?parent+'/'+name:name,f=JSON.parse(localStorage.qn_folders||'[]');if(!f.includes(path))f.push(path);localStorage.qn_folders=JSON.stringify(f);S.folder=path;S.tab='docs';shelf()}
+ return `<div class="fbar"><div class="chips" style="align-items:center">${crumbs}</div><div class="chips" style="align-items:center;margin-top:8px"><button class="chip" onclick="newFolder('${esc(f)}')">${ic('plus')} Subcarpeta</button><button class="chip" onclick="renameFolder()">Renombrar</button><button class="chip" onclick="deleteFolder()">Eliminar carpeta</button></div></div>`}
+async function newFolder(parent){const n=await dlg.t(parent?'Nombre de la subcarpeta dentro de «'+parent.split('/').pop()+'»':'Nombre de la carpeta');const name=cleanPath((n||'').replace(/\//g,' '));if(!name)return;const path=parent?parent+'/'+name:name,f=JSON.parse(localStorage.qn_folders||'[]');if(!f.includes(path))f.push(path);localStorage.qn_folders=JSON.stringify(f);S.folder=parent||path;S.tab='docs';S.tag='';shelf();toast('Carpeta «'+name+'» creada')}
 async function renameFolder(){const old=S.folder;if(old==='Todos')return;const p=old.split('/'),n=await dlg.t('Nuevo nombre',p[p.length-1]),name=cleanPath((n||'').replace(/\//g,' '));if(!name||name===p[p.length-1])return;const np=[...p.slice(0,-1),name].join('/');await moveFolder(old,np);S.folder=np;shelf()}
 async function moveFolder(old,np){const re=f=>f===old?np:f.startsWith(old+'/')?np+f.slice(old.length):f;localStorage.qn_folders=JSON.stringify([...new Set(JSON.parse(localStorage.qn_folders||'[]').map(re))]);const all=await db.notebooks.toArray(),ch=all.filter(n=>n.folder&&re(n.folder)!==n.folder);for(const n of ch){n.folder=re(n.folder);n.updatedAt=Date.now()}if(ch.length)await db.notebooks.bulkPut(ch);await loadNbs();syncSoon()}
 async function deleteFolder(){const f=S.folder;if(f==='Todos')return;const parent=f.split('/').slice(0,-1).join('/'),nm=f.split('/').pop();if(!await dlg.c('¿Eliminar la carpeta «'+nm+'»? Los cuadernos y subcarpetas no se borran: suben a '+(parent?'«'+parent.split('/').pop()+'»':'la raíz')+'.','Eliminar'))return;
@@ -666,7 +708,7 @@ function exportMd(){const nb=S.nb,o=['# '+nb.title,''];if(nb.sum)o.push('## Resu
  if((nb.tasks||[]).length){o.push('## Pendientes','');nb.tasks.forEach(t=>o.push(`- [${t.done?'x':' '}] ${t.t}${t.d?' ('+t.d+')':''} — ${t.k}`))}
  qvDl(new Blob([o.join('\n')],{type:'text/markdown'}),(nb.title||'cuaderno')+'.md');toast('Markdown exportado')}
 
-async function quickNb(t,tpl,bg){const nb={id:uid(),title:t,folder:'',template:tpl,cover:{c1:GR[3][0],c2:GR[3][1],tex:'solid',bind:'lomo',st:'⚡'},updatedAt:Date.now()};await db.notebooks.add(nb);await db.pages.add(mkPage(nb.id,1,tpl,bg));await loadNbs();syncSoon();await openNb(nb.id)}
+async function quickNb(t,tpl,bg){const nb={id:uid(),title:t,folder:curFolder(),template:tpl,cover:{c1:GR[3][0],c2:GR[3][1],tex:'solid',bind:'lomo',st:'⚡'},updatedAt:Date.now()};await db.notebooks.add(nb);await db.pages.add(mkPage(nb.id,1,tpl,bg));await loadNbs();syncSoon();await openNb(nb.id)}
 function quick(){quickNb('Nota rápida '+new Date().toLocaleDateString(),'lined')}
 async function scan(e,f){f=f||e.target.files[0];e.target.value='';if(!f)return;const im=new Image();im.onload=async()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const x=c.getContext('2d'),k=Math.min(c.width/im.width,c.height/im.height);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,(c.width-im.width*k)/2,(c.height-im.height*k)/2,im.width*k,im.height*k);await quickNb('Escaneo '+new Date().toLocaleDateString(),'blank',c.toDataURL('image/jpeg',.82))};im.src=URL.createObjectURL(f)}
 async function renNb(id){const n=await db.notebooks.get(id),t=prompt('Nombre del cuaderno',n.title);if(!t)return;n.title=t.trim();n.updatedAt=Date.now();await db.notebooks.put(n);await loadNbs();shelf();syncSoon()}
@@ -674,7 +716,7 @@ async function delNb(id){if(!await dlg.c('¿Mover este cuaderno a la papelera?',
 
 // ===== Crear cuaderno =====
 let NB;
-function newModal(n){NB=n?JSON.parse(JSON.stringify(n)):{title:'',folder:'',template:'lined',cover:{c1:GR[0][0],c2:GR[0][1],tex:'solid',bind:'espiral',st:'✨'}};NB.cover={tc:'#ffffff',ff:'inherit',fs:17,...NB.cover};
+function newModal(n){NB=n?JSON.parse(JSON.stringify(n)):{title:'',folder:curFolder(),template:'lined',cover:{c1:GR[0][0],c2:GR[0][1],tex:'solid',bind:'espiral',st:'✨'}};NB.cover={tc:'#ffffff',ff:'inherit',fs:17,...NB.cover};
 const o=(a,v)=>a.map(([k,l])=>`<option value="${k}" ${v===k?'selected':''}>${l}</option>`).join(''),c=NB.cover,m=document.createElement('div');m.className='modal';m.id='m';
 m.innerHTML=`<div class="box"><h2>${n?'Editar cuaderno':'Nuevo cuaderno'}</h2><div class="pv" id="pv"></div>
 <label>Título</label><input id="nt" value="${esc(NB.title)}" placeholder="Ej. Cálculo II, Startup Q&V…"><div class="row"><div><label>Carpeta</label><input id="nf" list="flist" value="${esc(NB.folder)}" placeholder="Universidad/Cálculo"><datalist id="flist">${allFolders().map(f=>`<option value="${esc(f)}">`).join('')}</datalist></div><div><label>Plantilla</label><select id="ntp">${o(Object.entries(TPLS),NB.template)}</select></div></div>
@@ -769,8 +811,8 @@ async function openNb(id){await flushSave();S.nb=await db.notebooks.get(id);S.pa
 function leaveEditor(){if(rec)try{rec.stop()}catch(_){}if(RO){RO.disconnect();RO=null}clearInterval(rtv);if(aud){aud.pause();aud=null}tp.clear();gst=null}
 async function leave(){await flushSave();shelf()}
 function editor(){S.dai=1;S.noan=0;leaveEditor();
-$('#app').innerHTML=`<header class="eh"><button onclick="leave()" title="Biblioteca">${ic('bl')}<span class="hide-s">Biblioteca</span></button><button class="tt" onclick="renTitle()" id="ttl" title="Renombrar">${esc(S.nb.title)}</button><span class="pill2" id="stat"></span><span style="flex:1"></span><button id="bu" onclick="undo()" title="Deshacer">${ic('undo')}</button><button id="br2" onclick="redo()" title="Rehacer">${ic('redo')}</button><button title="Páginas" onclick="pagesModal()">${ic('grid')}</button><button id="mb" onclick="menu()" title="Más">${ic('more')}</button></header>
-<div class="ed" id="ed"><div id="paper"></div><canvas id="base"></canvas><canvas id="live"></canvas><div id="nl"></div><div class="hud" id="hud"></div><button class="zc" id="zc" onclick="zoomTo(1)" title="Ajustar a la pantalla"></button></div><div id="tools"></div>
+$('#app').innerHTML=`<header class="eh"><button onclick="leave()" title="Biblioteca">${ic('bl')}<span class="hide-s">Biblioteca</span></button><button class="tt" onclick="renTitle()" id="ttl" title="Renombrar">${esc(S.nb.title)}</button><span class="pill2" id="stat"></span><span style="flex:1;min-width:0"></span><div class="hud" id="hud"></div><button id="bu" onclick="undo()" title="Deshacer">${ic('undo')}</button><button id="br2" onclick="redo()" title="Rehacer">${ic('redo')}</button><button title="Páginas" onclick="pagesModal()">${ic('grid')}</button><button id="mb" onclick="menu()" title="Más">${ic('more')}</button></header>
+<div class="ed" id="ed"><div id="paper"></div><canvas id="base"></canvas><canvas id="live"></canvas><div id="nl"></div><button class="zc" id="zc" onclick="zoomTo(1)" title="Ajustar a la pantalla"></button></div><div id="tools"></div>
 <input type="file" id="pdfin" accept="application/pdf" hidden onchange="importPdf(event)"><input type="file" id="imgin" accept="image/*" multiple hidden onchange="addImg(event)"><input type="file" id="camin" accept="image/*" capture="environment" hidden onchange="addImg(event)">`;
 base=$('#base');live=$('#live');RV.s=0;bctx=base.getContext('2d');lctx=live.getContext('2d');
 live.addEventListener('pointerdown',pdown);live.addEventListener('pointermove',pmove);live.addEventListener('pointerup',pup);live.addEventListener('pointercancel',e=>{dbg('pointercancel',e);pup(e)});live.addEventListener('lostpointercapture',pup);
@@ -895,7 +937,7 @@ if(T==='lasso'&&sel&&sel.act){
  else sel.b=q;selDraw();return}
 if(erasing){erase(q);return}if(!drawing)return;
 if(S.rtype==='touch'&&S.ptype==='pen'&&S.clean&&S.pw>0&&drawing.p.length===12){S.tipW=S.tipW?S.tipW*.8+S.pw*.2:S.pw;try{localStorage.qn_tipw=S.tipW}catch(_){}}
-if(drawing.t==='s')snapMove(q);else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2],...n.slice(3)]:n)});
+if(drawing.ln){const a=drawing.p[0],dx=q[0]-a[0],dy=q[1]-a[1];drawing.p[1]=Math.abs(dx)>=Math.abs(dy)?[q[0],a[1],.5]:[a[0],q[1],.5]}else if(drawing.t==='s')snapMove(q);else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2],...n.slice(3)]:n)});
  clearTimeout(hold);if(S.snap)hold=setTimeout(snapShape,700)}
 if(!S.raf)S.raf=requestAnimationFrame(()=>{S.raf=0;if(!drawing)return;lctx.clearRect(0,0,W,H);stroke(lctx,drawing)})}
 // --- Autoforma: línea / círculo / elipse / rectángulo (con inclinación) ---
@@ -934,7 +976,7 @@ function snapMove(q){const s=snp;if(!s){drawing.p[1]=q;return}const dc=[s.p1[0]+
  else drawing.p[1]=dc}
 function quadHit(q,p){if(p.some((v,i)=>dseg(q,v,p[(i+1)%4])<10))return true;let c=false;for(let i=0,j=3;i<4;j=i++){if((p[i][1]>q[1])!==(p[j][1]>q[1])&&q[0]<(p[j][0]-p[i][0])*(q[1]-p[i][1])/(p[j][1]-p[i][1])+p[i][0])c=!c}return c}
 function snapShape(){if(!drawing||drawing.t==='s'||drawing.p.length<9)return;const P=drawing.p,a=P[0],b=P.at(-1),d=drawing;
-if(d.t==='h')drawing={...d,p:[a,[b[0],a[1],.5]]};
+if(d.t==='h'){const dx=b[0]-a[0],dy=b[1]-a[1];drawing={...d,ln:1,p:[a,Math.abs(dx)>=Math.abs(dy)?[b[0],a[1],.5]:[a[0],b[1],.5]]}}
 else{const R=recogShape(P);if(!R)return;drawing={t:'s',k:R.k,f:S.fill,c:d.c,w:d.w,p:R.p};snp={q:b,p1:R.fr?R.fr.dc:R.p[1].slice(),fr:R.fr}}
 lctx.clearRect(0,0,W,H);stroke(lctx,drawing);navigator.vibrate&&navigator.vibrate(10)}
 function pup(e){if(e.pointerId!==S.pid)return;if(e.pointerType==='pen')S.lp=Date.now();finishStroke()}
@@ -988,13 +1030,14 @@ function redo(){if(!S.redo.length)return;S.undo.push(cur.strokes);cur.strokes=S.
 // --- herramientas ---
 const dpx=el=>({x:parseFloat(el.style.getPropertyValue('--tx'))||0,y:parseFloat(el.style.getPropertyValue('--ty'))||0});
 function dockMin(on){const el=$('#tools'),d=el&&el.firstElementChild;if(!d)return;const c=dpx(el);if(on){S.bpos={x:c.x,y:c.y};localStorage.qn_bpos=JSON.stringify(S.bpos)}else{S.dpos={x:c.x,y:c.y};localStorage.qn_dpos=JSON.stringify(S.dpos)}d.classList.add('out');setTimeout(()=>{S.dmin=on?1:0;localStorage.qn_dmin=S.dmin;S.pop='';S.dai=1;tools()},on?280:170)}
+function dockReserve(y,h){const ed=$('#ed');if(!ed)return;const rs=!S.dmin&&innerHeight>innerWidth&&y>innerHeight*.55?Math.round(innerHeight-y+4):0;if(ed.style.marginBottom!==rs+'px')ed.style.marginBottom=rs+'px'}
 function dockFix(el){const d=el.firstElementChild;if(!d)return;const w=d.offsetWidth,h=d.offsetHeight,P=S.dmin?S.bpos:S.dpos;let x=P?P.x:S.dmin?16:(innerWidth-w)/2,y=P?P.y:innerHeight-h-(S.dmin?24:14);x=clamp(x,6,Math.max(6,innerWidth-w-6));y=clamp(y,6,Math.max(6,innerHeight-h-6));
-el.style.setProperty('--tx',x+'px');el.style.setProperty('--ty',y+'px');el.classList.toggle('dn',y<280);el.classList.add('rdy');
+el.style.setProperty('--tx',x+'px');el.style.setProperty('--ty',y+'px');el.classList.toggle('dn',y<280);el.classList.add('rdy');dockReserve(y,h);
 const pp=el.querySelector('.pop2');if(pp){pp.style.translate='';const r=pp.getBoundingClientRect();pp.style.translate=(r.left<8?8-r.left:r.right>innerWidth-8?innerWidth-8-r.right:0)+'px 0'}S.dai=0}
 addEventListener('resize',()=>{const e=$('#tools');e&&dockFix(e)});
 function dockDown(e){const h=e.target.closest('.hdl,.bubble');if(!h)return;e.preventDefault();e.stopPropagation();const el=$('#tools'),d=el.firstElementChild,c=dpx(el),w=d.offsetWidth,hh=d.offsetHeight,ox=e.clientX-c.x,oy=e.clientY-c.y,x0=e.clientX,y0=e.clientY;let mv=0,px=c.x,py=c.y;try{h.setPointerCapture(e.pointerId)}catch(_){}
 const m=v=>{if(!mv&&Math.hypot(v.clientX-x0,v.clientY-y0)<6)return;if(!mv){mv=1;d.classList.add('drag');if(S.pop){S.pop='';const q=el.querySelector('.pop2');q&&q.remove()}}px=clamp(v.clientX-ox,6,Math.max(6,innerWidth-w-6));py=clamp(v.clientY-oy,6,Math.max(6,innerHeight-hh-6));el.style.setProperty('--tx',px+'px');el.style.setProperty('--ty',py+'px')};
-const u=()=>{h.removeEventListener('pointermove',m);h.removeEventListener('pointerup',u);h.removeEventListener('pointercancel',u);d.classList.remove('drag');if(mv){const P={x:px,y:py};if(S.dmin){S.bpos=P;localStorage.qn_bpos=JSON.stringify(P)}else{S.dpos=P;localStorage.qn_dpos=JSON.stringify(P)}el.classList.toggle('dn',py<280)}else if(h.classList.contains('bubble'))dockMin(0)};
+const u=()=>{h.removeEventListener('pointermove',m);h.removeEventListener('pointerup',u);h.removeEventListener('pointercancel',u);d.classList.remove('drag');if(mv){const P={x:px,y:py};if(S.dmin){S.bpos=P;localStorage.qn_bpos=JSON.stringify(P)}else{S.dpos=P;localStorage.qn_dpos=JSON.stringify(P)}el.classList.toggle('dn',py<280);dockReserve(py,hh)}else if(h.classList.contains('bubble'))dockMin(0)};
 h.addEventListener('pointermove',m);h.addEventListener('pointerup',u);h.addEventListener('pointercancel',u)}
 function pick(k){if(k===S.tool&&POPT.has(k)){S.pop=S.pop?'':'t';tools();return}if(k==='eraser'&&S.tool!=='eraser')S.prev=S.tool;S.tool=k;S.pop='';const c=S.cfg[k];if(c){S.color=c.c;S.size=c.w}if(k!=='lasso')sel=null;tools()}
 function savePen(){if(S.cfg[S.tool]){S.cfg[S.tool]={c:S.color,w:S.size};localStorage.qn_pens=JSON.stringify(S.cfg)}}
@@ -1044,6 +1087,7 @@ if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();e.shiftKey?redo():und
 if(e.key==='+'||e.key==='=')zoomTo(Z.s*1.25);if(e.key==='-')zoomTo(Z.s/1.25);if(e.key==='0')zoomTo(1);
 if((e.metaKey||e.ctrlKey)&&'cxv'.includes(e.key)){if(e.key==='v'){if(CLIP.length)pasteSel()}else copySel(e.key==='x')}
 const K={p:'pen',b:'ball',h:'highlighter',e:'eraser',l:'lasso',t:'text',s:'shape',v:'pan'};if(!e.metaKey&&!e.ctrlKey&&!e.altKey&&K[e.key])pick(K[e.key])});
+document.addEventListener('touchmove',e=>{if(e.touches.length>1&&!e.target.closest('#ed'))e.preventDefault()},{passive:false});addEventListener('wheel',e=>{if(e.ctrlKey&&!e.target.closest('#ed'))e.preventDefault()},{passive:false});
 let gz0=1;document.addEventListener('gesturestart',e=>{e.preventDefault();gz0=Z.s});document.addEventListener('gesturechange',e=>{e.preventDefault()});addEventListener('scroll',()=>scrollTo(0,0));window.visualViewport&&visualViewport.addEventListener('scroll',()=>scrollTo(0,0));
 function lz(){const n=Date.now();lzr=lzr.filter(a=>n-a[2]<700);lctx.clearRect(0,0,W,H);lzr.forEach((a,i)=>{lctx.globalAlpha=1-(n-a[2])/700;lctx.fillStyle='#ff2d2d';lctx.shadowColor='#f00';lctx.shadowBlur=14;lctx.beginPath();lctx.arc(a[0],a[1],i===lzr.length-1&&lzd?9:5,0,7);lctx.fill()});lctx.globalAlpha=1;lctx.shadowBlur=0;if(lzr.length)requestAnimationFrame(lz)}
 
