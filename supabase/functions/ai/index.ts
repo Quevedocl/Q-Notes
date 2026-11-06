@@ -97,7 +97,7 @@ function textTask(action: string, today: string, classDate: string): string {
 }
 
 type Media = { data: string; mime: string };
-type Opts = { sys: string; maxOut: number; timeout: number; total?: number; json?: boolean; think?: number };
+type Opts = { sys: string; maxOut: number; timeout: number; total?: number; json?: boolean; think?: number; fast?: boolean; light?: boolean; hedge?: number };
 
 // ---------- Normalizador de notación matemática ----------
 // Convierte cualquier resto de LaTeX/Unicode raro a la notación que dibuja el cliente (ver NOTA).
@@ -148,9 +148,10 @@ class AIError extends Error {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Modelos de Gemini a probar en orden (si uno está saturado, sin cuota o no existe, pasa al siguiente).
-function models(): string[] {
+function models(light = false): string[] {
   const m = Deno.env.get('GEMINI_MODEL');
-  return [...new Set([m, 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'].filter(Boolean) as string[])];
+  const base = light ? ['gemini-3.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'] : ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'];
+  return [...new Set([m, ...base].filter(Boolean) as string[])];
 }
 
 async function gemini(key: string, model: string, thinkingOff: boolean, media: Media | null, prompt: string, o: Opts) {
@@ -217,6 +218,47 @@ async function viaGemini(key: string, media: Media | null, prompt: string, o: Op
   }
   if (quota) throw new AIError('La IA llegó al límite de uso gratuito de Gemini. Espera unos minutos o activa facturación en Google AI Studio. Detalle: ' + last, 429);
   throw new AIError('La IA no pudo responder ahora mismo. Detalle: ' + last, 502);
+}
+
+// Modo rápido (todas las acciones salvo la transcripción de audio): si el primer modelo no responde en `hedge` ms se lanza el siguiente EN PARALELO.
+// Gana la primera respuesta válida, así un modelo lento o saturado ya no retrasa todo.
+async function viaGeminiFast(key: string, media: Media | null, prompt: string, o: Opts): Promise<string> {
+  const ms = models(!!o.light).slice(0, 3);
+  const hedge = o.hedge ?? 5000;
+  let last = 'sin respuesta';
+  return await new Promise<string>((resolve, reject) => {
+    let started = 0, failed = 0, done = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const launch = () => {
+      if (done || started >= ms.length) return;
+      const model = ms[started++];
+      clearTimeout(timer);
+      if (started < ms.length) timer = setTimeout(launch, hedge);
+      (async () => {
+        try {
+          let res = await gemini(key, model, true, media, prompt, o);
+          if (!res.ok && res.status === 400) res = await gemini(key, model, false, media, prompt, o);
+          if (res.ok) {
+            const j = res.j as any;
+            const text = (j?.candidates?.[0]?.content?.parts || []).filter((p: any) => p.text && !p.thought).map((p: any) => p.text).join('\n').trim();
+            if (text) { done = true; clearTimeout(timer); return resolve(text); }
+            last = `${model}: respuesta vacía`;
+          } else {
+            last = `${model}: ${(res.j as any)?.error?.message || 'HTTP ' + res.status}`;
+            console.error('gemini fast error', res.status, last);
+            if (res.status === 401 || res.status === 403) { done = true; clearTimeout(timer); return reject(new AIError('La clave GEMINI_API_KEY no es válida o no tiene permiso. Detalle: ' + last, 500)); }
+          }
+        } catch (e) {
+          last = `${model}: ${(e as Error).name === 'AbortError' ? 'tiempo agotado' : (e as Error).message}`;
+        }
+        failed++;
+        if (done) return;
+        if (started < ms.length) launch();
+        else if (failed >= ms.length) { done = true; clearTimeout(timer); reject(new AIError('La IA no pudo responder ahora mismo. Detalle: ' + last)); }
+      })();
+    };
+    launch();
+  });
 }
 
 // Respaldo opcional: Claude (Anthropic) si no hay clave de Gemini.
@@ -293,15 +335,26 @@ Deno.serve(async (req: Request) => {
         think: math ? 1024 : 0,
       };
     }
+    // Velocidad: modelos en paralelo para todo (menos audio), razonamiento solo donde ayuda, respuestas con tope ajustado.
+    if (action !== 'transcribe') {
+      const LIGHT = ['title', 'summary', 'bullets', 'translate'];
+      const light = LIGHT.includes(action);
+      const hedge = light ? 4000 : ['convert', 'lines', 'latex', 'explain'].includes(action) ? 8000 : action === 'wireframe' ? 15000 : (action === 'code' || action === 'tokens') ? 25000 : 12000;
+      const cfg: Partial<Opts> = { fast: true, light, hedge };
+      if (light) { cfg.think = 0; cfg.timeout = 15000; cfg.maxOut = action === 'title' ? 256 : action === 'translate' ? 4096 : 1024; }
+      else if (action === 'convert' || action === 'lines' || action === 'latex') cfg.think = 512;
+      o = { ...o, ...cfg };
+    }
     const day = new Date().toISOString().slice(0, 10);
     const { data: row } = await admin.from('ai_usage').select('n').eq('user_id', uid).eq('day', day).maybeSingle();
     const used = row?.n ?? 0;
     if (used >= DAILY_LIMIT) return json({ error: `Alcanzaste el límite diario de ${DAILY_LIMIT} consultas de IA.` }, 429);
 
-    const raw = gKey ? await viaGemini(gKey, media, prompt, o) : await viaClaude(cKey!, media, prompt, o);
+    const raw = gKey ? (o.fast ? await viaGeminiFast(gKey, media, prompt, o) : await viaGemini(gKey, media, prompt, o)) : await viaClaude(cKey!, media, prompt, o);
     const text = postProcess(action, raw);
 
-    await admin.from('ai_usage').upsert({ user_id: uid, day, n: used + 1 });
+    const up = Promise.resolve(admin.from('ai_usage').upsert({ user_id: uid, day, n: used + 1 })).catch((e) => console.error('usage', e));
+    try { (globalThis as any).EdgeRuntime?.waitUntil?.(up); } catch (_) { /* sin EdgeRuntime: se completa solo */ }
     return json({ text, left: DAILY_LIMIT - used - 1 });
   } catch (e) {
     console.error('ai fatal', e);
