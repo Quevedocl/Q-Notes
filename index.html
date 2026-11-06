@@ -146,6 +146,7 @@ button:disabled{opacity:.35;pointer-events:none}
 #mn{width:268px;max-height:calc(100dvh - 80px);overflow:auto;gap:2px;padding:10px}
 #mn h6{margin:10px 8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 #mn button{padding:10px 12px;gap:12px;width:100%}#mn .ic{width:18px;height:18px;color:var(--mut)}
+#mn button,#mn h6,#mn .mrow{flex:none}#mn button{height:auto;min-height:40px;line-height:1.25;text-align:left}#mn button span{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere}#mn .ic{flex:none}
 #mn .mrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:2px}
 /* Fórmulas en resultados de IA */
 .aiout sup,.aiout sub{font-size:.7em;line-height:0}.aiout .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .2em;font-size:.92em}.aiout .fr>span{padding:0 .25em}.aiout .fr>span:first-child{border-bottom:1.5px solid currentColor}.aiout .sq{white-space:nowrap}.aiout .sqi{border-top:1.5px solid currentColor;padding:0 .12em}.aiout .rt{margin-right:-.15em}
@@ -338,7 +339,7 @@ const TPLS={lined:'Líneas',grid:'Cuadrícula',dotted:'Puntos',staff:'Pentagrama
 const $=s=>document.querySelector(s),uid=()=>crypto.randomUUID(),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const db=new Dexie('qnotes2');db.version(1).stores({notebooks:'id,updatedAt',pages:'id,notebookId,updatedAt'});db.version(2).stores({audio:'id'});db.version(3).stores({code:'id,updatedAt'});db.version(4).stores({meta:'k'});
 let S={nbs:[],nb:null,pages:[],i:0,tool:'pen',color:COLORS[0],size:3,palm:true,undo:[],redo:[],folder:'Todos',shape:'line',q:'',tbc:localStorage.qn_tbc!=='0'?1:0,cfg:JSON.parse(localStorage.qn_pens||'null')||{pen:{c:'#111827',w:3},ball:{c:'#2563eb',w:2},brush:{c:'#7c3aed',w:4},call:{c:'#111827',w:3},pencil:{c:'#475569',w:3},highlighter:{c:'#facc15',w:6}}},sb=null,user=null,syncT,saveT,cur=null,base,bctx,live,lctx,imgs={};
-S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.altPen=localStorage.qn_alt==='1';S.altW=+localStorage.qn_altw||28;S.tapg=localStorage.qn_tapg==='1';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
+S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.altPen=localStorage.qn_alt==='1';S.altW=+localStorage.qn_altw||28;S.tapg=localStorage.qn_tapg==='1';S.tilt=localStorage.qn_tilt!=='0';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
 let rec=null,aud=null,t0=0,recPid='',lzr=[],lzd=false;
 let sel=null,imc={};
 function setTheme(v){document.documentElement.dataset.theme=localStorage.qn_theme=v;document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()}
@@ -508,7 +509,7 @@ function trPdf(doc){const pgs=S.pages.filter(p=>p.tr||p.sum);if(!pgs.length)retu
   if(pg.tr)pg.tr.segs.forEach(([s,t],i)=>{const lo=lostHit(pg,i);line((lo?'(!) ':'')+'['+fmtH(s)+'] '+t,{c:lo?[190,30,30]:[40,40,40]})})})}
 
 /* ---------- Marcador "me perdí" ---------- */
-function lostMark(){if(!rec)return toast('Empieza a grabar para marcar');const pg=S.pages.find(p=>p.id===recPid)||cur,s=Math.round((Date.now()-t0)/1000);pg.lost=pg.lost||[];pg.lost.push(s);savePg(pg);try{navigator.vibrate&&navigator.vibrate(25)}catch(_){}const b=$('#lostbtn');if(b){b.classList.add('hit');setTimeout(()=>b.classList.remove('hit'),500)}toast('🚩 Marcado en '+fmtH(s)+' · luego verás lo que se dijo')}
+function lostMark(){if(!rec)return toast('Empieza a grabar para marcar');const pg=S.pages.find(p=>p.id===recPid)||cur,s=Math.round((Date.now()-t0)/1000);pg.lost=pg.lost||[];pg.lost.push(s);savePg(pg);try{navigator.vibrate&&navigator.vibrate(25)}catch(_){}const b=$('#lostbtn');if(b){b.classList.add('hit');setTimeout(()=>b.classList.remove('hit'),500)}0}
 function syncFab(){const ed=$('#ed');if(!ed)return;let b=$('#lostbtn');if(rec&&!b){b=document.createElement('button');b.id='lostbtn';b.className='fab';b.innerHTML='🚩 <span>Me perdí</span>';b.onclick=lostMark;ed.appendChild(b)}else if(!rec&&b)b.remove()}
 
 /* ---------- Transcripción con marcas de tiempo ---------- */
@@ -537,7 +538,7 @@ async function trClick(e){const b=e.target.closest('[data-a]');if(!b)return;cons
  if(a==='notes'){S.scope='pg';return studyRun('classnotes')}if(a==='quiz'){S.scope='pg';return studyRun('quiz')}if(a==='tasks'){S.scope='pg';return studyRun('tasks')}}
 async function trSeek(pg,sec){if(pg!==cur)return toast('Abre esa página para escucharla');if(!cur.audio)return toast('Sin audio en esta página');if(!aud)await play();if(aud){aud.currentTime=sec;aud.play&&aud.play()}}
 function freeY(){let m=40;for(const s of cur.strokes){try{const b=bbox(s);if(b&&isFinite(b[3]))m=Math.max(m,b[3])}catch(_){}}return m+18}
-function insText(t,pg){if(pg&&pg!==cur)return toast('Abre esa página para insertar el texto');if(S.ro)return toast('Estás en modo lectura');const y=freeY(),txt=wrap(t,52),h=txt.split('\n').length*24;commit({t:'x',c:S.color,w:2,p:[[44,y,.5]],s:txt});toast(y+h>H-30?'Insertado, pero se sale de la hoja: muévelo con el lazo':'Insertado: selecciónalo con el lazo para moverlo')}
+function insText(t,pg){if(pg&&pg!==cur)return toast('Abre esa página para insertar el texto');if(S.ro)return toast('Estás en modo lectura');const y=freeY(),txt=wrap(t,52),h=txt.split('\n').length*24;commit({t:'x',c:S.color,w:2,p:[[44,y,.5]],s:txt});0}
 
 /* ---------- Estudiar con IA: apuntes, quiz, tarjetas, tareas ---------- */
 function pageText(pg){const o=[];if(pg.tr)pg.tr.segs.forEach(([s,t])=>o.push(`[${fmtH(s)}] ${t}`));if(pg.ocr)o.push('APUNTES MANUSCRITOS: '+pg.ocr);(pg.notes||[]).forEach(n=>n.t&&o.push('POST-IT: '+n.t));pg.strokes.filter(s=>s.t==='x'&&s.s).forEach(s=>o.push('TEXTO: '+txPlainAll(s.s)));return o.join('\n')}
@@ -715,10 +716,22 @@ function stroke(c,s){c.save();c.lineCap=c.lineJoin='round';c.strokeStyle=c.fillS
 if(s.t==='x'){const fs=s.w*5+10,ls=s.s.split('\n');c.textBaseline='top';ls.forEach((l,i)=>txDraw(c,s,l,p[0][0],p[0][1]+i*(s.w*6+12),fs));if(s.u){const ww=Math.max(...ls.map(l=>txW(c,s,l,fs))),yy=p[0][1]+ls.length*(s.w*6+12)-fs*.02;c.lineWidth=Math.max(2,fs*.07);c.globalAlpha=.85;c.beginPath();c.moveTo(p[0][0],yy);c.lineTo(p[0][0]+ww,yy);c.stroke();c.globalAlpha=1}}
 else if(s.t==='i'){const m=imc[s.s];if(imb[s.s])c.drawImage(imb[s.s],p[0][0],p[0][1],p[1][0]-p[0][0],p[1][1]-p[0][1]);else if(m&&m.complete&&m.naturalWidth){c.drawImage(m,p[0][0],p[0][1],p[1][0]-p[0][0],p[1][1]-p[0][1]);bmp(s.s,m)}else ld(s.s).then(()=>{if(c===bctx)paint()})}
 else if(s.t==='s'){const[a,b]=p;c.lineWidth=s.w;c.beginPath();if(s.k==='quad'){c.moveTo(p[0][0],p[0][1]);for(let i=1;i<4;i++)c.lineTo(p[i][0],p[i][1]);c.closePath()}else if(s.k==='rect')c.rect(a[0],a[1],b[0]-a[0],b[1]-a[1]);else if(s.k==='ell')c.ellipse((a[0]+b[0])/2,(a[1]+b[1])/2,Math.abs(b[0]-a[0])/2||1,Math.abs(b[1]-a[1])/2||1,0,0,7);else{c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);if(s.k==='arr'){const g=Math.atan2(b[1]-a[1],b[0]-a[0]),h=14+s.w*2;[.45,-.45].forEach(d=>{c.moveTo(b[0],b[1]);c.lineTo(b[0]+h*Math.cos(g+Math.PI+d),b[1]+h*Math.sin(g+Math.PI+d))})}}if(s.f&&(s.k==='rect'||s.k==='ell'||s.k==='quad')){c.globalAlpha=.25;c.fill();c.globalAlpha=1}c.stroke()}
+else if((s.t==='l'||s.t==='br')&&p.length>1&&p[0].length>4)tiltStroke(c,s);
 else if(s.t==='b')stroke0(c,{...s,p:p.map(a=>[a[0],a[1],.45])});
 else if(s.t==='br')stroke0(c,{...s,w:s.w*1.7,p:p.map(a=>[a[0],a[1],Math.min(1.5,a[2]*1.9)])});
 else if(s.t==='c'){if(p.length===1){c.beginPath();c.arc(p[0][0],p[0][1],s.w/2,0,7);c.fill()}for(let i=1;i<p.length;i++){const g=Math.atan2(p[i][1]-p[i-1][1],p[i][0]-p[i-1][0]);c.lineWidth=s.w*(.3+2.4*Math.abs(Math.sin(g-.8)));c.beginPath();c.moveTo(p[i-1][0],p[i-1][1]);c.lineTo(p[i][0],p[i][1]);c.stroke()}}
 else{if(s.t==='l')c.globalAlpha=.7;stroke0(c,s)}c.restore()}
+/* Trazo con inclinación: el ancho crece al inclinar el lápiz (más en la dirección perpendicular a su inclinación),
+   y la opacidad baja al inclinar y sube con la presión → efecto de sombreado como un lápiz real. */
+function tiltStroke(c,s){const p=s.p,n=p.length,br=s.t==='br',K=br?2:3.4,W0=br?s.w*1.7:s.w,base=c.globalAlpha,w=[],al=[],dr=[];let pw=0,pa=0,pd=0;
+for(let i=0;i<n;i++){const a=p[i],q0=p[Math.max(0,i-1)],q1=p[Math.min(n-1,i+1)],dx=q1[0]-q0[0],dy=q1[1]-q0[1];
+ if(Math.hypot(dx,dy)>.01)pd=Math.atan2(dy,dx);dr.push(pd);
+ const pr=Math.min(1.5,a[2]),tl=a[3]||0,az=a[4]||0,across=.35+.65*Math.abs(Math.sin(pd-az)),
+  wi=W0*(br?.6+pr*1.1:.45+pr)*(1+tl*K*across),
+  ai=br?(.5+.5*Math.min(1,pr))*(1-.3*tl):(.4+.6*Math.min(1,pr))*(1-.55*tl);
+ pw=i?pw*.6+wi*.4:wi;pa=i?pa*.5+ai*.5:ai;w.push(pw);al.push(clamp(pa,.12,.97))}
+const L=[],R=[];for(let i=0;i<n;i++){const nx=-Math.sin(dr[i])*w[i]/2,ny=Math.cos(dr[i])*w[i]/2;L.push([p[i][0]+nx,p[i][1]+ny]);R.push([p[i][0]-nx,p[i][1]-ny])}
+for(let i=1;i<n;i++){c.globalAlpha=base*al[i];c.beginPath();c.moveTo(L[i-1][0],L[i-1][1]);c.lineTo(L[i][0],L[i][1]);c.lineTo(R[i][0],R[i][1]);c.lineTo(R[i-1][0],R[i-1][1]);c.closePath();c.fill()}c.globalAlpha=base}
 function stroke0(c,s){const p=s.p;if(!p.length)return;c.lineCap=c.lineJoin='round';c.strokeStyle=c.fillStyle=s.c;
 if(s.t==='h'){c.globalAlpha=.35;c.lineWidth=s.w*5;c.beginPath();c.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length-1;i++)c.quadraticCurveTo(p[i][0],p[i][1],(p[i][0]+p[i+1][0])/2,(p[i][1]+p[i+1][1])/2);c.lineTo(p.at(-1)[0],p.at(-1)[1]);c.stroke();c.globalAlpha=1;return}
 if(p.length===1){c.beginPath();c.arc(p[0][0],p[0][1],s.w/2,0,7);c.fill();return}
@@ -811,8 +824,10 @@ function maskMail(e){const[a,d]=String(e).split('@');return a?a[0]+'•'.repeat(
 function setStat(){const el=$('#stat');if(!el)return;let t,c='';if(S.err){t='Error al guardar';c='err'}else if(!user){t=dirty.size?'Guardando…':'Solo local';c=dirty.size?'sync':''}else if(!navigator.onLine){t='Sin conexión';c='off'}else if(S.syncState==='err'){t='Error de sync';c='err'}else if(dirty.size||S.syncState==='sync'){t='Guardando…';c='sync'}else{t='Sincronizado';c='ok'}if(c!=='err'){el.className='pill2 hid';el.innerHTML='';return}el.className='pill2 err';el.innerHTML='<i></i><span>'+t+'</span>'}
 
 // --- utilidades de geometría ---
-function pt(e){const r=S.rc||pr();return[+((e.clientX-r.left)*W/r.width).toFixed(1),+((e.clientY-r.top)*H/r.height).toFixed(1),+prs(e).toFixed(2)]}
-function prs(e){let p=e.pressure>0?e.pressure:.5;if(e.pointerType==='pen'&&(S.tool==='pencil'||S.tool==='brush'))p=Math.min(1.6,p*(1+Math.hypot(e.tiltX||0,e.tiltY||0)/55));return p}
+function pt(e){const r=S.rc||pr(),a=[+((e.clientX-r.left)*W/r.width).toFixed(1),+((e.clientY-r.top)*H/r.height).toFixed(1),+prs(e).toFixed(2)];
+/* Inclinación del lápiz: [x,y,presión,inclinación 0..1,azimut rad]. 0 = vertical (punta fina), 1 = casi plano (sombreado ancho) */
+if(S.tilt&&e.pointerType==='pen'&&(S.tool==='pencil'||S.tool==='brush')){const D=Math.PI/180,tx=Math.tan(clamp(e.tiltX||0,-89,89)*D),ty=Math.tan(clamp(e.tiltY||0,-89,89)*D),ang=Math.atan(Math.hypot(tx,ty))/D;a.push(+clamp((ang-10)/65,0,1).toFixed(2),+Math.atan2(ty,tx).toFixed(2))}return a}
+function prs(e){let p=e.pressure>0?e.pressure:.5;if(!S.tilt&&e.pointerType==='pen'&&(S.tool==='pencil'||S.tool==='brush'))p=Math.min(1.6,p*(1+Math.hypot(e.tiltX||0,e.tiltY||0)/55));return p}
 function pagePt(cx,cy){const r=pr();return[(cx-r.left)*W/r.width,(cy-r.top)*H/r.height]}
 function bbox(s){if(s.t==='s'&&s.k==='quad'){const X=s.p.map(v=>v[0]),Y=s.p.map(v=>v[1]);return[Math.min(...X),Math.min(...Y),Math.max(...X),Math.max(...Y)]}if(s.t==='i'||s.t==='s'){const[a,b]=s.p;return[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])]}
 if(s.t==='x'){const fs=s.w*5+10,ls=s.s.split('\n');const w=Math.max(...ls.map(l=>txW(MC,s,l,fs)));return[s.p[0][0],s.p[0][1],s.p[0][0]+w,s.p[0][1]+ls.length*(s.w*6+12)]}
@@ -827,14 +842,14 @@ function xf(f){cur.strokes=cur.strokes.map((x,i)=>sel.idx.includes(i)?f(x):x)}
 function selDraw(){lctx.clearRect(0,0,W,H);if(!sel)return;lctx.save();lctx.setLineDash([6,5]);lctx.lineWidth=1.5;lctx.strokeStyle='#4f8cff';if(sel.act==='rect'){const a=sel.a,b=sel.b;lctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1])}else if(sel.box){const b=sel.box;lctx.strokeRect(b[0]-8,b[1]-8,b[2]-b[0]+16,b[3]-b[1]+16);lctx.setLineDash([]);lctx.fillStyle='#fff';const h=hsz();[[b[0]-8,b[1]-8],[b[2]+8,b[1]-8],[b[2]+8,b[3]+8],[b[0]-8,b[3]+8]].forEach(c=>{lctx.beginPath();lctx.arc(c[0],c[1],h,0,7);lctx.fill();lctx.stroke()})}lctx.restore()}
 function scaleSel(f){if(!sel||!sel.box)return;snapU();const b=sel.box,cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2;xf(x=>({...x,w:x.t==='x'?x.w*f:x.w,p:x.p.map(a=>[cx+(a[0]-cx)*f,cy+(a[1]-cy)*f,...a.slice(2)])}));sel.box=[cx+(b[0]-cx)*f,cy+(b[1]-cy)*f,cx+(b[2]-cx)*f,cy+(b[3]-cy)*f];paint();selDraw();save()}
 let CLIP=[];
-function copySel(cut){if(!sel||!sel.box)return;CLIP=sel.idx.map(i=>JSON.parse(JSON.stringify(cur.strokes[i])));toast(cut?'Cortado':'Copiado · pégalo en cualquier página');if(cut)delSel()}
+function copySel(cut){if(!sel||!sel.box)return;CLIP=sel.idx.map(i=>JSON.parse(JSON.stringify(cur.strokes[i])));0;if(cut)delSel()}
 function pasteSel(){if(!CLIP.length)return toast('No hay nada copiado');snapU();const b=cur.strokes.length,n=CLIP.map(x=>({...x,ts:undefined,p:x.p.map(a=>[a[0]+24,a[1]+24,...a.slice(2)])}));cur.strokes=[...cur.strokes,...n];CLIP=JSON.parse(JSON.stringify(n));S.tool='lasso';S.pop='';const ix=n.map((_,k)=>b+k);sel={idx:ix,box:unionBox(ix),act:null};paint();selDraw();save();tools()}
 function bucket(q){const k=.5,w=Math.round(W*k),h=Math.round(H*k),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.scale(k,k);cur.strokes.forEach(t=>{if(t.t!=='i')stroke(x,t)});
 const a=x.getImageData(0,0,w,h).data,sx=Math.round(q[0]*k),sy=Math.round(q[1]*k);if(a[(sy*w+sx)*4+3]>20)return toast('Toca dentro de una zona cerrada, no sobre el trazo');
 const m=new Uint8Array(w*h),st=[sx+sy*w];let n=0;while(st.length){const i=st.pop();if(m[i]||a[i*4+3]>20)continue;m[i]=1;n++;const X=i%w,Y=i/w|0;if(X>0)st.push(i-1);if(X<w-1)st.push(i+1);if(Y>0)st.push(i-w);if(Y<h-1)st.push(i+w)}
 if(n>w*h*.85)return toast('La zona no está cerrada: cierra el contorno e inténtalo de nuevo');
 const o=x.createImageData(w,h),cc=S.color.match(/\w\w/g).map(v=>parseInt(v,16));for(let i=0;i<m.length;i++)if(m[i])o.data.set([cc[0],cc[1],cc[2],255],i*4);
-x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,w,h);x.putImageData(o,0,0);snapU();cur.strokes=[{t:'i',fill:1,c:S.color,w:1,s:c.toDataURL('image/png'),p:[[0,0],[W,H]]},...cur.strokes];paint();save();toast('Relleno aplicado · deshacer lo quita')}
+x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,w,h);x.putImageData(o,0,0);snapU();cur.strokes=[{t:'i',fill:1,c:S.color,w:1,s:c.toDataURL('image/png'),p:[[0,0],[W,H]]},...cur.strokes];paint();save();0}
 function delSel(){if(!sel)return;snapU();cur.strokes=cur.strokes.filter((_,i)=>!sel.idx.includes(i));sel=null;lctx.clearRect(0,0,W,H);paint();save();tools()}
 function recolor(){if(!sel||!sel.box)return;snapU();xf(x=>x.t==='i'?x:{...x,c:S.color});paint();save()}
 function dupSel(){if(!sel||!sel.box)return;snapU();const n=sel.idx.map(i=>({...cur.strokes[i],p:cur.strokes[i].p.map(a=>[a[0]+30,a[1]+30,...a.slice(2)])})),b=cur.strokes.length;cur.strokes=[...cur.strokes,...n];sel.idx=n.map((_,k)=>b+k);sel.box=sel.box.map(v=>v+30);paint();selDraw();save()}
@@ -877,7 +892,7 @@ if(T==='lasso'&&sel&&sel.act){
  else if(sel.act==='rs'){const f=clamp(Math.hypot(q[0]-sel.o[0],q[1]-sel.o[1])/sel.q0,.1,12),o=sel.o;cur.strokes=cur.strokes.map((x,i)=>{const k=sel.idx.indexOf(i);if(k<0)return x;const s0=sel.sn[k];return{...s0,w:s0.t==='x'?s0.w*f:s0.w,p:s0.p.map(a=>[o[0]+(a[0]-o[0])*f,o[1]+(a[1]-o[1])*f,...a.slice(2)])}});sel.box=sel.b0.map((v,i)=>o[i%2]+(v-o[i%2])*f);dragPaintSoon();return}
  else sel.b=q;selDraw();return}
 if(erasing){erase(q);return}if(!drawing)return;
-if(drawing.t==='s')snapMove(q);else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2]]:n)});
+if(drawing.t==='s')snapMove(q);else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2],...n.slice(3)]:n)});
  clearTimeout(hold);if(S.snap)hold=setTimeout(snapShape,700)}
 if(!S.raf)S.raf=requestAnimationFrame(()=>{S.raf=0;if(!drawing)return;lctx.clearRect(0,0,W,H);stroke(lctx,drawing)})}
 // --- Autoforma: línea / círculo / elipse / rectángulo (con inclinación) ---
@@ -948,7 +963,7 @@ function scribbleErase(d){if(!d||d.t==='h'||d.t==='s'||d.t==='x'||d.t==='i'||!d.
   if(n/P.length>=.7)hit.push(i)});
  if(!hit.length)return false; // no cubre nada: se conserva como trazo normal
  snapU();const rm=new Set(hit);cur.strokes=cur.strokes.filter((_,i)=>!rm.has(i));sel=null;paint();save();tools();
- toast('Borrado rayando · deshacer lo restaura');navigator.vibrate&&navigator.vibrate(12);return true}
+ 0;navigator.vibrate&&navigator.vibrate(12);return true}
 function erase(q){const r=S.esz,out=[];let ch=false;
 for(const s of cur.strokes){
  if(S.er.hl&&s.t!=='h'){out.push(s);continue}
@@ -990,7 +1005,7 @@ if(T==='shape')return `<div class="pr">${[['line','Línea'],['arr','Flecha'],['r
 if(T==='lasso')return sel&&sel.box?`<div class="pr">${chip(1,'aiMenu(0)',ic('bolt')+' IA')}${hwSel().length?chip(0,'smartRun()','Aa Texto')+chip(0,'titleSel()','Título'):''}${chip(0,'recolor()','Color')}${sel.idx.length===1&&cur.strokes[sel.idx[0]]&&cur.strokes[sel.idx[0]].t==='i'&&!cur.strokes[sel.idx[0]].fill?chip(0,'cropSel()','Recortar'):''}${chip(0,'dupSel()','Duplicar')}${chip(0,'copySel()','Copiar')}${chip(0,'copySel(1)','Cortar')}${CLIP.length?chip(0,'pasteSel()','Pegar'):''}${chip(0,'scaleSel(1.15)','＋')}${chip(0,'scaleSel(.87)','－')}<button class="chip dg" onclick="delSel()">Borrar</button></div><div class="pr"><b>Arrastra las esquinas para cambiar el tamaño</b></div>`:'';
 if(T==='title')return cpop()+`<div class="pr"><b>Escribe tu título a mano y haz una pausa: se convierte solo</b></div><div class="pr">${FONTS.map(([f,l])=>chip(smartFont()===f,`localStorage.qn_sfont='${f}';tools()`,`<span style="font-family:${f}">${l}</span>`)).join('')}</div>`;
 if(T==='text')return cpop();
-return cpop()+`<div class="pr">${chip(S.snap,"S.snap=!S.snap;localStorage.qn_snap=S.snap?1:0;tools();toast(S.snap?'Autoforma: mantén el lápiz quieto al final del trazo':'Autoforma desactivada')",'Autoforma al mantener')}</div>`}
+return cpop()+`<div class="pr">${chip(S.snap,"S.snap=!S.snap;localStorage.qn_snap=S.snap?1:0;tools();0",'Autoforma al mantener')}</div>`}
 function tools(){syncFab();if(S.tool!=='lasso'){sel=null;lctx&&lctx.clearRect(0,0,W,H)}
 const el=$('#tools');if(!el)return;if(!el._dd){el._dd=1;el.addEventListener('pointerdown',dockDown)}const sc=el.querySelector('.dsc'),sl=sc?sc.scrollLeft:0;
 const b=(k,l)=>`<button class="tb ${S.tool===k?'on':''}" title="${l}" onclick="pick('${k}')">${ic(k)}</button>`,hasA=!!cur&&!!cur.audio;
@@ -1000,7 +1015,7 @@ el.innerHTML=`<div class="dock ${S.dai?'in':''}">${pop?`<div class="pop2">${pop}
 <div class="tg2">${PENS.map(p=>b(p[0],p[1])).join('')}</div>
 <div class="tg2">${b('eraser','Borrador')}${b('lasso','Seleccionar, mover y redimensionar')}${b('text','Texto')}${b('title','Título inteligente: escribe a mano, haz una pausa y se convierte en título')}${b('shape','Formas')}<button class="tb" title="Insertar imagen" onclick="$('#imgin').click()">${ic('image')}</button>${b('fill','Relleno de cubo')}<button class="tb" title="Post-it" onclick="addNote()">${ic('note')}</button><button class="tb" title="Boceto a código (programadores)" onclick="devModal()">${ic('code')}</button></div>
 <button class="cbtn" title="Color y grosor" onclick="S.pop=S.pop?'':'t';tools()"><i style="width:26px;height:26px;border-radius:50%;display:block;background:${S.color};box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--mut)"></i></button>
-<div class="tg2">${b('pan','Mover página')}${b('laser','Puntero láser')}<button class="tb ${S.palm?'':'on'}" title="${S.palm?'El dedo NO dibuja (solo mueve la página)':'El dedo dibuja'}" onclick="S.palm=!S.palm;localStorage.qn_palm=S.palm?'1':'0';tools();toast(S.palm?'Solo el lápiz dibuja · el dedo mueve la página (zoom con la lupa)':'El dedo también dibuja')">${ic('hand')}</button><button class="tb ${S.ro?'on':''}" title="Modo lectura" onclick="S.ro=!S.ro;tools();toast(S.ro?'Modo lectura':'Modo edición')">${ic('book')}</button></div>
+<div class="tg2">${b('pan','Mover página')}${b('laser','Puntero láser')}<button class="tb ${S.palm?'':'on'}" title="${S.palm?'El dedo NO dibuja (solo mueve la página)':'El dedo dibuja'}" onclick="S.palm=!S.palm;localStorage.qn_palm=S.palm?'1':'0';tools();0">${ic('hand')}</button><button class="tb ${S.ro?'on':''}" title="Modo lectura" onclick="S.ro=!S.ro;tools();0">${ic('book')}</button></div>
 <div class="tg2">${rec?`<button class="tb rec" onclick="recToggle()" title="Detener grabación">${ic('stop')}<span class="rt" id="rt">${fmtT((Date.now()-t0)/1000)}</span></button>`:`<button class="tb" title="Grabar audio" onclick="recToggle()">${ic('mic')}</button>`}${hasA?`<button class="tb" title="Reproducir" onclick="play()">${ic(aud?'pause':'play')}</button>${b('seek','Tocar un trazo para saltar al audio')}`:''}<button class="tb" title="Audios del cuaderno" onclick="audioModal()">${ic('list')}</button></div>
 </div><button class="tb sm" title="Contraer en una bolita" onclick="dockMin(1)">${ic('cd')}</button></div>`;
 const n=el.querySelector('.dsc');if(n)n.scrollLeft=sl;const on=el.querySelector('.tb.on:not(.sm)');if(on&&n&&!ph){/* mantiene visible */}dockFix(el)}
@@ -1018,7 +1033,7 @@ m.innerHTML=`<div class="mrow"><select onchange="cur.template=this.value;paint()
 <h6>Audio y exportar</h6>${it('mic','Audios del cuaderno','audioModal()')}${it('list','Transcripción y marcas «me perdí»','trOpen()')}${it('bolt','Estudiar con IA: apuntes, quiz, tareas','studyMenu()')}${it('dl','Exportar PDF','exportPdf()')}${it('dl','Exportar PDF + transcripción','exportPdf(1)')}${it('dl','Exportar Markdown','exportMd()')}${it('dl','Exportar esta página (PNG)','exportPng()')}${it('dl','Respaldo .qnotes (con audios)','exportNb(S.nb.id)')}
 <h6>Vista</h6>${it('fit','Ajustar a la pantalla','zoomTo(1)')}${it('swap','Restablecer posición de herramientas','S.dpos=S.bpos=null;localStorage.removeItem(\'qn_dpos\');localStorage.removeItem(\'qn_bpos\');tools()')}${it('bolt','Diagnóstico lápiz / palma','S.dg=!S.dg;S.dgl=[];if(!S.dg){const d=$(\'#dg\');d&&d.remove()}else dgLog(\'Diagnóstico activo: toca con lápiz y con la palma\')')}${it('fit','Ajustar al ancho','zoomTo(V.cw/V.w0)')}${it('side','Modo enfoque','focusM()')}${it('gear','Ajustes','cfgModal()')}${it('grid','Biblioteca','leave()')}`;
 m.style.left=Math.max(8,Math.min(r.right-268,innerWidth-276))+'px';m.style.top=(r.bottom+8)+'px';document.body.appendChild(m)}
-function focusM(){const on=!document.body.classList.contains('focus');document.body.classList.toggle('focus',on);$('header').style.display=on?'none':'';let b=$('#fx');b&&b.remove();if(on){b=document.createElement('button');b.id='fx';b.className='p';b.innerHTML=ic('x')+' Salir del enfoque';b.onclick=focusM;document.body.appendChild(b);toast('Modo enfoque: toca “Salir del enfoque” o pulsa Esc')}fit()}
+function focusM(){const on=!document.body.classList.contains('focus');document.body.classList.toggle('focus',on);$('header').style.display=on?'none':'';let b=$('#fx');b&&b.remove();if(on){b=document.createElement('button');b.id='fx';b.className='p';b.innerHTML=ic('x')+' Salir del enfoque';b.onclick=focusM;document.body.appendChild(b);0}fit()}
 addEventListener('keydown',e=>{if(!S.nb||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
 if(e.key==='Escape'&&document.body.classList.contains('focus'))focusM();
 if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);
@@ -1031,7 +1046,7 @@ function lz(){const n=Date.now();lzr=lzr.filter(a=>n-a[2]<700);lctx.clearRect(0,
 
 // --- gestos: zoom, mover con 1 dedo, 2 dedos, ratón ---
 function panStart(e){gst={m:'pan',touch:e.pointerType==='touch',id:e.pointerId,x0:e.clientX,y0:e.clientY,zx:Z.x,zy:Z.y,t0:Date.now(),lx:e.clientX,ly:e.clientY,lt:Date.now(),vx:0,vy:0,dx:0,dy:0};if(e.pointerType!=='touch'){try{$('#ed').setPointerCapture(e.pointerId)}catch(_){}tp.set(e.pointerId,{})}}
-/* Gestos: 1 dedo = mover la página (sin pellizco: el zoom es solo con la lupa).
+/* Gestos: 1 dedo = mover la página · 2 dedos = pellizco para hacer zoom (y mover); la lupa sigue disponible.
    Anti-palma: el dedo se ignora si el lápiz está cerca/escribiendo, si el contacto es grande o si hay más de un dedo en pantalla. */
 function gest(){Z.s=1;Z.x=Z.y=0;const ed=$('#ed');let inertia=0;
 const PEN_Q=1000,PALM=70,act=new Map(),big=e=>Math.max(e.width||0,e.height||0)>PALM;
@@ -1069,6 +1084,24 @@ const tch=e=>{for(const t of e.changedTouches){const n=Date.now(),rd=Math.max(t.
   if(e.type==='touchstart'&&S.pid!=null&&S.ptype==='pen'&&n-S.pidT<300&&![...e.touches].some(x=>x.touchType==='stylus')){cancelDraw();S.lp=0;dbg('palma reportada como lápiz: descartada',null)}}}};
 ed.addEventListener('touchstart',tch,{passive:true});ed.addEventListener('touchmove',tch,{passive:true});
 if(window._ge){removeEventListener('pointerup',window._ge);removeEventListener('pointercancel',window._ge)}window._ge=end;addEventListener('pointerup',end);addEventListener('pointercancel',end);if(!window._gb){window._gb=1;addEventListener('blur',()=>{tp.clear();gst=null})}
+/* Pellizco: 2 dedos hacen zoom centrado entre los dedos y también arrastran la página */
+const pc=new Map();let pz=null;
+const pend=()=>{if(pz){pz=null;if(Z.s<1.03)zoomTo(1)}};
+ed.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||e.target.closest('.hud,.zc,.fab'))return;
+ if(big(e)||penNear()||(S.altPen&&Math.max(e.width||0,e.height||0)<=S.altW))return;
+ pc.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pc.size===2){cancelAnimationFrame(inertia);if(S.pid!=null&&S.ptype==='touch')cancelDraw();gst=null;
+  const[a,b]=[...pc.values()],r=ed.getBoundingClientRect();
+  pz={d0:Math.max(10,Math.hypot(a.x-b.x,a.y-b.y)),s0:Z.s,zx:Z.x,zy:Z.y,fx:(a.x+b.x)/2-r.left-r.width/2,fy:(a.y+b.y)/2-r.top-r.height/2}}});
+ed.addEventListener('pointermove',e=>{const t=pc.get(e.pointerId);if(!t)return;t.x=e.clientX;t.y=e.clientY;
+ if(!pz||pc.size<2)return;
+ if(penNear()){pc.clear();pz=null;return}
+ const[a,b]=[...pc.values()],r=ed.getBoundingClientRect(),
+  cx=(a.x+b.x)/2-r.left-r.width/2,cy=(a.y+b.y)/2-r.top-r.height/2,
+  s1=clamp(pz.s0*Math.hypot(a.x-b.x,a.y-b.y)/pz.d0,1,8),k=s1/pz.s0;
+ Z.s=s1;Z.x=cx-k*(pz.fx-pz.zx);Z.y=cy-k*(pz.fy-pz.zy);applyZ()});
+const pup=e=>{if(!pc.delete(e.pointerId))return;if(pc.size<2)pend()};
+ed.addEventListener('pointerup',pup);ed.addEventListener('pointercancel',pup);addEventListener('pointerup',pup);addEventListener('pointercancel',pup);addEventListener('blur',()=>{pc.clear();pz=null});
 ed.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)zoomTo(Z.s*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);else{Z.x-=e.deltaX;Z.y-=e.deltaY;applyZ()}},{passive:false})}
 
 // --- audio: dónde se guarda y cómo gestionarlo ---
@@ -1078,7 +1111,7 @@ if(cur.audio&&!await dlg.c('Esta página ya tiene un audio. Grabar uno nuevo lo 
 try{const st=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1}}),ch=[],pg=cur,r=new MediaRecorder(st,{audioBitsPerSecond:24000});rec=r;recPid=pg.id;pg.lost=[];if(pg.audio)pg.tr=null;r.ondataavailable=e=>e.data&&e.data.size&&ch.push(e.data);
 r.onstop=async()=>{clearInterval(rtv);st.getTracks().forEach(k=>k.stop());const dur=Math.round((Date.now()-t0)/1000),blob=new Blob(ch,{type:r.mimeType||'audio/mp4'});rec=null;
  try{await db.audio.put({id:pg.id,nb:pg.notebookId,blob,mime:blob.type,dur,at:Date.now()});pg.audio=1;pg.updatedAt=Date.now();await db.pages.put(pg);toast('Audio guardado en este dispositivo · menú ⋯ → Audios del cuaderno')}catch(e){console.error(e);toast('No se pudo guardar el audio (poco espacio)')}tools()};
-t0=Date.now();r.start(1000);rtv=setInterval(()=>{const e=$('#rt');if(e)e.textContent=fmtT((Date.now()-t0)/1000)},500);tools();toast('🔴 Grabando: cada trazo queda ligado a este momento')}catch(e){rec=null;tools();toast('Sin permiso de micrófono')}}
+t0=Date.now();r.start(1000);rtv=setInterval(()=>{const e=$('#rt');if(e)e.textContent=fmtT((Date.now()-t0)/1000)},500);tools();0}catch(e){rec=null;tools();toast('Sin permiso de micrófono')}}
 async function play(){if(aud){aud.pause();URL.revokeObjectURL(aud.src);aud=null;paint();return tools()}const r=await db.audio.get(cur.id);if(!r)return toast('Este audio no está en este dispositivo (los audios no se sincronizan)');aud=new Audio(URL.createObjectURL(r.blob));aud.onended=()=>{aud=null;paint();tools()};await aud.play();const iv=setInterval(()=>{if(!aud)return clearInterval(iv);paint()},200);tools()}
 const extOf=m=>/mp4|aac|m4a/.test(m||'')?'m4a':/ogg/.test(m||'')?'ogg':/wav/.test(m||'')?'wav':/mpeg|mp3/.test(m||'')?'mp3':'webm';
 const fmtMB=b=>b>1e6?(b/1e6).toFixed(1)+' MB':Math.max(1,Math.round(b/1e3))+' KB';
@@ -1108,8 +1141,8 @@ else{const b=sel.box,m=30,sx=Math.max(0,b[0]-m),sy=Math.max(0,b[1]-m),w=Math.min
 toast('✨ Pensando…');const img=c.toDataURL('image/jpeg',.92).split(',')[1];
 try{const d=await aiCall(a,img);AI_T=d.text?(a==='latex'?d.text:normMath(d.text)):'(sin resultado)';AI_A=a;aiShow(d.left)}catch(e){console.error(e);errBox('La IA no pudo responder',e.message||String(e),()=>aiRun(a,whole))}}
 function aiShow(left){const m=document.createElement('div');m.className='modal';m.id='m';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="box" style="max-width:520px"><h2 style="margin:0 0 12px">${ic('bolt')} Resultado</h2><div style="white-space:pre-wrap;max-height:50vh;overflow:auto;padding:14px;border-radius:14px;background:var(--grp);line-height:1.5;-webkit-user-select:text;user-select:text" class="aiout">${AI_A==='latex'?esc(AI_T):mathHTML(AI_T)}</div><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="navigator.clipboard&&navigator.clipboard.writeText(AI_A==='latex'?AI_T:txPlainAll(AI_T));toast('Copiado')">Copiar</button><button class="p" style="flex:2" onclick="aiIns()">Insertar debajo</button></div>${AI_A==='convert'&&sel&&sel.box?`<label>Vista previa: reemplazar mi letra por…</label><div class="sw">${FONTS.map(([f,l])=>`<button class="chip" style="font-family:${f}" onclick="aiRep('${f}')">${l}</button>`).join('')}</div>`:''}${left!=null?`<p class="mut" style="margin:10px 0 0;font-size:12px">Te quedan ${left} consultas hoy.</p>`:''}</div>`;document.body.appendChild(m)}
-function aiRep(f){if(!sel||!sel.box)return;const b=sel.box,n=Math.max(1,AI_T.split('\n').length),fs=clamp((b[3]-b[1])/n*.7,14,60),ix=sel.idx;snapU();cur.strokes=[...cur.strokes.filter((_,i)=>!ix.includes(i)),{t:'x',c:S.color,w:(fs-10)/5,ff:f,p:[[b[0],b[1],.5]],s:AI_T}];sel=null;lctx.clearRect(0,0,W,H);paint();save();$('#m').remove();tools();toast('Texto reemplazado · deshacer lo revierte')}
-function aiIns(){const b=sel&&sel.box;commit({t:'x',c:S.color,w:2,p:[[b?b[0]:60,b?b[3]+24:80,.5]],s:wrap(AI_T)});$('#m').remove();toast('Insertado: selecciónalo con el lazo para moverlo')}
+function aiRep(f){if(!sel||!sel.box)return;const b=sel.box,n=Math.max(1,AI_T.split('\n').length),fs=clamp((b[3]-b[1])/n*.7,14,60),ix=sel.idx;snapU();cur.strokes=[...cur.strokes.filter((_,i)=>!ix.includes(i)),{t:'x',c:S.color,w:(fs-10)/5,ff:f,p:[[b[0],b[1],.5]],s:AI_T}];sel=null;lctx.clearRect(0,0,W,H);paint();save();$('#m').remove();tools();0}
+function aiIns(){const b=sel&&sel.box;commit({t:'x',c:S.color,w:2,p:[[b?b[0]:60,b?b[3]+24:80,.5]],s:wrap(AI_T)});$('#m').remove();0}
 async function clearPg(){if(!await dlg.c('¿Limpiar los trazos de esta página?','Limpiar'))return;snapU();cur.strokes=[];sel=null;paint();save()}
 function exportPng(){const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const x=c.getContext('2d');x.scale(2,2);Promise.all(cur.strokes.filter(k=>k.t==='i').map(k=>ld(k.s))).then(()=>drawPage(x,cur,()=>c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(S.nb.title||'pagina')+'-'+(S.i+1)+'.png';a.click()})))}
 
@@ -1245,7 +1278,7 @@ function smartModal(){const o=$('#m');o&&o.remove();const m=document.createEleme
 function sfStyle(){document.querySelectorAll('#sfl .sfr input').forEach((inp,i)=>{const t=SF.F[i];inp.style.fontFamily=SF.ff;inp.style.fontWeight=t?'700':'400';inp.style.fontSize=t?'20px':'15px'})}
 function smartApply(){if(!SF||cur.id!==SF.pid)return;const T=[...document.querySelectorAll('#sfl input')].map(i=>i.value),F=SF.F.map((f,i)=>f&&T[i].trim().length<=90),ff=SF.ff;
  const B=hwBuild(SF.L,T,F,{W,ff,meas:(t,fs,b)=>Math.max(...t.split('\n').map(l=>txW(MC,{b,ff},l,fs)))}),rm=new Set(SF.L.flatMap(l=>l.strokes));
- snapU();cur.strokes=[...cur.strokes.filter(s=>!rm.has(s)),...B.strokes];sel=null;lctx.clearRect(0,0,W,H);paint();save();$('#m').remove();tools();toast('Texto convertido · deshacer te devuelve tu letra')}
+ snapU();cur.strokes=[...cur.strokes.filter(s=>!rm.has(s)),...B.strokes];sel=null;lctx.clearRect(0,0,W,H);paint();save();$('#m').remove();tools();0}
 // «Poner título»: la escritura seleccionada (o la que haces con la herramienta Título) pasa a un título tipográfico
 function titleSel(){if(needLogin())return;const hw=hwSel();if(!hw.length)return toast('Selecciona con el lazo lo que escribiste');const o=$('#m');o&&o.remove();titleRun(hw,cur.id)}
 async function titleRun(list,pid){if(!user||!sb){toast('Inicia sesión en Ajustes para convertir títulos con IA');return}
@@ -1255,7 +1288,7 @@ async function titleRun(list,pid){if(!user||!sb){toast('Inicia sesión en Ajuste
    col=(G[0]&&G[0].col)||L[0].c,w=txW(MC,{b:1,ff},t,fs),cen=Math.abs((x0+x1)/2-W/2)<.06*W,x=cen?W/2-w/2:x0,wrapW=W-20-Math.max(10,x);
   let s2=t;if(w>wrapW){const ws=t.split(' '),o=[];let c='';ws.forEach(a=>{const n=c?c+' '+a:a;if(txW(MC,{b:1,ff},n,fs)>wrapW&&c){o.push(c);c=a}else c=n});o.push(c);s2=o.join('\n')}
   const ob={t:'x',c:col,w:(fs-10)/5,ff,b:1,u:1,p:[[Math.round(Math.max(10,cen&&w<=wrapW?x:Math.min(x,40))),Math.round((y0+y1)/2-.6*fs),.5]],s:s2},rm=new Set(L);
-  snapU();cur.strokes=[...cur.strokes.filter(s=>!rm.has(s)),ob];sel=null;lctx.clearRect(0,0,W,H);paint();save();tools();toast('Título listo · deshacer te devuelve tu letra')}
+  snapU();cur.strokes=[...cur.strokes.filter(s=>!rm.has(s)),ob];sel=null;lctx.clearRect(0,0,W,H);paint();save();tools();0}
  catch(e){console.error(e);toast((e.message||'No se pudo crear el título')+' · tus trazos siguen ahí')}}
 // herramienta Título: escribe, haz una pausa y se convierte sola
 function titleQ(d){S.tq=S.tq||[];S.tqp=cur.id;S.tq.push(d);clearTimeout(S.tt);S.tt=setTimeout(titleFlush,1600)}
@@ -1314,8 +1347,8 @@ async function cropSel(){if(!sel||sel.idx.length!==1)return;const i=sel.idx[0],s
  const c=document.createElement('canvas');c.width=m.naturalWidth;c.height=m.naturalHeight;c.getContext('2d').drawImage(m,0,0);
  const r=await cropDialog(c,{t:'Recortar imagen',skip:false});if(!r||r.full)return;
  const png=/png/.test(s.s.slice(0,30)),[a,b]=s.p,dw=b[0]-a[0],dh=b[1]-a[1],nx=a[0]+dw*r.rect.x,ny=a[1]+dh*r.rect.y,nw=dw*r.rect.w,nh=dh*r.rect.h;
- snapU();cur.strokes=cur.strokes.map((x,k)=>k===i?{...x,s:png?r.canvas.toDataURL('image/png'):r.canvas.toDataURL('image/jpeg',.9),p:[[nx,ny],[nx+nw,ny+nh]]}:x);sel={idx:[i],box:[nx,ny,nx+nw,ny+nh],act:null};paint();save();tools();selDraw();toast('Imagen recortada · deshacer la restaura')}
-async function addImg(e){const fs=[...e.target.files];e.target.value='';let n=0,ok=0;for(const f of fs){if(await insertImage(f,n++,fs.length))ok++}if(ok)toast('Imagen añadida: arrástrala o tira de las esquinas para cambiar el tamaño')}
+ snapU();cur.strokes=cur.strokes.map((x,k)=>k===i?{...x,s:png?r.canvas.toDataURL('image/png'):r.canvas.toDataURL('image/jpeg',.9),p:[[nx,ny],[nx+nw,ny+nh]]}:x);sel={idx:[i],box:[nx,ny,nx+nw,ny+nh],act:null};paint();save();tools();selDraw();0}
+async function addImg(e){const fs=[...e.target.files];e.target.value='';let n=0,ok=0;for(const f of fs){if(await insertImage(f,n++,fs.length))ok++}if(ok)0}
 async function dropFiles(e){e.preventDefault();const fs=[...(e.dataTransfer?.files||[])];let n=0;for(const f of fs){if(f.type.startsWith('image/'))await insertImage(f,n++,fs.length);else if(f.type==='application/pdf')await importPdf({target:{files:[f],value:''}})}}
 addEventListener('paste',e=>{if(!S.nb||/INPUT|TEXTAREA/.test(e.target.tagName))return;const fs=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));if(!fs.length)return;e.preventDefault();let n=0;fs.reduce((p,f)=>p.then(()=>insertImage(f,n++,fs.length)),Promise.resolve())});
 
@@ -1388,7 +1421,7 @@ const rng=(t,sm,min,max,val,fn,fmt)=>`<div class="set cstk"><div class="cst"><di
 m.innerHTML=`<div class="box cfg"><div class="cfgh"><h2>Ajustes</h2><button class="cfgx" aria-label="Cerrar" onclick="$('#m').remove()">${ic('x')}</button></div>
 <h3>Cuenta</h3>${user?`<div class="sl">${row(`<b>${esc(maskMail(user.email))}</b>`,'Cuenta conectada',`<button onclick="sb.auth.signOut();$('#m').remove()">Salir</button>`)}${row('Restaurar desde la nube','Vuelve a descargar todos tus cuadernos guardados en tu cuenta (no borra nada local)',`<button onclick="$('#m').remove();restoreCloud()">Restaurar</button>`)}</div>`:`<div class="sl fm"><p class="mut">Inicia sesión para sincronizar tus cuadernos y usar la IA.</p><div class="row"><input id="ce" type="email" placeholder="Correo" autocomplete="email"><input id="cp" type="password" placeholder="Contraseña" autocomplete="current-password"></div><div class="row"><button class="p" onclick="auth(0)">Entrar</button><button onclick="auth(1)">Crear cuenta</button></div></div>`}
 <h3>Exportar</h3><div class="sl">${row('Logo Q&amp;V en los PDF','Aparece en la esquina de cada página exportada',sw(localStorage.qn_logo!=='0',"localStorage.qn_logo=this.checked?'1':'0'"))}</div>
-<h3>Escritura</h3><div class="sl">${row('Dibujar con el dedo','Apagado: solo el lápiz dibuja y 1 dedo mueve la página. El zoom se hace con la lupa (+ / −)',sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()"))}${row('Mi lápiz se detecta como dedo','Para lápices genéricos o capacitivos: un contacto pequeño escribe y los grandes (palma) se ignoran',sw(S.altPen,"S.altPen=this.checked;localStorage.qn_alt=S.altPen?'1':'0'"))}${rng('Tamaño máximo de la punta','Si la palma escribe, bájalo; si el lápiz no escribe, súbelo. El Diagnóstico (menú ⋯) muestra los tamaños.',6,60,S.altW,"S.altW=+this.value;localStorage.qn_altw=this.value",v=>v+' px')}${rng('Estabilización del trazo','Más alto suaviza más la línea, pero responde con algo de retraso.',0,80,Math.round(S.stab*100),"S.stab=this.value/100;localStorage.qn_stab=S.stab",v=>v+'%')}${row('Gestos de toque','2 dedos = deshacer · 3 dedos = rehacer (la palma puede activarlos)',sw(S.tapg,"S.tapg=this.checked;localStorage.qn_tapg=S.tapg?'1':'0'"))}${row('Deslizar con un dedo para cambiar de página','Solo con la página a tamaño completo',sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'"))}${row('Recortar al insertar una imagen','Muestra el recorte antes de colocar la foto en la hoja (también puedes recortar una imagen ya puesta: selecciónala y toca «Recortar»)',sw(cropOn(),"localStorage.qn_crop=this.checked?1:0"))}${row('Borrar rayando','Tacha un texto o dibujo con un zigzag rápido del lápiz y se borra lo que quede cubierto (deshacer lo restaura). Si el rayado no cubre nada, queda como trazo normal',sw(S.scr,"S.scr=this.checked;localStorage.qn_scr=S.scr?1:0"))}${row('Autoforma al mantener pulsado','Convierte tu trazo en línea, círculo, elipse o rectángulo (también inclinado) si dejas el lápiz quieto; sin soltar, puedes arrastrar para ajustar el tamaño. Apagado por defecto para no alterar tu letra',sw(S.snap,"S.snap=this.checked;localStorage.qn_snap=S.snap?1:0"))}${row('Volver al lápiz al soltar el borrador','',sw(S.er.auto,"S.er.auto=+this.checked"))}</div>
+<h3>Escritura</h3><div class="sl">${row('Dibujar con el dedo','Apagado: solo el lápiz dibuja y 1 dedo mueve la página. Pellizca con 2 dedos para hacer zoom (o usa la lupa + / −)',sw(!S.palm,"S.palm=!this.checked;localStorage.qn_palm=S.palm?'1':'0';tools()"))}${row('Mi lápiz se detecta como dedo','Para lápices genéricos o capacitivos: un contacto pequeño escribe y los grandes (palma) se ignoran',sw(S.altPen,"S.altPen=this.checked;localStorage.qn_alt=S.altPen?'1':'0'"))}${rng('Tamaño máximo de la punta','Si la palma escribe, bájalo; si el lápiz no escribe, súbelo. El Diagnóstico (menú ⋯) muestra los tamaños.',6,60,S.altW,"S.altW=+this.value;localStorage.qn_altw=this.value",v=>v+' px')}${row('Inclinación del lápiz','Con lápiz compatible (Apple Pencil, S Pen…): al inclinarlo el trazo se ensancha y se aclara como un lápiz real, y con más presión oscurece. Funciona en Lápiz y Pincel. Apágalo para el trazo clásico',sw(S.tilt,"S.tilt=this.checked;localStorage.qn_tilt=S.tilt?'1':'0'"))}${rng('Estabilización del trazo','Más alto suaviza más la línea, pero responde con algo de retraso.',0,80,Math.round(S.stab*100),"S.stab=this.value/100;localStorage.qn_stab=S.stab",v=>v+'%')}${row('Gestos de toque','2 dedos = deshacer · 3 dedos = rehacer (la palma puede activarlos)',sw(S.tapg,"S.tapg=this.checked;localStorage.qn_tapg=S.tapg?'1':'0'"))}${row('Deslizar con un dedo para cambiar de página','Solo con la página a tamaño completo',sw(S.flip,"S.flip=this.checked;localStorage.qn_flip=S.flip?'1':'0'"))}${row('Recortar al insertar una imagen','Muestra el recorte antes de colocar la foto en la hoja (también puedes recortar una imagen ya puesta: selecciónala y toca «Recortar»)',sw(cropOn(),"localStorage.qn_crop=this.checked?1:0"))}${row('Borrar rayando','Tacha un texto o dibujo con un zigzag rápido del lápiz y se borra lo que quede cubierto (deshacer lo restaura). Si el rayado no cubre nada, queda como trazo normal',sw(S.scr,"S.scr=this.checked;localStorage.qn_scr=S.scr?1:0"))}${row('Autoforma al mantener pulsado','Convierte tu trazo en línea, círculo, elipse o rectángulo (también inclinado) si dejas el lápiz quieto; sin soltar, puedes arrastrar para ajustar el tamaño. Apagado por defecto para no alterar tu letra',sw(S.snap,"S.snap=this.checked;localStorage.qn_snap=S.snap?1:0"))}${row('Volver al lápiz al soltar el borrador','',sw(S.er.auto,"S.er.auto=+this.checked"))}</div>
 <h3>Apariencia</h3><div class="sl"><div class="set cstk"><div class="cst"><div>Tema</div></div><select class="cs" onchange="setTheme(this.value)">${[['perla','Perla (claro + esmeralda)'],['obsidiana','Obsidiana (oscuro + menta)'],['marfil','Marfil (claro)'],['ambar','Ámbar (oscuro cálido)']].map(([k,v])=>`<option value="${k}" ${(localStorage.qn_theme||'perla')===k?'selected':''}>${v}</option>`).join('')}</select></div></div>
 <h3>Datos en este dispositivo</h3><div class="sl"><p class="mut note" id="stor">Los cuadernos se guardan en el navegador de este dispositivo y, si inicias sesión, también en la nube. Los <b>audios solo viven en este dispositivo</b>: descárgalos desde “Audios del cuaderno” o con el respaldo .qnotes.</p>${row('Modo diagnóstico','Muestra un panel con lo que detecta la app al escribir (para encontrar fallos del lápiz o la palma)',sw(S.dbgOn,"S.dbgOn=this.checked;localStorage.qn_dbg=S.dbgOn?1:0;const d=$('#dbg');if(d&&!S.dbgOn)d.remove();if(S.dbgOn)dbg('activado')"))}</div>
 <details class="adv"><summary>Avanzado: conexión Supabase</summary><label>Project URL</label><input id="cu" value="${esc(CFG.url)}" placeholder="https://xxxx.supabase.co"><label>Anon key</label><input id="ck" value="${esc(CFG.key)}"><button style="margin-top:12px;width:100%" onclick="saveCfg()">Guardar y conectar</button></details>
@@ -1409,6 +1442,7 @@ doc.save((S.nb.title||'cuaderno')+'.pdf');toast('PDF vectorial exportado ✔ (tr
 function vecStroke(doc,s){const h=s.c||'#000',rgb=h.length===7?[1,3,5].map(i=>parseInt(h.substr(i,2),16)):[0,0,0];doc.setDrawColor(...rgb);doc.setFillColor(...rgb);doc.setTextColor(...rgb);doc.setLineCap('round');doc.setLineJoin('round');
 const al=s.t==='h'?.35:s.t==='l'?.7:1,P=s.p;doc.setGState(new doc.GState({opacity:al,'stroke-opacity':al}));
 try{if(s.t==='i')doc.addImage(s.s,/png/.test(s.s.slice(0,30))?'PNG':'JPEG',P[0][0],P[0][1],P[1][0]-P[0][0],P[1][1]-P[0][1]);
+else if((s.t==='l'||s.t==='br')&&P.length>1&&P[0].length>4){const bb=bbox(s),pd=s.w*5+8,Z=3,w=bb[2]-bb[0]+2*pd,h=bb[3]-bb[1]+2*pd,cv=document.createElement('canvas');cv.width=Math.ceil(w*Z);cv.height=Math.ceil(h*Z);const cx=cv.getContext('2d');cx.scale(Z,Z);cx.translate(pd-bb[0],pd-bb[1]);stroke(cx,s);doc.setGState(new doc.GState({opacity:1,'stroke-opacity':1}));doc.addImage(cv.toDataURL('image/png'),'PNG',bb[0]-pd,bb[1]-pd,w,h)}
 else if(s.t==='x'&&/[^\x20-\x7E\u00A0-\u00FF\n]|[\^_]\{|(?:frac|sqrt|root)\{/.test(s.s)){const bb=bbox(s),pd=8,Z=3,w=bb[2]-bb[0]+2*pd,h=bb[3]-bb[1]+2*pd+.4*(s.w*5+10),cv=document.createElement('canvas');cv.width=Math.ceil(w*Z);cv.height=Math.ceil(h*Z);const cx=cv.getContext('2d');cx.scale(Z,Z);cx.translate(pd-bb[0],pd-bb[1]);stroke(cx,s);doc.addImage(cv.toDataURL('image/png'),'PNG',bb[0]-pd,bb[1]-pd,w,h)}
 else if(s.t==='x'){doc.setFontSize(s.w*5+10);try{doc.setFont(undefined,s.b?'bold':'normal')}catch(_){}s.s.split('\n').forEach((l,i)=>doc.text(txPlain(l),P[0][0],P[0][1]+i*(s.w*6+12),{baseline:'top'}));if(s.u){const fs=s.w*5+10,n=s.s.split('\n').length,ww=Math.max(...s.s.split('\n').map(l=>doc.getTextWidth(txPlain(l))));doc.setLineWidth(Math.max(2,fs*.07));doc.line(P[0][0],P[0][1]+n*(s.w*6+12),P[0][0]+ww,P[0][1]+n*(s.w*6+12))}}
 else if(s.t==='s'){doc.setLineWidth(s.w);const[a,b]=P;if(s.k==='quad')doc.lines([1,2,3].map(i=>[P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]]),P[0][0],P[0][1],[1,1],'S',true);else if(s.k==='rect')doc.rect(a[0],a[1],b[0]-a[0],b[1]-a[1],'S');else if(s.k==='ell')doc.ellipse((a[0]+b[0])/2,(a[1]+b[1])/2,Math.abs(b[0]-a[0])/2||1,Math.abs(b[1]-a[1])/2||1,'S');else{doc.line(a[0],a[1],b[0],b[1]);if(s.k==='arr'){const g=Math.atan2(b[1]-a[1],b[0]-a[0]),q=14+s.w*2;[.45,-.45].forEach(d=>doc.line(b[0],b[1],b[0]+q*Math.cos(g+Math.PI+d),b[1]+q*Math.sin(g+Math.PI+d)))}}}
