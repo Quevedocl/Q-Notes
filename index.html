@@ -339,7 +339,7 @@ const TPLS={lined:'Líneas',grid:'Cuadrícula',dotted:'Puntos',staff:'Pentagrama
 const $=s=>document.querySelector(s),uid=()=>crypto.randomUUID(),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const db=new Dexie('qnotes2');db.version(1).stores({notebooks:'id,updatedAt',pages:'id,notebookId,updatedAt'});db.version(2).stores({audio:'id'});db.version(3).stores({code:'id,updatedAt'});db.version(4).stores({meta:'k'});
 let S={nbs:[],nb:null,pages:[],i:0,tool:'pen',color:COLORS[0],size:3,palm:true,undo:[],redo:[],folder:'Todos',shape:'line',q:'',tbc:localStorage.qn_tbc!=='0'?1:0,cfg:JSON.parse(localStorage.qn_pens||'null')||{pen:{c:'#111827',w:3},ball:{c:'#2563eb',w:2},brush:{c:'#7c3aed',w:4},call:{c:'#111827',w:3},pencil:{c:'#475569',w:3},highlighter:{c:'#facc15',w:6}}},sb=null,user=null,syncT,saveT,cur=null,base,bctx,live,lctx,imgs={};
-S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.altPen=localStorage.qn_alt==='1';S.altW=+localStorage.qn_altw||28;S.tapg=localStorage.qn_tapg==='1';S.tilt=localStorage.qn_tilt!=='0';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
+S.view=localStorage.qn_view||'grid';S.sort='recent';S.palm=localStorage.qn_palm!=='0';S.altPen=localStorage.qn_alt==='1';S.altW=+localStorage.qn_altw||28;S.tapg=localStorage.qn_tapg==='1';S.tipW=+localStorage.qn_tipw||0;S.tilt=localStorage.qn_tilt!=='0';S.stab=+localStorage.qn_stab||0;S.er={hl:0,auto:0};S.fill=0;S.pop='';S.sbc=innerWidth<760?1:0;S.trash=[];
 let rec=null,aud=null,t0=0,recPid='',lzr=[],lzd=false;
 let sel=null,imc={};
 function setTheme(v){document.documentElement.dataset.theme=localStorage.qn_theme=v;document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()}
@@ -757,6 +757,7 @@ copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00
 Object.assign(S,{dbgOn:localStorage.qn_dbg==='1',snap:localStorage.qn_snap==='1',scr:localStorage.qn_scr!=='0',flip:localStorage.qn_flip!=='0',esz:+localStorage.qn_esz||14,emode:localStorage.qn_emode||'part',dtop:localStorage.qn_dtop==='1',dmin:localStorage.qn_dmin==='1',syncState:'',res:0,dpos:JSON.parse(localStorage.qn_dpos||'null'),bpos:JSON.parse(localStorage.qn_bpos||'null'),dai:1});
 const PENS=[['pen','Pluma fuente'],['ball','Bolígrafo'],['brush','Pincel'],['call','Caligrafía'],['pencil','Lápiz'],['highlighter','Resaltador']];
 const POPT=new Set(['title','fill','pen','ball','brush','call','pencil','highlighter','eraser','shape','text','lasso']);
+const PALM=new Map();if(!window._pl){window._pl=1;addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const n=Date.now();for(const[k,t]of PALM)if(n-t>15000)PALM.delete(k);if(Math.max(e.width||0,e.height||0)>(S.altW||28))PALM.set(e.pointerId,n)},true);const rm=e=>PALM.delete(e.pointerId);addEventListener('pointerup',rm,true);addEventListener('pointercancel',rm,true)}
 const Z={s:1,x:0,y:0},V={w0:1,h0:1,cw:1,ch:1},tp=new Map(),dirty=new Set();
 let drawing=null,erasing=false,hold,RO=null,gst=null,rtv=0;
 const DBG={n:{},last:''};sessionStorage.qn_loads=(+sessionStorage.qn_loads||0)+1;
@@ -861,17 +862,18 @@ function cancelDraw(){drawing=null;snp=null;erasing=false;S.pid=null;clearTimeou
 function dgLog(m){if(!S.dg)return;let d=$('#dg');if(!d){d=document.createElement('div');d.id='dg';document.body.appendChild(d)}S.dgl=[m,...(S.dgl||[])].slice(0,9);d.textContent=S.dgl.join('\n')}
 function pdown(e){const T=S.tool,touch=e.pointerType==='touch';dbg('pointerdown '+e.pointerType,e);
 dgLog('ptr '+e.pointerType+' '+Math.round(e.width||0)+'x'+Math.round(e.height||0)+' p'+(e.pressure||0).toFixed(2)+' tilt'+Math.round(e.tiltX||0)+','+Math.round(e.tiltY||0));
-if(e.pointerType==='pen'&&Math.max(e.width||0,e.height||0)>30){dbg('ignorado: contacto grande reportado como lápiz',e);return}
+if(e.pointerType==='pen'&&Math.max(e.width||0,e.height||0)>30&&!(e.tiltX||e.tiltY)){dbg('ignorado: contacto grande reportado como lápiz',e);return}
 if(touch&&Math.max(e.width||0,e.height||0)>110){dbg('ignorado: contacto grande (palma)',e);return}
-const altOK=S.altPen&&touch&&Math.max(e.width||0,e.height||0)<=S.altW,penLike=e.pointerType==='pen'||altOK;
+const cw=Math.max(e.width||0,e.height||0),altOK=S.altPen&&touch&&cw<=S.altW&&!(S.tipW&&PALM.size&&Math.abs(cw-S.tipW)>Math.max(6,S.tipW*.6)),penLike=e.pointerType==='pen'||altOK;
 if(touch&&!altOK&&(S.palm||T==='pan'||tp.size>=1||Date.now()-(S.lp||0)<4000||Date.now()-(S.bigT||0)<900)){S.ign={e,t:Date.now()};return}
 if(e.pointerType==='mouse'&&e.button!==0)return;
+if(altOK&&drawing&&e.pointerId!==S.pid){if(drawing.p.length>=4&&Date.now()-(S.lm||0)<1200){dbg('ignorado: 2º contacto mientras escribes (palma)',e);return}if(drawing.p.length<4)cancelDraw()}
 if(penLike){for(const[k,v]of tp)if(v.x!=null)tp.delete(k);gst=null;S.lp=Date.now()}
 if(T==='pan'){panStart(e);return}
 if(penLike&&(S.pid!=null||drawing||erasing)){S.ptype==='touch'?cancelDraw():finishStroke()}
 if(S.pid!=null||drawing||erasing){const stale=Date.now()-(S.lm||0)>400;if(e.pointerId===S.pid||stale||(e.pointerType==='pen'&&drawing&&drawing.p.length<3&&Date.now()-S.pidT<300)||(!drawing&&!erasing))finishStroke();else{dbg('ignorado: otro puntero activo',e);return}}
 {const r=pr();if(e.clientX<r.left-6||e.clientX>r.right+6||e.clientY<r.top-6||e.clientY>r.bottom+6)return}if(viewStale())viewRender();
-e.preventDefault();S.pid=e.pointerId;S.ptype=penLike?'pen':e.pointerType;S.pidT=S.lm=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=pr();
+e.preventDefault();S.pid=e.pointerId;S.ptype=penLike?'pen':e.pointerType;S.rtype=e.pointerType;S.pw=cw;S.clean=!PALM.size;S.pidT=S.lm=Date.now();try{live.setPointerCapture(e.pointerId)}catch(_){}S.rc=pr();
 if(S.pop){S.pop='';tools()}
 const q=pt(e);if(S.ro&&T!=='laser'&&T!=='seek'){S.pid=null;return}
 if(T==='laser'){lzd=true;lzr.push([q[0],q[1],Date.now()]);if(lzr.length===1)lz();return}
@@ -892,6 +894,7 @@ if(T==='lasso'&&sel&&sel.act){
  else if(sel.act==='rs'){const f=clamp(Math.hypot(q[0]-sel.o[0],q[1]-sel.o[1])/sel.q0,.1,12),o=sel.o;cur.strokes=cur.strokes.map((x,i)=>{const k=sel.idx.indexOf(i);if(k<0)return x;const s0=sel.sn[k];return{...s0,w:s0.t==='x'?s0.w*f:s0.w,p:s0.p.map(a=>[o[0]+(a[0]-o[0])*f,o[1]+(a[1]-o[1])*f,...a.slice(2)])}});sel.box=sel.b0.map((v,i)=>o[i%2]+(v-o[i%2])*f);dragPaintSoon();return}
  else sel.b=q;selDraw();return}
 if(erasing){erase(q);return}if(!drawing)return;
+if(S.rtype==='touch'&&S.ptype==='pen'&&S.clean&&S.pw>0&&drawing.p.length===12){S.tipW=S.tipW?S.tipW*.8+S.pw*.2:S.pw;try{localStorage.qn_tipw=S.tipW}catch(_){}}
 if(drawing.t==='s')snapMove(q);else{(()=>{const ce=e.getCoalescedEvents?e.getCoalescedEvents():[];return ce.length?ce:[e]})().forEach(x=>{const n=pt(x),l=drawing.p.at(-1),k=1-S.stab;drawing.p.push(S.stab?[l[0]+(n[0]-l[0])*k,l[1]+(n[1]-l[1])*k,n[2],...n.slice(3)]:n)});
  clearTimeout(hold);if(S.snap)hold=setTimeout(snapShape,700)}
 if(!S.raf)S.raf=requestAnimationFrame(()=>{S.raf=0;if(!drawing)return;lctx.clearRect(0,0,W,H);stroke(lctx,drawing)})}
@@ -1081,27 +1084,33 @@ ed.addEventListener('pointerup',end);ed.addEventListener('pointercancel',end);
 const tch=e=>{for(const t of e.changedTouches){const n=Date.now(),rd=Math.max(t.radiusX||0,t.radiusY||0);dgLog('touch '+t.touchType+' r'+Math.round(rd)+(t.force?' f'+t.force.toFixed(2):''));
  if(t.touchType==='stylus'){S.lp=n;dropTouch();act.clear();if(S.ign&&n-S.ign.t<150&&S.pid==null){const o=S.ign.e;S.ign=null;tp.delete(o.pointerId);gst=null;dbg('lápiz reportado como dedo: corregido',null);pdown(new Proxy(o,{get:(a,k)=>k==='pointerType'?'pen':typeof a[k]==='function'?a[k].bind(a):a[k]}))}}
  else{if(rd>55){S.bigT=n;dropTouch();dbg('palma por radio',null)}
-  if(e.type==='touchstart'&&S.pid!=null&&S.ptype==='pen'&&n-S.pidT<300&&![...e.touches].some(x=>x.touchType==='stylus')){cancelDraw();S.lp=0;dbg('palma reportada como lápiz: descartada',null)}}}};
+  if(e.type==='touchstart'&&S.pid!=null&&S.ptype==='pen'&&n-S.pidT<300&&S.rtype==='pen'&&t.touchType==='direct'&&![...e.touches].some(x=>x.touchType==='stylus')){cancelDraw();S.lp=0;dbg('palma reportada como lápiz: descartada',null)}}}};
 ed.addEventListener('touchstart',tch,{passive:true});ed.addEventListener('touchmove',tch,{passive:true});
 if(window._ge){removeEventListener('pointerup',window._ge);removeEventListener('pointercancel',window._ge)}window._ge=end;addEventListener('pointerup',end);addEventListener('pointercancel',end);if(!window._gb){window._gb=1;addEventListener('blur',()=>{tp.clear();gst=null})}
-/* Pellizco: 2 dedos hacen zoom centrado entre los dedos y también arrastran la página */
-const pc=new Map();let pz=null;
-const pend=()=>{if(pz){pz=null;if(Z.s<1.03)zoomTo(1)}};
-ed.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||e.target.closest('.hud,.zc,.fab'))return;
- if(big(e)||penNear()||(S.altPen&&Math.max(e.width||0,e.height||0)<=S.altW))return;
+/* Pellizco: 2 dedos hacen zoom. Anti-palma: solo vale si son exactamente 2 dedos separados (>70px), sin lápiz usado en los últimos 2,5 s,
+   sin palma ni otros contactos, y solo se activa tras abrir/cerrar los dedos un poco (zona muerta). Cualquier lápiz/palma lo cancela. */
+const pc=new Map(),allT=new Set();let pz=null,pcBad=0;
+const pcOK=()=>{const n=Date.now();return n-(S.lp||0)>2500&&n-(S.bigT||0)>2500&&!PALM.size&&S.pid==null&&!drawing};
+const pend=()=>{if(pz&&pz.on&&Z.s<1.03)zoomTo(1);pz=null};
+ed.addEventListener('pointerdown',e=>{
+ if(e.pointerType==='pen'){pc.clear();pz=null;pcBad=1;return}
+ if(e.pointerType!=='touch'||e.target.closest('.hud,.zc,.fab'))return;
+ if(!allT.size)pcBad=0;allT.add(e.pointerId);
+ if(big(e)||penNear()||(S.altPen&&Math.max(e.width||0,e.height||0)<=S.altW)||!pcOK()){pc.clear();pz=null;pcBad=1;return}
+ if(pcBad)return;
  pc.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(pc.size===2){cancelAnimationFrame(inertia);if(S.pid!=null&&S.ptype==='touch')cancelDraw();gst=null;
-  const[a,b]=[...pc.values()],r=ed.getBoundingClientRect();
-  pz={d0:Math.max(10,Math.hypot(a.x-b.x,a.y-b.y)),s0:Z.s,zx:Z.x,zy:Z.y,fx:(a.x+b.x)/2-r.left-r.width/2,fy:(a.y+b.y)/2-r.top-r.height/2}}});
+ if(allT.size>2||pc.size>2){pc.clear();pz=null;pcBad=1;return}
+ if(pc.size===2){const[a,b]=[...pc.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<70){pz=null;pcBad=1;return}pz={d0:d,s0:Z.s,zx:Z.x,zy:Z.y,fx:0,fy:0,on:false,dd:d}}});
 ed.addEventListener('pointermove',e=>{const t=pc.get(e.pointerId);if(!t)return;t.x=e.clientX;t.y=e.clientY;
  if(!pz||pc.size<2)return;
- if(penNear()){pc.clear();pz=null;return}
- const[a,b]=[...pc.values()],r=ed.getBoundingClientRect(),
-  cx=(a.x+b.x)/2-r.left-r.width/2,cy=(a.y+b.y)/2-r.top-r.height/2,
-  s1=clamp(pz.s0*Math.hypot(a.x-b.x,a.y-b.y)/pz.d0,1,8),k=s1/pz.s0;
+ if(penNear()||PALM.size||(Date.now()-(S.bigT||0)<2500)){pc.clear();pz=null;pcBad=1;return}
+ const[a,b]=[...pc.values()],r=ed.getBoundingClientRect(),d=Math.hypot(a.x-b.x,a.y-b.y),
+  cx=(a.x+b.x)/2-r.left-r.width/2,cy=(a.y+b.y)/2-r.top-r.height/2;
+ if(!pz.on){if(Math.abs(d-pz.dd)<16)return;pz.on=true;cancelAnimationFrame(inertia);if(S.pid!=null&&S.ptype==='touch')cancelDraw();gst=null;pz.d0=d;pz.s0=Z.s;pz.zx=Z.x;pz.zy=Z.y;pz.fx=cx;pz.fy=cy}
+ const s1=clamp(pz.s0*d/pz.d0,1,8),k=s1/pz.s0;
  Z.s=s1;Z.x=cx-k*(pz.fx-pz.zx);Z.y=cy-k*(pz.fy-pz.zy);applyZ()});
-const pup=e=>{if(!pc.delete(e.pointerId))return;if(pc.size<2)pend()};
-ed.addEventListener('pointerup',pup);ed.addEventListener('pointercancel',pup);addEventListener('pointerup',pup);addEventListener('pointercancel',pup);addEventListener('blur',()=>{pc.clear();pz=null});
+const pup=e=>{allT.delete(e.pointerId);if(!allT.size)pcBad=0;if(!pc.delete(e.pointerId))return;if(pc.size<2)pend()};
+ed.addEventListener('pointerup',pup);ed.addEventListener('pointercancel',pup);addEventListener('pointerup',pup);addEventListener('pointercancel',pup);addEventListener('blur',()=>{pc.clear();allT.clear();pz=null;pcBad=0});
 ed.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)zoomTo(Z.s*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);else{Z.x-=e.deltaX;Z.y-=e.deltaY;applyZ()}},{passive:false})}
 
 // --- audio: dónde se guarda y cómo gestionarlo ---

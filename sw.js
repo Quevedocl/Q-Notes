@@ -1,5 +1,5 @@
 // Q-Notes service worker: la app arranca sin internet (Local-First)
-const V='qn-shell-v10';
+const V='qn-shell-v13';
 const SHELL=['./','index.html','manifest.webmanifest','favicon.svg','favicon.png','icon-192.png','icon-512.png','apple-touch-icon.png'];
 const LIBS=[
  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js',
