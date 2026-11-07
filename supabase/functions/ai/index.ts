@@ -69,6 +69,8 @@ const TASKS: Record<string, string> = {
     'Transcribe fielmente todo el contenido de la imagen (texto manuscrito o impreso, puede ser una foto o un escaneo de una hoja de apuntes con matemáticas). Respeta el orden de lectura, los saltos de línea, las listas y los títulos. Cada ecuación o fórmula que esté en su propia línea sigue en su propia línea, y sus fracciones apiladas, exponentes, subíndices y raíces se quedan DENTRO de esa misma línea usando la notación indicada. No resuelvas, no corrijas ni expliques nada. Devuelve SOLO la transcripción.' + NOTA,
   lines:
     'Transcribe fielmente el texto manuscrito de la imagen LÍNEA por línea, en orden de lectura de arriba abajo, sin corregir ni inventar nada. Devuelve SOLO un arreglo JSON: [{"t":"texto de la línea","title":true|false}], con UNA entrada por cada línea visual escrita (no juntes varias líneas de texto en una ni partas una línea en dos). IMPORTANTE: una fracción apilada o una expresión con exponentes/subíndices NO cuenta como varias líneas: el numerador, la barra y el denominador pertenecen a la MISMA línea de su ecuación y van juntos en una sola entrada con frac{}{} (por ejemplo la línea «x = (−b ± √(b²−4ac)) / 2a» es una sola entrada: x=frac{-b±sqrt{b^{2}-4ac}}{2a}). Dentro del JSON no uses barras invertidas. Pon title:true únicamente si esa línea es claramente un título o encabezado: más grande que el resto, subrayada, centrada o en mayúsculas, y corta.' + NOTA,
+  ocrbox:
+    'Esta imagen es una hoja de apuntes escritos a mano (normalmente en español, con posibles fórmulas) en negro sobre fondo blanco. Lee TODO lo escrito con mucho cuidado, aunque la letra sea desordenada, inclinada, cursiva o esté pegada: usa el contexto de la frase para decidir cada palabra y no omitas ninguna línea. Devuelve SOLO un arreglo JSON con UNA entrada por cada línea visual de texto, de arriba abajo: [{\"t\":\"texto de la línea\",\"b\":[ymin,xmin,ymax,xmax]}]. \"b\" es la caja que rodea esa línea completa, en coordenadas enteras de 0 a 1000 relativas al tamaño de la imagen (0,0 es la esquina superior izquierda y 1000,1000 la inferior derecha). Una fracción apilada o una expresión con exponentes o subíndices es UNA sola línea (usa frac{a}{b}, x^{2}, x_{i}, sqrt{x}). Dentro del JSON no uses barras invertidas ni comillas dobles dentro del texto. Si una palabra es ilegible escribe ? en su lugar y nunca inventes texto.' + NOTA,
   title:
     'La imagen contiene un título escrito a mano. Transcríbelo fielmente en UNA sola línea, sin comillas, sin punto final y sin añadir numeración ni viñetas. Devuelve SOLO el texto.' + NOTA,
   summary: 'Resume el contenido en 2 a 4 frases claras. Devuelve SOLO el resumen.' + NOTA_CORTA,
@@ -136,7 +138,7 @@ function fixLines(text: string): string {
 
 const MATH_ACTIONS = ['convert', 'title', 'summary', 'bullets', 'explain', 'translate'];
 function postProcess(action: string, text: string): string {
-  if (action === 'lines') return fixLines(text);
+  if (action === 'lines' || action === 'ocrbox') return fixLines(text);
   if (action === 'latex') return text.replace(/\$+/g, '').trim();
   if (MATH_ACTIONS.includes(action)) return normMath(text);
   return text;
@@ -355,13 +357,13 @@ Deno.serve(async (req: Request) => {
           ? tokenTask(String(colors || ''), String(shapes || ''), String(annotations || ''), String(notes || ''))
           : TASKS[action];
       // Lectura de matemáticas (fracciones, exponentes, raíces): se activa un poco de razonamiento para leer bien la estructura espacial.
-      const math = ['convert', 'lines', 'title', 'latex', 'explain'].includes(action);
+      const math = ['convert', 'lines', 'ocrbox', 'title', 'latex', 'explain'].includes(action);
       o = {
         sys: big ? SYSTEM_CODE : SYSTEM,
         maxOut: big ? 16384 : math ? 8192 : 4096,
         timeout: big ? 90000 : math ? 45000 : action === 'wireframe' ? 45000 : 25000,
         total: big ? 135000 : math ? 90000 : action === 'wireframe' ? 70000 : 50000,
-        json: action === 'lines' || action === 'wireframe',
+        json: action === 'lines' || action === 'ocrbox' || action === 'wireframe',
         think: math ? 1024 : 0,
       };
     }
@@ -369,10 +371,10 @@ Deno.serve(async (req: Request) => {
     if (action !== 'transcribe') {
       const LIGHT = ['title', 'summary', 'bullets', 'translate'];
       const light = LIGHT.includes(action);
-      const hedge = light ? 4000 : ['convert', 'lines', 'latex', 'explain'].includes(action) ? 8000 : action === 'wireframe' ? 15000 : (action === 'code' || action === 'tokens') ? 25000 : 12000;
+      const hedge = light ? 4000 : ['convert', 'lines', 'ocrbox', 'latex', 'explain'].includes(action) ? 8000 : action === 'wireframe' ? 15000 : (action === 'code' || action === 'tokens') ? 25000 : 12000;
       const cfg: Partial<Opts> = { fast: true, light, hedge };
       if (light) { cfg.think = 0; cfg.timeout = 15000; cfg.maxOut = action === 'title' ? 256 : action === 'translate' ? 4096 : 1024; }
-      else if (action === 'convert' || action === 'lines' || action === 'latex') cfg.think = 512;
+      else if (action === 'convert' || action === 'lines' || action === 'ocrbox' || action === 'latex') cfg.think = 512;
       o = { ...o, ...cfg };
     }
     const day = new Date().toISOString().slice(0, 10);
