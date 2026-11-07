@@ -265,8 +265,11 @@ async function viaGeminiFast(key: string, media: Media | null, prompt: string, o
 async function viaClaude(key: string, media: Media | null, prompt: string, o: Opts) {
   if (media && media.mime.startsWith('audio/')) throw new AIError('La transcripción de audio necesita GEMINI_API_KEY en Supabase (Edge Functions > Secrets).', 500);
   const content: unknown[] = media ? [{ type: 'image', source: { type: 'base64', media_type: media.mime, data: media.data } }, { type: 'text', text: prompt }] : [{ type: 'text', text: prompt }];
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  let r: Response;
+  try {
+    r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: AbortSignal.timeout(Math.max(20000, o.total || o.timeout)),
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model: Deno.env.get('AI_MODEL') || 'claude-sonnet-5-5',
@@ -274,10 +277,37 @@ async function viaClaude(key: string, media: Media | null, prompt: string, o: Op
       system: o.sys,
       messages: [{ role: 'user', content }],
     }),
-  });
-  const j = await r.json();
+    });
+  } catch (e) {
+    throw new AIError('Claude no respondió a tiempo: ' + (((e as Error).name === 'TimeoutError' || (e as Error).name === 'AbortError') ? 'tiempo agotado' : (e as Error).message));
+  }
+  const j = await r.json().catch(() => ({}));
   if (!r.ok) { console.error('claude error', r.status, j?.error?.message); throw new AIError(j?.error?.message || 'Error del servicio de IA (Claude).'); }
   return (j.content || []).filter((c: any) => c.type === 'text').map((c: any) => c.text).join('\n').trim();
+}
+
+// Gemini primero; Claude entra si Gemini falla o tarda demasiado. Gana la primera respuesta válida.
+// Sin ANTHROPIC_API_KEY (o para audio) todo funciona como antes, solo con Gemini.
+async function viaBest(gKey: string | undefined, cKey: string | undefined, media: Media | null, prompt: string, o: Opts): Promise<string> {
+  const gem = () => (o.fast ? viaGeminiFast(gKey!, media, prompt, o) : viaGemini(gKey!, media, prompt, o));
+  const isAudio = !!media && media.mime.startsWith('audio/');
+  if (!gKey) return viaClaude(cKey!, media, prompt, o);
+  if (!cKey || isAudio) return gem();
+  return await new Promise<string>((resolve, reject) => {
+    let done = false, started = false;
+    let gErr: unknown = null, cErr: unknown = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const win = (t: string) => { if (done) return; done = true; clearTimeout(timer); resolve(t); };
+    const lose = () => { if (done || !gErr || !cErr) return; done = true; clearTimeout(timer); reject(gErr); };
+    const startClaude = () => {
+      if (started || done) return;
+      started = true; clearTimeout(timer);
+      console.error('respaldo: usando Claude');
+      viaClaude(cKey, media, prompt, o).then(win).catch((e) => { console.error('claude fallback', (e as Error).message); cErr = e; lose(); });
+    };
+    gem().then(win).catch((e) => { gErr = e; if (!started) startClaude(); else lose(); });
+    timer = setTimeout(startClaude, Math.max(12000, (o.hedge ?? 8000) + 4000));
+  });
 }
 
 Deno.serve(async (req: Request) => {
@@ -350,7 +380,7 @@ Deno.serve(async (req: Request) => {
     const used = row?.n ?? 0;
     if (used >= DAILY_LIMIT) return json({ error: `Alcanzaste el límite diario de ${DAILY_LIMIT} consultas de IA.` }, 429);
 
-    const raw = gKey ? (o.fast ? await viaGeminiFast(gKey, media, prompt, o) : await viaGemini(gKey, media, prompt, o)) : await viaClaude(cKey!, media, prompt, o);
+    const raw = await viaBest(gKey, cKey, media, prompt, o);
     const text = postProcess(action, raw);
 
     const up = Promise.resolve(admin.from('ai_usage').upsert({ user_id: uid, day, n: used + 1 })).catch((e) => console.error('usage', e));
